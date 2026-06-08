@@ -1,19 +1,19 @@
-import '../../../../core/common/result.dart';
+import '../../../core/common/result.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../datasources/remote/auth_remote_datasource_impl.dart';
+import '../datasources/local/auth_local_datasource_impl.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthRemoteDataSourceImpl authRemoteDataSource;
+  final AuthLocalDataSourceImpl authLocalDataSource;
 
   AuthRepositoryImpl({
-    required this.authRemoteDataSource,
+    required this.authLocalDataSource,
   });
 
   @override
   Future<Result<UserEntity>> signInWithGoogle() async {
     try {
-      final res = await authRemoteDataSource.signInWithGoogle();
+      final res = await authLocalDataSource.signInWithGoogle();
       if (res.isFailure) return Result.failure(error: res.error!);
 
       return Result.success(data: res.data!.toEntity());
@@ -25,7 +25,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<void>> signOut() async {
     try {
-      final res = await authRemoteDataSource.signOut();
+      final res = await authLocalDataSource.signOut();
       if (res.isFailure) return Result.failure(error: res.error!);
 
       return Result.success(data: null);
@@ -37,7 +37,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<UserEntity?>> getCurrentUser() async {
     try {
-      final res = await authRemoteDataSource.getCurrentUser();
+      final res = await authLocalDataSource.getCurrentUser();
       if (res.isFailure) return Result.failure(error: res.error!);
 
       return Result.success(data: res.data?.toEntity());

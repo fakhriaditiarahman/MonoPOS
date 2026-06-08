@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter_pos/core/services/connectivity/ping_service.dart';
+import 'package:mono_pos/core/services/connectivity/ping_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

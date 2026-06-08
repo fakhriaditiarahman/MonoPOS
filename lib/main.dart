@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,23 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/app.dart';
 import 'app/di/app_providers.dart';
 import 'core/services/database/database_service.dart';
-import 'firebase_options.dart';
 
 void main() async {
   // Initialize binding
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase (use `flutterfire configure` to generate the options)
-  await Firebase.initializeApp(
-    name: DefaultFirebaseOptions.currentPlatform.projectId,
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
   // Initialize app local db
   await DatabaseService.instance.init();
-
-  // Ensure persistence is cleared
-  await FirebaseFirestore.instance.clearPersistence();
 
   // Initialize date formatting
   await initializeDateFormatting();

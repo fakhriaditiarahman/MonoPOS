@@ -64,6 +64,8 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
   void onAddOrderedProduct(ProductEntity product, int qty) {
     final orderedProducts = [...state.orderedProducts];
     var currentIndex = orderedProducts.indexWhere((e) => e.productId == product.id);
+    bool isGrosir = state.selectedPriceType == 'grosir';
+    int price = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
 
     if (currentIndex != -1) {
       orderedProducts[currentIndex] = orderedProducts[currentIndex].copyWith(quantity: qty);
@@ -75,13 +77,19 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         stock: product.stock,
         name: product.name,
         imageUrl: product.imageUrl,
-        price: product.price,
+        price: price,
+        priceType: state.selectedPriceType,
+        unit: product.unit,
       );
 
       orderedProducts.add(order);
     }
 
     state = state.copyWith(orderedProducts: orderedProducts);
+  }
+
+  void onChangedPriceType(String value) {
+    state = state.copyWith(selectedPriceType: value);
   }
 
   void onRemoveOrderedProduct(OrderedProductEntity val) {

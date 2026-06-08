@@ -1,0 +1,216 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Flutter POS",
+
+  "home": "Home",
+  "products": "Products",
+  "transactions": "Transactions",
+  "settings": "Settings",
+
+  "home_searchHint": "Search Products...",
+  "home_syncronizing": "Syncronizing",
+  "home_synced": "Synced",
+  "home_pending": "Pending",
+  "home_onlineMode": "Online mode",
+  "home_noInternet": "No internet connection, running in offline mode",
+  "home_enterAmount": "Enter Amount",
+  "home_addToCart": "Add To Cart",
+  "home_cancel": "Cancel",
+  "home_noProducts": "No products available, add product to continue",
+  "home_addProduct": "Add Product",
+  "home_transaction": "Transaction",
+  "home_pay": "Pay",
+  "home_retail": "Retail",
+  "home_grosir": "Grosir",
+
+  "cart_products": "{count} Products",
+  "@cart_products": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cart_confirm": "Confirm",
+  "cart_removeAllConfirm": "Are you sure want to remove all product?",
+  "cart_remove": "Remove",
+  "cart_removeAll": "Remove All",
+  "cart_empty": "Empty",
+  "cart_noProducts": "No products added to cart",
+  "cart_total": "Total ({count})",
+  "@cart_total": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cart_back": "Back",
+  "cart_receivedAmount": "Received Amount",
+  "cart_receivedAmountHint": "Received amount...",
+  "cart_paymentMethod": "Payment Method",
+  "cart_bank": "Bank",
+  "cart_cash": "Cash",
+  "cart_customerName": "Customer Name (Optional)",
+  "cart_customerNameHint": "e.g. Jhone Doe",
+  "cart_description": "Description (Optional)",
+  "cart_descriptionHint": "Description...",
+  "cart_stock": "Stock: {count}",
+  "@cart_stock": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cart_removeProductConfirm": "Are you sure want to remove this product?",
+
+  "product_stockSold": "Stock {stock} | Sold {sold}",
+  "@product_stockSold": {
+    "placeholders": {
+      "stock": {},
+      "sold": {}
+    }
+  },
+  "product_retailPrice": "Retail: {price}",
+  "@product_retailPrice": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "product_grosirPrice": "Grosir: {price}",
+  "@product_grosirPrice": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "product_outOfStock": "Out of stock",
+  "product_searchHint": "Search Products...",
+  "product_noProducts": "No products available, add product to continue",
+  "product_createTitle": "Create Product",
+  "product_editTitle": "Edit Product",
+  "product_image": "Product Image",
+  "product_nameLabel": "Name",
+  "product_nameHint": "Product name...",
+  "product_retailPriceLabel": "Retail Price",
+  "product_retailPriceHint": "Retail price...",
+  "product_wholesalePriceLabel": "Wholesale Price (Optional)",
+  "product_wholesalePriceHint": "Wholesale price...",
+  "product_stockLabel": "Stock",
+  "product_stockHint": "Product stock...",
+  "product_barcodeLabel": "Barcode",
+  "product_barcodeHint": "Scan or type barcode...",
+  "product_barcode": "Barcode",
+  "product_unitLabel": "Unit",
+  "product_descriptionLabel": "Description",
+  "product_descriptionHint": "Product description...",
+  "product_addButton": "Add Product",
+  "product_updateButton": "Update Product",
+  "product_deleteButton": "Delete",
+  "product_deleteConfirm": "Are you sure want to delete this product?",
+  "product_deleted": "Product deleted",
+  "product_created": "Product created",
+  "product_updated": "Product updated",
+  "product_detailTitle": "Product Detail",
+  "product_editProduct": "Edit Product",
+  "product_noName": "(No name)",
+  "product_addedAt": "Added at {date}",
+  "@product_addedAt": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "product_lastUpdated": "Last updated at {date}",
+  "@product_lastUpdated": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "product_price": "Price",
+  "product_stock": "Stock",
+  "product_sold": "Sold",
+  "product_description": "Description",
+  "product_noDescription": "(No description)",
+  "product_notFound": "Not Found",
+
+  "transaction_searchHint": "Search Transaction ID...",
+  "transaction_noTransaction": "No transaction available",
+  "transaction_detailTitle": "Transaction Detail",
+  "transaction_reprint": "Reprint",
+  "transaction_created": "Transaction Created",
+  "transaction_id": "Transaction ID",
+  "transaction_paymentMethod": "Payment Method",
+  "transaction_createdBy": "Created By",
+  "transaction_createdAt": "Created At",
+  "transaction_customerName": "Customer Name",
+  "transaction_description": "Description",
+  "transaction_orderedProducts": "Ordered Products",
+  "transaction_total": "Total",
+  "transaction_paymentReceived": "Payment Received",
+  "transaction_change": "Change",
+  "transaction_notFound": "Not Found",
+  "transaction_products": "{count} Products",
+  "@transaction_products": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+
+  "settings_title": "Settings",
+  "settings_profile": "Profile",
+  "settings_theme": "Theme",
+  "settings_close": "Close",
+  "settings_darkMode": "Dark Mode",
+  "settings_printerSettings": "Printer Settings",
+  "settings_about": "About",
+  "settings_language": "Language",
+  "settings_english": "English",
+  "settings_indonesian": "Indonesian",
+  "settings_noName": "(No Name)",
+
+  "profile_editTitle": "Edit Profile",
+  "profile_image": "Profile Image",
+  "profile_nameLabel": "Name",
+  "profile_nameHint": "Your name...",
+  "profile_emailLabel": "Email",
+  "profile_emailHint": "Your email...",
+  "profile_phoneLabel": "Phone Number",
+  "profile_phoneHint": "Your phone number...",
+  "profile_update": "Update",
+  "profile_cropPhoto": "Crop Photo",
+  "profile_updated": "Profile updated",
+
+  "printer_title": "Printer Settings",
+  "printer_paperSize": "Paper Size",
+  "printer_connectionTypes": "Connection Types",
+  "printer_selectConnection": "Select connection types",
+  "printer_usb": "USB",
+  "printer_bluetooth": "Bluetooth",
+  "printer_ble": "BLE",
+  "printer_network": "Network",
+  "printer_allConnections": "All connection types",
+  "printer_availableDevices": "Available Devices",
+  "printer_scanning": "Scanning for printers...",
+  "printer_noDevice": "(No printer detected)",
+
+  "about_title": "About",
+  "about_appName": "Flutter POS",
+  "about_version": "version {version}",
+  "@about_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "about_description": "A Point of Sale (POS) application built with Flutter framework. This application manages product data, transactions, and user data. The data is stored locally using SQLite database and can be synchronized with REST API server.",
+  "about_learningResource": "This project serves as a learning resource for Flutter developers who want to learn about Clean Architecture, Riverpod state management, GoRouter navigation, and SQLite database integration. The project is open source and available on GitHub.",
+  "about_developedBy": "Developed with ❤️ by",
+  "about_developerName": "Fakhri Aditia Rahman",
+  "about_github": "GitHub",
+  "about_website": "Website",
+
+  "welcome_title": "Welcome!",
+  "welcome_subtitle": "Welcome to Flutter POS app",
+
+  "error_backToHome": "Back to home",
+
+  "shared_oops": "Oops!",
+  "shared_somethingWrong": "Something went wrong, please contact developer.",
+  "shared_close": "Close",
+  "shared_nothingToShow": "Nothing to show",
+  "shared_somethingWrongRetry": "Something went wrong.\nPlease try again later."
+}

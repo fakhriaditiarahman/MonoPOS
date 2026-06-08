@@ -12,6 +12,8 @@ abstract class ProductDatasource {
 
   Future<Result<List<ProductModel>>> getAllUserProducts(String userId);
 
+  Future<Result<ProductModel?>> getProductByBarcode(String barcode);
+
   Future<Result<List<ProductModel>>> getUserProducts(
     String userId, {
     String orderBy,

@@ -4,6 +4,7 @@ import 'package:app_image/app_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mono_pos/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,10 +13,12 @@ import '../../../core/themes/app_sizes.dart';
 import '../../providers/products/product_form_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
+import '../../widgets/app_drop_down.dart';
 import '../../widgets/app_icon_button.dart';
 import '../../widgets/app_progress_indicator.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_text_field.dart';
+import '../home/components/barcode_scanner_screen.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
   final int? id;
@@ -32,7 +35,9 @@ class ProductFormScreen extends ConsumerStatefulWidget {
 class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   final nameController = TextEditingController();
   final priceController = TextEditingController();
+  final wholesalePriceController = TextEditingController();
   final stockController = TextEditingController();
+  final barcodeController = TextEditingController();
   final descController = TextEditingController();
 
   @override
@@ -44,7 +49,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       final state = ref.read(productFormNotifierProvider);
       nameController.text = state.name ?? '';
       priceController.text = state.price?.toString() ?? '';
+      wholesalePriceController.text = state.wholesalePrice?.toString() ?? '';
       stockController.text = state.stock?.toString() ?? '';
+      barcodeController.text = state.barcode ?? '';
       descController.text = state.description ?? '';
     });
   }
@@ -53,7 +60,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   void dispose() {
     nameController.dispose();
     priceController.dispose();
+    wholesalePriceController.dispose();
     stockController.dispose();
+    barcodeController.dispose();
     descController.dispose();
     super.dispose();
   }
@@ -89,7 +98,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     if (res.isSuccess) {
       if (!mounted) return;
       context.go('/products');
-      AppSnackBar.show('Product created');
+      AppSnackBar.show(AppLocalizations.of(context)!.product_created);
     } else {
       AppDialog.showError(error: res.error?.toString());
     }
@@ -103,7 +112,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     if (res.isSuccess) {
       if (!mounted) return;
       context.pop();
-      AppSnackBar.show('Product updated');
+      AppSnackBar.show(AppLocalizations.of(context)!.product_updated);
     } else {
       AppDialog.showError(error: res.error?.toString());
     }
@@ -117,7 +126,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     if (res.isSuccess) {
       if (!mounted) return;
       context.go('/products');
-      AppSnackBar.show('Product deleted');
+      AppSnackBar.show(AppLocalizations.of(context)!.product_deleted);
     } else {
       AppDialog.showError(error: res.error?.toString());
     }
@@ -131,7 +140,11 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.id == null ? 'Create Product' : 'Edit Product'),
+        title: Text(
+          widget.id == null
+              ? AppLocalizations.of(context)!.product_createTitle
+              : AppLocalizations.of(context)!.product_editTitle,
+        ),
         titleSpacing: 0,
       ),
       body: !isLoaded
@@ -146,13 +159,24 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     controller: nameController,
                     onChanged: notifier.onChangedName,
                   ),
-                  _PriceField(
+                  _RetailPriceField(
                     controller: priceController,
                     onChanged: notifier.onChangedPrice,
+                  ),
+                  _WholesalePriceField(
+                    controller: wholesalePriceController,
+                    onChanged: notifier.onChangedWholesalePrice,
                   ),
                   _StockField(
                     controller: stockController,
                     onChanged: notifier.onChangedStock,
+                  ),
+                  _BarcodeField(
+                    controller: barcodeController,
+                    onChanged: notifier.onChangedBarcode,
+                  ),
+                  _UnitField(
+                    onChanged: notifier.onChangedUnit,
                   ),
                   _DescriptionField(
                     controller: descController,
@@ -188,7 +212,7 @@ class _ImageSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Product Image',
+          AppLocalizations.of(context)!.product_image,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -249,19 +273,78 @@ class _NameField extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppTextField(
         controller: controller,
-        labelText: 'Name',
-        hintText: 'Product name...',
+        labelText: AppLocalizations.of(context)!.product_nameLabel,
+        hintText: AppLocalizations.of(context)!.product_nameHint,
         onChanged: onChanged,
       ),
     );
   }
 }
 
-class _PriceField extends StatelessWidget {
+class _BarcodeField extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
 
-  const _PriceField({
+  const _BarcodeField({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: Row(
+        children: [
+          Expanded(
+            child: AppTextField(
+              controller: controller,
+              labelText: AppLocalizations.of(context)!.product_barcodeLabel,
+              hintText: AppLocalizations.of(context)!.product_barcodeHint,
+              onChanged: onChanged,
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            height: 48,
+            child: Material(
+              color: Theme.of(context).colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(AppSizes.radius),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppSizes.radius),
+                onTap: () async {
+                  final result = await Navigator.push<String>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const BarcodeScannerScreen(),
+                    ),
+                  );
+                  if (result != null) {
+                    controller.text = result;
+                    onChanged(result);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Icon(
+                    Icons.qr_code_scanner_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RetailPriceField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _RetailPriceField({
     required this.controller,
     required this.onChanged,
   });
@@ -272,8 +355,32 @@ class _PriceField extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppTextField(
         controller: controller,
-        labelText: 'Price',
-        hintText: 'Product price...',
+        labelText: AppLocalizations.of(context)!.product_retailPriceLabel,
+        hintText: AppLocalizations.of(context)!.product_retailPriceHint,
+        type: AppTextFieldType.currency,
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _WholesalePriceField extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _WholesalePriceField({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppTextField(
+        controller: controller,
+        labelText: AppLocalizations.of(context)!.product_wholesalePriceLabel,
+        hintText: AppLocalizations.of(context)!.product_wholesalePriceHint,
         type: AppTextFieldType.currency,
         onChanged: onChanged,
       ),
@@ -296,11 +403,48 @@ class _StockField extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppTextField(
         controller: controller,
-        labelText: 'Stock',
-        hintText: 'Product stock...',
+        labelText: AppLocalizations.of(context)!.product_stockLabel,
+        hintText: AppLocalizations.of(context)!.product_stockHint,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _UnitField extends ConsumerWidget {
+  final ValueChanged<String> onChanged;
+
+  const _UnitField({
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedUnit = ref.watch(productFormNotifierProvider.select((s) => s.unit));
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppDropDown(
+        labelText: AppLocalizations.of(context)!.product_unitLabel,
+        selectedValue: selectedUnit,
+        dropdownItems: const [
+          DropdownMenuItem(value: 'pcs', child: Text('pcs')),
+          DropdownMenuItem(value: 'dus', child: Text('dus')),
+          DropdownMenuItem(value: 'kg', child: Text('kg')),
+          DropdownMenuItem(value: 'pack', child: Text('pack')),
+          DropdownMenuItem(value: 'box', child: Text('box')),
+          DropdownMenuItem(value: 'sachet', child: Text('sachet')),
+          DropdownMenuItem(value: 'botol', child: Text('botol')),
+          DropdownMenuItem(value: 'lusin', child: Text('lusin')),
+          DropdownMenuItem(value: 'kodi', child: Text('kodi')),
+          DropdownMenuItem(value: 'rim', child: Text('rim')),
+          DropdownMenuItem(value: 'bungkus', child: Text('bungkus')),
+        ],
+        onChanged: (v) {
+          if (v != null) onChanged(v);
+        },
       ),
     );
   }
@@ -321,8 +465,8 @@ class _DescriptionField extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppTextField(
         controller: controller,
-        labelText: 'Description',
-        hintText: 'Product description...',
+        labelText: AppLocalizations.of(context)!.product_descriptionLabel,
+        hintText: AppLocalizations.of(context)!.product_descriptionHint,
         maxLines: 4,
         onChanged: onChanged,
       ),
@@ -352,7 +496,9 @@ class _CreateOrUpdateButton extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding * 1.5),
       child: AppButton(
-        text: id == null ? 'Add Product' : 'Update Product',
+        text: id == null
+            ? AppLocalizations.of(context)!.product_addButton
+            : AppLocalizations.of(context)!.product_updateButton,
         enabled: isFormValid,
         onTap: () {
           if (id != null) {
@@ -385,15 +531,15 @@ class _DeleteButton extends StatelessWidget {
         bottom: AppSizes.padding * 2,
       ),
       child: AppButton(
-        text: 'Delete',
+        text: AppLocalizations.of(context)!.product_deleteButton,
         textColor: Theme.of(context).colorScheme.error,
         buttonColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         onTap: () {
           AppDialog.show(
-            title: 'Confirm',
-            text: 'Are you sure want to delete this product?',
-            leftButtonText: 'Cancel',
-            rightButtonText: 'Delete',
+            title: AppLocalizations.of(context)!.cart_confirm,
+            text: AppLocalizations.of(context)!.product_deleteConfirm,
+            leftButtonText: AppLocalizations.of(context)!.home_cancel,
+            rightButtonText: AppLocalizations.of(context)!.cart_remove,
             rightButtonColor: Theme.of(context).colorScheme.errorContainer,
             rightButtonTextColor: Theme.of(context).colorScheme.error,
             onTapRightButton: (context) async {

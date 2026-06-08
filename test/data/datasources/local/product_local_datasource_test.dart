@@ -1,6 +1,6 @@
-import 'package:flutter_pos/core/services/database/database_service.dart';
-import 'package:flutter_pos/data/datasources/local/product_local_datasource_impl.dart';
-import 'package:flutter_pos/data/models/product_model.dart';
+import 'package:mono_pos/core/services/database/database_service.dart';
+import 'package:mono_pos/data/datasources/local/product_local_datasource_impl.dart';
+import 'package:mono_pos/data/models/product_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -26,7 +26,7 @@ void main() {
 
   const userId = "user123";
 
-  ProductModel createSampleProduct({int id = 1}) {
+  ProductModel createSampleProduct({int id = 1, String? barcode}) {
     return ProductModel(
       id: id,
       name: 'Sample Product',
@@ -35,6 +35,7 @@ void main() {
       price: 42,
       sold: 10,
       stock: 50,
+      barcode: barcode,
     );
   }
 
@@ -137,6 +138,38 @@ void main() {
         final result = await datasource.getAllUserProducts('different_user');
 
         expect(result.data, isEmpty);
+      });
+    });
+
+    group('getProductByBarcode', () {
+      test('should find product by barcode', () async {
+        const barcode = '8991234567890';
+        final product = createSampleProduct(id: 10, barcode: barcode);
+        await datasource.createProduct(product);
+
+        final result = await datasource.getProductByBarcode(barcode);
+
+        expect(result.data, isNotNull);
+        expect(result.data?.id, equals(10));
+        expect(result.data?.barcode, equals(barcode));
+      });
+
+      test('should return null when barcode does not match any product', () async {
+        final result = await datasource.getProductByBarcode('nonexistent-barcode');
+
+        expect(result.data, isNull);
+      });
+
+      test('should find correct product among multiple products', () async {
+        await datasource.createProduct(createSampleProduct(id: 1, barcode: 'barcode-1'));
+        await datasource.createProduct(createSampleProduct(id: 2, barcode: 'barcode-2'));
+        await datasource.createProduct(createSampleProduct(id: 3, barcode: 'barcode-3'));
+
+        final result = await datasource.getProductByBarcode('barcode-2');
+
+        expect(result.data, isNotNull);
+        expect(result.data?.id, equals(2));
+        expect(result.data?.barcode, equals('barcode-2'));
       });
     });
 

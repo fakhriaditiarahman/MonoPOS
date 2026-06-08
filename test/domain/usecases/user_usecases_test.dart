@@ -1,7 +1,7 @@
-import 'package:flutter_pos/core/common/result.dart';
-import 'package:flutter_pos/domain/entities/user_entity.dart';
-import 'package:flutter_pos/domain/repositories/user_repository.dart';
-import 'package:flutter_pos/domain/usecases/user_usecases.dart';
+import 'package:mono_pos/core/common/result.dart';
+import 'package:mono_pos/domain/entities/user_entity.dart';
+import 'package:mono_pos/domain/repositories/user_repository.dart';
+import 'package:mono_pos/domain/usecases/user_usecases.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';

@@ -4,15 +4,6 @@ import '../entities/transaction_entity.dart';
 import '../repositories/transaction_repository.dart';
 import 'params/base_params.dart';
 
-class SyncAllUserTransactionsUsecase extends Usecase<Result, String> {
-  SyncAllUserTransactionsUsecase(this._transactionRepository);
-
-  final TransactionRepository _transactionRepository;
-
-  @override
-  Future<Result<int>> call(String params) async => _transactionRepository.syncAllUserTransactions(params);
-}
-
 class GetUserTransactionsUsecase extends Usecase<Result, BaseParams> {
   GetUserTransactionsUsecase(this._transactionRepository);
 

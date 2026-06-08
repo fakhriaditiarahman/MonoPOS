@@ -7,7 +7,6 @@ import '../../../core/common/result.dart';
 import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/usecases/product_usecases.dart';
-import '../../../domain/usecases/storage_usecases.dart';
 import '../auth/auth_notifier.dart';
 import 'product_form_state.dart';
 import 'products_notifier.dart';
@@ -44,7 +43,10 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         imageUrl: product?.imageUrl,
         name: product?.name,
         price: product?.price,
+        wholesalePrice: product?.wholesalePrice,
         stock: product?.stock,
+        unit: product?.unit ?? 'pcs',
+        barcode: product?.barcode,
         description: product?.description,
         isLoaded: true,
       );
@@ -56,14 +58,12 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   Future<Result<int>> createProduct() async {
     try {
       final userId = _requireUserId();
-      final storageRepository = ref.read(storageRepositoryProvider);
       final productRepository = ref.read(productRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        final res = await UploadProductImageUsecase(storageRepository).call(state.imageFile!.path);
-        imageUrl = res.data;
+        imageUrl = state.imageFile!.path;
       }
 
       cl('imageUrl $imageUrl');
@@ -74,6 +74,9 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         imageUrl: imageUrl ?? '',
         stock: state.stock ?? 0,
         price: state.price ?? 0,
+        wholesalePrice: state.wholesalePrice,
+        unit: state.unit,
+        barcode: state.barcode,
         description: state.description ?? '',
       );
 
@@ -91,14 +94,12 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   Future<Result<void>> updatedProduct(int id) async {
     try {
       final userId = _requireUserId();
-      final storageRepository = ref.read(storageRepositoryProvider);
       final productRepository = ref.read(productRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        final res = await UploadProductImageUsecase(storageRepository).call(state.imageFile!.path);
-        imageUrl = res.data;
+        imageUrl = state.imageFile!.path;
       }
 
       cl('imageUrl $imageUrl');
@@ -110,6 +111,9 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         imageUrl: imageUrl ?? '',
         stock: state.stock ?? 0,
         price: state.price ?? 0,
+        wholesalePrice: state.wholesalePrice,
+        unit: state.unit,
+        barcode: state.barcode,
         description: state.description ?? '',
       );
 
@@ -150,8 +154,20 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     state = state.copyWith(price: int.tryParse(value));
   }
 
+  void onChangedWholesalePrice(String value) {
+    state = state.copyWith(wholesalePrice: int.tryParse(value));
+  }
+
   void onChangedStock(String value) {
     state = state.copyWith(stock: int.tryParse(value));
+  }
+
+  void onChangedUnit(String value) {
+    state = state.copyWith(unit: value);
+  }
+
+  void onChangedBarcode(String value) {
+    state = state.copyWith(barcode: value.isEmpty ? null : value);
   }
 
   void onChangedDesc(String value) {

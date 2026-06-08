@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/themes/app_sizes.dart';
 import '../../core/utilities/console_logger.dart';
+import '../../generated/app_localizations.dart';
 
 class AppErrorWidget extends StatelessWidget {
   final Object? error;
@@ -43,7 +44,7 @@ class AppErrorWidget extends StatelessWidget {
               ),
               const SizedBox(height: AppSizes.padding / 6),
               Text(
-                'Oops!',
+                AppLocalizations.of(context)!.shared_oops,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.error,
@@ -51,7 +52,7 @@ class AppErrorWidget extends StatelessWidget {
               ),
               const SizedBox(height: AppSizes.padding / 4),
               Text(
-                message ?? 'Something went wrong.\nPlease try again later.',
+                message ?? AppLocalizations.of(context)!.shared_somethingWrongRetry,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

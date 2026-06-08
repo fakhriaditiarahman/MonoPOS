@@ -1,7 +1,7 @@
-import 'package:flutter_pos/core/common/result.dart';
-import 'package:flutter_pos/core/services/connectivity/ping_service.dart';
-import 'package:flutter_pos/data/datasources/remote/storage_remote_datasource_impl.dart';
-import 'package:flutter_pos/data/repositories/storage_repository_impl.dart';
+import 'package:mono_pos/core/common/result.dart';
+import 'package:mono_pos/core/services/connectivity/ping_service.dart';
+import 'package:mono_pos/data/datasources/remote/storage_remote_datasource_impl.dart';
+import 'package:mono_pos/data/repositories/storage_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';

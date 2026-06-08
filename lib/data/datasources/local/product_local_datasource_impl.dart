@@ -119,4 +119,21 @@ class ProductLocalDatasourceImpl extends ProductDatasource {
       return Result.failure(error: e);
     }
   }
+
+  @override
+  Future<Result<ProductModel?>> getProductByBarcode(String barcode) async {
+    try {
+      var res = await _databaseService.database.query(
+        DatabaseConfig.productTableName,
+        where: 'barcode = ?',
+        whereArgs: [barcode],
+      );
+
+      if (res.isEmpty) return Result.success(data: null);
+
+      return Result.success(data: ProductModel.fromJson(res.first));
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
 }

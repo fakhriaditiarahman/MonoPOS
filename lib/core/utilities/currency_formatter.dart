@@ -1,8 +1,6 @@
 import 'package:intl/intl.dart';
 
-import '../locale/app_locale.dart';
-
-/// Currency Formatter dependent on [AppLocale]
+/// Currency Formatter for Rupiah
 class CurrencyFormatter {
   CurrencyFormatter._();
 
@@ -10,14 +8,14 @@ class CurrencyFormatter {
 
   static String format(num data, {int? decimalDigits}) {
     return NumberFormat.simpleCurrency(
-      locale: AppLocale.defaultLocale.countryCode,
+      locale: 'id',
       decimalDigits: decimalDigits ?? defaultDecimalDigits,
     ).format(data);
   }
 
   static String compact(num data, {int? decimalDigits, bool withSymbol = true}) {
     return NumberFormat.compactSimpleCurrency(
-      locale: AppLocale.defaultLocale.countryCode,
+      locale: 'id',
       name: withSymbol ? null : '',
       decimalDigits: decimalDigits ?? defaultDecimalDigits,
     ).format(data);
@@ -25,7 +23,7 @@ class CurrencyFormatter {
 
   static String withoutSymbol(num data, {int? decimalDigits}) {
     return NumberFormat.currency(
-      locale: AppLocale.defaultLocale.countryCode,
+      locale: 'id',
       decimalDigits: decimalDigits ?? defaultDecimalDigits,
       symbol: "",
     ).format(data);
@@ -33,7 +31,7 @@ class CurrencyFormatter {
 
   static String currencySymbol() {
     return NumberFormat.simpleCurrency(
-      locale: AppLocale.defaultLocale.countryCode,
+      locale: 'id',
     ).currencySymbol;
   }
 }

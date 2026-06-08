@@ -1,5 +1,5 @@
 import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
-import 'package:flutter_pos/data/datasources/remote/storage_remote_datasource_impl.dart';
+import 'package:mono_pos/data/datasources/remote/storage_remote_datasource_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

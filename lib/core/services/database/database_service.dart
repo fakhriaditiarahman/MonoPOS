@@ -47,6 +47,26 @@ class DatabaseService {
       database.execute(DatabaseConfig.createOrderedProductTable),
       database.execute(DatabaseConfig.createQueuedActionTable),
     ]);
+
+    // Migration: add wholesalePrice column (safe for existing DBs)
+    try {
+      await database.execute('ALTER TABLE Product ADD COLUMN wholesalePrice INTEGER');
+    } catch (_) {}
+
+    // Migration: add priceType column
+    try {
+      await database.execute("ALTER TABLE OrderedProduct ADD COLUMN priceType TEXT DEFAULT 'retail'");
+    } catch (_) {}
+
+    // Migration: add unit column
+    try {
+      await database.execute("ALTER TABLE Product ADD COLUMN unit TEXT DEFAULT 'pcs'");
+    } catch (_) {}
+
+    // Migration: add barcode column
+    try {
+      await database.execute('ALTER TABLE Product ADD COLUMN barcode TEXT');
+    } catch (_) {}
   }
 
   @visibleForTesting

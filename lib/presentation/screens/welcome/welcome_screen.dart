@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/assets/assets.dart';
 import '../../../core/themes/app_sizes.dart';
+import '../../../generated/app_localizations.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -32,11 +33,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
           const SizedBox(height: AppSizes.padding),
           Text(
-            'Welcome!',
+            AppLocalizations.of(context)!.welcome_title,
             style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           Text(
-            'Welcome to Flutter POS app',
+            AppLocalizations.of(context)!.welcome_subtitle,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge,
           ),

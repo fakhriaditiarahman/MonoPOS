@@ -1,0 +1,479 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appTitle => 'Flutter POS';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get products => 'Products';
+
+  @override
+  String get transactions => 'Transactions';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get home_searchHint => 'Search Products...';
+
+  @override
+  String get home_syncronizing => 'Syncronizing';
+
+  @override
+  String get home_synced => 'Synced';
+
+  @override
+  String get home_pending => 'Pending';
+
+  @override
+  String get home_onlineMode => 'Online mode';
+
+  @override
+  String get home_noInternet => 'No internet connection, running in offline mode';
+
+  @override
+  String get home_enterAmount => 'Enter Amount';
+
+  @override
+  String get home_addToCart => 'Add To Cart';
+
+  @override
+  String get home_cancel => 'Cancel';
+
+  @override
+  String get home_noProducts => 'No products available, add product to continue';
+
+  @override
+  String get home_addProduct => 'Add Product';
+
+  @override
+  String get home_transaction => 'Transaction';
+
+  @override
+  String get home_pay => 'Pay';
+
+  @override
+  String get home_retail => 'Retail';
+
+  @override
+  String get home_grosir => 'Grosir';
+
+  @override
+  String cart_products(Object count) {
+    return '$count Products';
+  }
+
+  @override
+  String get cart_confirm => 'Confirm';
+
+  @override
+  String get cart_removeAllConfirm => 'Are you sure want to remove all product?';
+
+  @override
+  String get cart_remove => 'Remove';
+
+  @override
+  String get cart_removeAll => 'Remove All';
+
+  @override
+  String get cart_empty => 'Empty';
+
+  @override
+  String get cart_noProducts => 'No products added to cart';
+
+  @override
+  String cart_total(Object count) {
+    return 'Total ($count)';
+  }
+
+  @override
+  String get cart_back => 'Back';
+
+  @override
+  String get cart_receivedAmount => 'Received Amount';
+
+  @override
+  String get cart_receivedAmountHint => 'Received amount...';
+
+  @override
+  String get cart_paymentMethod => 'Payment Method';
+
+  @override
+  String get cart_bank => 'Bank';
+
+  @override
+  String get cart_cash => 'Cash';
+
+  @override
+  String get cart_customerName => 'Customer Name (Optional)';
+
+  @override
+  String get cart_customerNameHint => 'e.g. Jhone Doe';
+
+  @override
+  String get cart_description => 'Description (Optional)';
+
+  @override
+  String get cart_descriptionHint => 'Description...';
+
+  @override
+  String cart_stock(Object count) {
+    return 'Stock: $count';
+  }
+
+  @override
+  String get cart_removeProductConfirm => 'Are you sure want to remove this product?';
+
+  @override
+  String product_stockSold(Object stock, Object sold) {
+    return 'Stock $stock | Sold $sold';
+  }
+
+  @override
+  String product_retailPrice(Object price) {
+    return 'Retail: $price';
+  }
+
+  @override
+  String product_grosirPrice(Object price) {
+    return 'Grosir: $price';
+  }
+
+  @override
+  String get product_outOfStock => 'Out of stock';
+
+  @override
+  String get product_searchHint => 'Search Products...';
+
+  @override
+  String get product_noProducts => 'No products available, add product to continue';
+
+  @override
+  String get product_createTitle => 'Create Product';
+
+  @override
+  String get product_editTitle => 'Edit Product';
+
+  @override
+  String get product_image => 'Product Image';
+
+  @override
+  String get product_nameLabel => 'Name';
+
+  @override
+  String get product_nameHint => 'Product name...';
+
+  @override
+  String get product_retailPriceLabel => 'Retail Price';
+
+  @override
+  String get product_retailPriceHint => 'Retail price...';
+
+  @override
+  String get product_wholesalePriceLabel => 'Wholesale Price (Optional)';
+
+  @override
+  String get product_wholesalePriceHint => 'Wholesale price...';
+
+  @override
+  String get product_stockLabel => 'Stock';
+
+  @override
+  String get product_stockHint => 'Product stock...';
+
+  @override
+  String get product_barcodeLabel => 'Barcode';
+
+  @override
+  String get product_barcodeHint => 'Scan or type barcode...';
+
+  @override
+  String get product_barcode => 'Barcode';
+
+  @override
+  String get product_unitLabel => 'Unit';
+
+  @override
+  String get product_descriptionLabel => 'Description';
+
+  @override
+  String get product_descriptionHint => 'Product description...';
+
+  @override
+  String get product_addButton => 'Add Product';
+
+  @override
+  String get product_updateButton => 'Update Product';
+
+  @override
+  String get product_deleteButton => 'Delete';
+
+  @override
+  String get product_deleteConfirm => 'Are you sure want to delete this product?';
+
+  @override
+  String get product_deleted => 'Product deleted';
+
+  @override
+  String get product_created => 'Product created';
+
+  @override
+  String get product_updated => 'Product updated';
+
+  @override
+  String get product_detailTitle => 'Product Detail';
+
+  @override
+  String get product_editProduct => 'Edit Product';
+
+  @override
+  String get product_noName => '(No name)';
+
+  @override
+  String product_addedAt(Object date) {
+    return 'Added at $date';
+  }
+
+  @override
+  String product_lastUpdated(Object date) {
+    return 'Last updated at $date';
+  }
+
+  @override
+  String get product_price => 'Price';
+
+  @override
+  String get product_stock => 'Stock';
+
+  @override
+  String get product_sold => 'Sold';
+
+  @override
+  String get product_description => 'Description';
+
+  @override
+  String get product_noDescription => '(No description)';
+
+  @override
+  String get product_notFound => 'Not Found';
+
+  @override
+  String get transaction_searchHint => 'Search Transaction ID...';
+
+  @override
+  String get transaction_noTransaction => 'No transaction available';
+
+  @override
+  String get transaction_detailTitle => 'Transaction Detail';
+
+  @override
+  String get transaction_reprint => 'Reprint';
+
+  @override
+  String get transaction_created => 'Transaction Created';
+
+  @override
+  String get transaction_id => 'Transaction ID';
+
+  @override
+  String get transaction_paymentMethod => 'Payment Method';
+
+  @override
+  String get transaction_createdBy => 'Created By';
+
+  @override
+  String get transaction_createdAt => 'Created At';
+
+  @override
+  String get transaction_customerName => 'Customer Name';
+
+  @override
+  String get transaction_description => 'Description';
+
+  @override
+  String get transaction_orderedProducts => 'Ordered Products';
+
+  @override
+  String get transaction_total => 'Total';
+
+  @override
+  String get transaction_paymentReceived => 'Payment Received';
+
+  @override
+  String get transaction_change => 'Change';
+
+  @override
+  String get transaction_notFound => 'Not Found';
+
+  @override
+  String transaction_products(Object count) {
+    return '$count Products';
+  }
+
+  @override
+  String get settings_title => 'Settings';
+
+  @override
+  String get settings_profile => 'Profile';
+
+  @override
+  String get settings_theme => 'Theme';
+
+  @override
+  String get settings_close => 'Close';
+
+  @override
+  String get settings_darkMode => 'Dark Mode';
+
+  @override
+  String get settings_printerSettings => 'Printer Settings';
+
+  @override
+  String get settings_about => 'About';
+
+  @override
+  String get settings_language => 'Language';
+
+  @override
+  String get settings_english => 'English';
+
+  @override
+  String get settings_indonesian => 'Indonesian';
+
+  @override
+  String get settings_noName => '(No Name)';
+
+  @override
+  String get profile_editTitle => 'Edit Profile';
+
+  @override
+  String get profile_image => 'Profile Image';
+
+  @override
+  String get profile_nameLabel => 'Name';
+
+  @override
+  String get profile_nameHint => 'Your name...';
+
+  @override
+  String get profile_emailLabel => 'Email';
+
+  @override
+  String get profile_emailHint => 'Your email...';
+
+  @override
+  String get profile_phoneLabel => 'Phone Number';
+
+  @override
+  String get profile_phoneHint => 'Your phone number...';
+
+  @override
+  String get profile_update => 'Update';
+
+  @override
+  String get profile_cropPhoto => 'Crop Photo';
+
+  @override
+  String get profile_updated => 'Profile updated';
+
+  @override
+  String get printer_title => 'Printer Settings';
+
+  @override
+  String get printer_paperSize => 'Paper Size';
+
+  @override
+  String get printer_connectionTypes => 'Connection Types';
+
+  @override
+  String get printer_selectConnection => 'Select connection types';
+
+  @override
+  String get printer_usb => 'USB';
+
+  @override
+  String get printer_bluetooth => 'Bluetooth';
+
+  @override
+  String get printer_ble => 'BLE';
+
+  @override
+  String get printer_network => 'Network';
+
+  @override
+  String get printer_allConnections => 'All connection types';
+
+  @override
+  String get printer_availableDevices => 'Available Devices';
+
+  @override
+  String get printer_scanning => 'Scanning for printers...';
+
+  @override
+  String get printer_noDevice => '(No printer detected)';
+
+  @override
+  String get about_title => 'About';
+
+  @override
+  String get about_appName => 'Flutter POS';
+
+  @override
+  String about_version(Object version) {
+    return 'version $version';
+  }
+
+  @override
+  String get about_description =>
+      'A Point of Sale (POS) application built with Flutter framework. This application manages product data, transactions, and user data. The data is stored locally using SQLite database and can be synchronized with REST API server.';
+
+  @override
+  String get about_learningResource =>
+      'This project serves as a learning resource for Flutter developers who want to learn about Clean Architecture, Riverpod state management, GoRouter navigation, and SQLite database integration. The project is open source and available on GitHub.';
+
+  @override
+  String get about_developedBy => 'Developed with ❤️ by';
+
+  @override
+  String get about_developerName => 'Fakhri Aditia Rahman';
+
+  @override
+  String get about_github => 'GitHub';
+
+  @override
+  String get about_website => 'Website';
+
+  @override
+  String get welcome_title => 'Welcome!';
+
+  @override
+  String get welcome_subtitle => 'Welcome to Flutter POS app';
+
+  @override
+  String get error_backToHome => 'Back to home';
+
+  @override
+  String get shared_oops => 'Oops!';
+
+  @override
+  String get shared_somethingWrong => 'Something went wrong, please contact developer.';
+
+  @override
+  String get shared_close => 'Close';
+
+  @override
+  String get shared_nothingToShow => 'Nothing to show';
+
+  @override
+  String get shared_somethingWrongRetry => 'Something went wrong.\nPlease try again later.';
+}

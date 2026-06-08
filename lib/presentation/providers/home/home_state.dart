@@ -7,6 +7,7 @@ class HomeState {
   final String? customerName;
   final String? description;
   final bool isPanelExpanded;
+  final String selectedPriceType;
 
   const HomeState({
     this.orderedProducts = const [],
@@ -15,6 +16,7 @@ class HomeState {
     this.customerName,
     this.description,
     this.isPanelExpanded = false,
+    this.selectedPriceType = 'retail',
   });
 
   HomeState copyWith({
@@ -24,6 +26,7 @@ class HomeState {
     String? customerName,
     String? description,
     bool? isPanelExpanded,
+    String? selectedPriceType,
   }) {
     return HomeState(
       orderedProducts: orderedProducts ?? this.orderedProducts,
@@ -32,6 +35,7 @@ class HomeState {
       customerName: customerName ?? this.customerName,
       description: description ?? this.description,
       isPanelExpanded: isPanelExpanded ?? this.isPanelExpanded,
+      selectedPriceType: selectedPriceType ?? this.selectedPriceType,
     );
   }
 }

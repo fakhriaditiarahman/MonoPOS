@@ -5,7 +5,10 @@ class ProductFormState {
   final String? imageUrl;
   final String? name;
   final int? price;
+  final int? wholesalePrice;
   final int? stock;
+  final String unit;
+  final String? barcode;
   final String? description;
   final bool isLoaded;
 
@@ -14,7 +17,10 @@ class ProductFormState {
     this.imageUrl,
     this.name,
     this.price,
+    this.wholesalePrice,
     this.stock,
+    this.unit = 'pcs',
+    this.barcode,
     this.description,
     this.isLoaded = false,
   });
@@ -24,7 +30,10 @@ class ProductFormState {
     String? imageUrl,
     String? name,
     int? price,
+    int? wholesalePrice,
     int? stock,
+    String? unit,
+    String? barcode,
     String? description,
     bool? isLoaded,
   }) {
@@ -33,7 +42,10 @@ class ProductFormState {
       imageUrl: imageUrl ?? this.imageUrl,
       name: name ?? this.name,
       price: price ?? this.price,
+      wholesalePrice: wholesalePrice ?? this.wholesalePrice,
       stock: stock ?? this.stock,
+      unit: unit ?? this.unit,
+      barcode: barcode ?? this.barcode,
       description: description ?? this.description,
       isLoaded: isLoaded ?? this.isLoaded,
     );

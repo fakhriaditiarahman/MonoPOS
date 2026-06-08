@@ -8,6 +8,9 @@ class ProductModel {
   int stock;
   int sold;
   int price;
+  int? wholesalePrice;
+  String unit;
+  String? barcode;
   String? description;
   String? createdAt;
   String? updatedAt;
@@ -20,6 +23,9 @@ class ProductModel {
     required this.stock,
     required this.sold,
     required this.price,
+    this.wholesalePrice,
+    this.unit = 'pcs',
+    this.barcode,
     this.description,
     this.createdAt,
     this.updatedAt,
@@ -34,6 +40,9 @@ class ProductModel {
       stock: json['stock'],
       sold: json['sold'],
       price: json['price'],
+      wholesalePrice: json['wholesalePrice'],
+      unit: json['unit'] ?? 'pcs',
+      barcode: json['barcode'],
       description: json['description'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
@@ -49,6 +58,9 @@ class ProductModel {
       'stock': stock,
       'sold': sold,
       'price': price,
+      'wholesalePrice': wholesalePrice,
+      'unit': unit,
+      'barcode': barcode,
       'description': description,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
@@ -64,6 +76,9 @@ class ProductModel {
       stock: entity.stock,
       sold: entity.sold ?? 0,
       price: entity.price,
+      wholesalePrice: entity.wholesalePrice,
+      unit: entity.unit,
+      barcode: entity.barcode,
       description: entity.description,
       createdAt: entity.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: entity.updatedAt ?? DateTime.now().toIso8601String(),
@@ -79,6 +94,9 @@ class ProductModel {
       stock: stock,
       sold: sold,
       price: price,
+      wholesalePrice: wholesalePrice,
+      unit: unit,
+      barcode: barcode,
       description: description,
       createdAt: createdAt,
       updatedAt: updatedAt,

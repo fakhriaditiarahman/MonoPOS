@@ -1,8 +1,8 @@
-import 'package:flutter_pos/core/common/result.dart';
-import 'package:flutter_pos/domain/entities/product_entity.dart';
-import 'package:flutter_pos/domain/repositories/product_repository.dart';
-import 'package:flutter_pos/domain/usecases/params/base_params.dart';
-import 'package:flutter_pos/domain/usecases/product_usecases.dart';
+import 'package:mono_pos/core/common/result.dart';
+import 'package:mono_pos/domain/entities/product_entity.dart';
+import 'package:mono_pos/domain/repositories/product_repository.dart';
+import 'package:mono_pos/domain/usecases/params/base_params.dart';
+import 'package:mono_pos/domain/usecases/product_usecases.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -24,46 +24,6 @@ void main() {
 
   setUp(() {
     mockProductRepository = MockProductRepository();
-  });
-
-  group('SyncAllUserProductsUsecase', () {
-    late SyncAllUserProductsUsecase usecase;
-
-    setUp(() {
-      usecase = SyncAllUserProductsUsecase(mockProductRepository);
-    });
-
-    test('should sync all user products successfully', () async {
-      // arrange
-      const userId = 'user123';
-      const syncedCount = 10;
-      final result = Result<int>.success(data: syncedCount);
-
-      when(mockProductRepository.syncAllUserProducts(userId)).thenAnswer((_) async => result);
-
-      // act
-      final response = await usecase.call(userId);
-
-      // assert
-      expect(response, result);
-      verify(mockProductRepository.syncAllUserProducts(userId));
-      verifyNoMoreInteractions(mockProductRepository);
-    });
-
-    test('should return failure when sync fails', () async {
-      // arrange
-      const userId = 'user123';
-      final result = Result<int>.failure(error: 'Sync failed');
-
-      when(mockProductRepository.syncAllUserProducts(userId)).thenAnswer((_) async => result);
-
-      // act
-      final response = await usecase.call(userId);
-
-      // assert
-      expect(response, result);
-      verify(mockProductRepository.syncAllUserProducts(userId));
-    });
   });
 
   group('GetUserProductsUsecase', () {
@@ -294,6 +254,64 @@ void main() {
       // assert
       expect(response.isFailure, true);
       verify(mockProductRepository.updateProduct(product));
+    });
+  });
+
+  group('GetProductByBarcodeUsecase', () {
+    late GetProductByBarcodeUsecase usecase;
+
+    setUp(() {
+      usecase = GetProductByBarcodeUsecase(mockProductRepository);
+    });
+
+    test('should find product by barcode successfully', () async {
+      const barcode = '8991234567890';
+      final product = ProductEntity(
+        id: 1,
+        name: 'Product with Barcode',
+        createdById: '',
+        imageUrl: '',
+        stock: 10,
+        price: 5000,
+        barcode: barcode,
+      );
+      final result = Result<ProductEntity?>.success(data: product);
+
+      when(mockProductRepository.getProductByBarcode(barcode)).thenAnswer((_) async => result);
+
+      final response = await usecase.call(barcode);
+
+      expect(response, result);
+      expect(response.data?.barcode, barcode);
+      verify(mockProductRepository.getProductByBarcode(barcode));
+      verifyNoMoreInteractions(mockProductRepository);
+    });
+
+    test('should return null when barcode not found', () async {
+      const barcode = '0000000000000';
+      final result = Result<ProductEntity?>.success(data: null);
+
+      when(mockProductRepository.getProductByBarcode(barcode)).thenAnswer((_) async => result);
+
+      final response = await usecase.call(barcode);
+
+      expect(response.data, isNull);
+      verify(mockProductRepository.getProductByBarcode(barcode));
+      verifyNoMoreInteractions(mockProductRepository);
+    });
+
+    test('should handle repository failure', () async {
+      const barcode = 'error-barcode';
+      final result = Result<ProductEntity?>.failure(error: 'DB error');
+
+      when(mockProductRepository.getProductByBarcode(barcode)).thenAnswer((_) async => result);
+
+      final response = await usecase.call(barcode);
+
+      expect(response.isFailure, true);
+      expect(response.error, 'DB error');
+      verify(mockProductRepository.getProductByBarcode(barcode));
+      verifyNoMoreInteractions(mockProductRepository);
     });
   });
 

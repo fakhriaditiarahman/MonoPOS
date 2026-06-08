@@ -1,8 +1,8 @@
-import 'package:flutter_pos/core/common/result.dart';
-import 'package:flutter_pos/domain/entities/queued_action_entity.dart';
-import 'package:flutter_pos/domain/repositories/queued_action_repository.dart';
-import 'package:flutter_pos/domain/usecases/params/no_param.dart';
-import 'package:flutter_pos/domain/usecases/queued_action_usecases.dart';
+import 'package:mono_pos/core/common/result.dart';
+import 'package:mono_pos/domain/entities/queued_action_entity.dart';
+import 'package:mono_pos/domain/repositories/queued_action_repository.dart';
+import 'package:mono_pos/domain/usecases/params/no_param.dart';
+import 'package:mono_pos/domain/usecases/queued_action_usecases.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';

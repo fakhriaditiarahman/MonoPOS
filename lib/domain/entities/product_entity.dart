@@ -8,6 +8,9 @@ class ProductEntity extends Equatable {
   final int stock;
   final int? sold;
   final int price;
+  final int? wholesalePrice;
+  final String unit;
+  final String? barcode;
   final String? description;
   final String? createdAt;
   final String? updatedAt;
@@ -20,6 +23,9 @@ class ProductEntity extends Equatable {
     required this.stock,
     this.sold,
     required this.price,
+    this.wholesalePrice,
+    this.unit = 'pcs',
+    this.barcode,
     this.description,
     this.createdAt,
     this.updatedAt,
@@ -33,6 +39,9 @@ class ProductEntity extends Equatable {
     int? stock,
     int? sold,
     int? price,
+    int? wholesalePrice,
+    String? unit,
+    String? barcode,
     String? description,
     String? createdAt,
     String? updatedAt,
@@ -45,6 +54,9 @@ class ProductEntity extends Equatable {
       stock: stock ?? this.stock,
       sold: sold ?? this.sold,
       price: price ?? this.price,
+      wholesalePrice: wholesalePrice ?? this.wholesalePrice,
+      unit: unit ?? this.unit,
+      barcode: barcode ?? this.barcode,
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -60,6 +72,9 @@ class ProductEntity extends Equatable {
     stock,
     sold,
     price,
+    wholesalePrice,
+    unit,
+    barcode,
     description,
     createdAt,
     updatedAt,

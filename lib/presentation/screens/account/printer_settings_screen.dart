@@ -4,6 +4,7 @@ import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../core/themes/app_sizes.dart';
+import '../../../generated/app_localizations.dart';
 import '../../providers/account/printer_settings_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_drop_down.dart';
@@ -30,7 +31,7 @@ class _PrinterSettingsScreenState extends ConsumerState<PrinterSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Printer Settings'),
+        title: Text(AppLocalizations.of(context)!.printer_title),
         titleSpacing: 0,
       ),
       body: const _PrinterSettingsBody(),
@@ -88,7 +89,7 @@ class _PaperSizeSelector extends ConsumerWidget {
     final isBusy = isScanning || isConnecting || isDisconnecting;
 
     return AppDropDown<PaperSize>(
-      labelText: 'Paper Size',
+      labelText: AppLocalizations.of(context)!.printer_paperSize,
       selectedValue: paperSize,
       enabled: !isBusy,
       dropdownItems: PaperSize.values.map((size) {
@@ -126,8 +127,8 @@ class _ConnectionTypeDropDown extends ConsumerWidget {
     final isBusy = isScanning || isConnecting || isDisconnecting;
 
     return AppDropDown<PrinterConnectionType>.multi(
-      labelText: 'Connection Types',
-      hintText: 'Select connection types',
+      labelText: AppLocalizations.of(context)!.printer_connectionTypes,
+      hintText: AppLocalizations.of(context)!.printer_selectConnection,
       enabled: !isBusy,
       selectedValues: selectedTypes,
       dropdownItems: PrinterConnectionType.values.map((type) {
@@ -137,12 +138,12 @@ class _ConnectionTypeDropDown extends ConsumerWidget {
             children: [
               Icon(_icon(type), size: 18),
               const SizedBox(width: 8),
-              Text(_label(type)),
+              Text(_label(context, type)),
             ],
           ),
         );
       }).toList(),
-      selectedValuesTextBuilder: _selectedLabel,
+      selectedValuesTextBuilder: (selected) => _selectedLabel(context, selected),
       onChanged: (type) {
         if (type == null) return;
         ref.read(printerSettingsNotifierProvider.notifier).toggleConnectionType(type);
@@ -150,12 +151,13 @@ class _ConnectionTypeDropDown extends ConsumerWidget {
     );
   }
 
-  String _label(PrinterConnectionType type) {
+  String _label(context, PrinterConnectionType type) {
+    final l10n = AppLocalizations.of(context)!;
     return switch (type) {
-      PrinterConnectionType.usb => 'USB',
-      PrinterConnectionType.bluetooth => 'Bluetooth',
-      PrinterConnectionType.ble => 'BLE',
-      PrinterConnectionType.network => 'Network',
+      PrinterConnectionType.usb => l10n.printer_usb,
+      PrinterConnectionType.bluetooth => l10n.printer_bluetooth,
+      PrinterConnectionType.ble => l10n.printer_ble,
+      PrinterConnectionType.network => l10n.printer_network,
     };
   }
 
@@ -168,12 +170,13 @@ class _ConnectionTypeDropDown extends ConsumerWidget {
     };
   }
 
-  String _selectedLabel(Set<PrinterConnectionType> selectedTypes) {
+  String _selectedLabel(context, Set<PrinterConnectionType> selectedTypes) {
+    final l10n = AppLocalizations.of(context)!;
     if (selectedTypes.length == PrinterConnectionType.values.length) {
-      return 'All connection types';
+      return l10n.printer_allConnections;
     }
 
-    return selectedTypes.map(_label).join(', ');
+    return selectedTypes.map((t) => _label(context, t)).join(', ');
   }
 }
 
@@ -195,7 +198,7 @@ class _DevicesHeader extends ConsumerWidget {
         Row(
           children: [
             Text(
-              'Available Devices',
+              AppLocalizations.of(context)!.printer_availableDevices,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: AppSizes.padding / 1.5),
@@ -263,7 +266,9 @@ class _PrinterList extends ConsumerWidget {
         padding: const EdgeInsets.all(AppSizes.padding * 2),
         child: Center(
           child: Text(
-            isScanning ? 'Scanning for printers...' : '(No printer detected)',
+            isScanning
+                ? AppLocalizations.of(context)!.printer_scanning
+                : AppLocalizations.of(context)!.printer_noDevice,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.outline,

@@ -1,6 +1,6 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter_pos/core/services/logger/error_logger_service.dart';
-import 'package:flutter_pos/core/utilities/debug_mode_wrapper.dart';
+import 'package:mono_pos/core/services/logger/error_logger_service.dart';
+import 'package:mono_pos/core/utilities/debug_mode_wrapper.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';

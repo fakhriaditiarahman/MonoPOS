@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/themes/app_sizes.dart';
+import '../../generated/app_localizations.dart';
 import 'app_button.dart';
 
 class AppEmptyState extends StatelessWidget {
@@ -32,7 +33,7 @@ class AppEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: AppSizes.padding / 2),
             Text(
-              title ?? 'Nothing to show',
+              title ?? AppLocalizations.of(context)!.shared_nothingToShow,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.bold,

@@ -17,6 +17,7 @@ import '../../widgets/app_progress_indicator.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_text_field.dart';
 import '../products/components/products_card.dart';
+import 'components/barcode_scanner_screen.dart';
 import 'components/cart_panel_body.dart';
 import 'components/cart_panel_footer.dart';
 import 'components/cart_panel_header.dart';
@@ -64,7 +65,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> onRefresh() async {
     await ref.read(productsNotifierProvider.notifier).getAllProducts();
-    await ref.read(mainNotifierProvider.notifier).checkIsHasQueuedActions();
   }
 
   @override
@@ -125,6 +125,7 @@ class _Body extends ConsumerWidget {
         elevation: 0,
         shadowColor: Colors.transparent,
         actions: const [
+          _ScanButton(),
           _SyncButton(),
           _NetworkInfo(),
         ],
@@ -141,11 +142,17 @@ class _Body extends ConsumerWidget {
                 floating: true,
                 snap: true,
                 automaticallyImplyLeading: false,
-                collapsedHeight: 70,
+                collapsedHeight: 110,
                 titleSpacing: 0,
                 title: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
-                  child: _SearchField(controller: searchFieldController),
+                  child: Column(
+                    children: [
+                      _SearchField(controller: searchFieldController),
+                      const SizedBox(height: 6),
+                      const _PriceTypeToggle(),
+                    ],
+                  ),
                 ),
               ),
               SliverLayoutBuilder(
@@ -252,6 +259,36 @@ class _Title extends ConsumerWidget {
   }
 }
 
+class _ScanButton extends StatelessWidget {
+  const _ScanButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 0),
+      child: AppButton(
+        height: 26,
+        borderRadius: BorderRadius.circular(4),
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding / 2),
+        buttonColor: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.06),
+        child: Icon(
+          Icons.qr_code_scanner_rounded,
+          size: 16,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const BarcodeScannerScreen(),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class _SyncButton extends ConsumerWidget {
   const _SyncButton();
 
@@ -300,7 +337,7 @@ class _SyncButton extends ConsumerWidget {
           ],
         ),
         onTap: () {
-          ref.read(mainNotifierProvider.notifier).checkAndSyncAllData();
+          ref.read(mainNotifierProvider.notifier).getUserData();
         },
       ),
     );
@@ -360,6 +397,71 @@ class _SearchField extends ConsumerWidget {
   }
 }
 
+class _PriceTypeToggle extends ConsumerWidget {
+  const _PriceTypeToggle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedPriceType = ref.watch(homeNotifierProvider.select((s) => s.selectedPriceType));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => ref.read(homeNotifierProvider.notifier).onChangedPriceType('retail'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: selectedPriceType == 'retail' ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Retail',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: selectedPriceType == 'retail'
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => ref.read(homeNotifierProvider.notifier).onChangedPriceType('grosir'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: selectedPriceType == 'grosir' ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Grosir',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: selectedPriceType == 'grosir'
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ProductCard extends ConsumerWidget {
   final ProductEntity product;
 
@@ -367,12 +469,15 @@ class _ProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final homeState = ref.watch(homeNotifierProvider);
+    bool isGrosir = homeState.selectedPriceType == 'grosir';
+    int displayPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
+    bool hasWholesalePrice = product.wholesalePrice != null;
+
     return ProductsCard(
       product: product,
-      enabled: product.stock > 0,
+      enabled: product.stock > 0 && (!isGrosir || hasWholesalePrice),
       onTap: () {
-        final homeState = ref.read(homeNotifierProvider);
-
         int currentQty = homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0;
 
         AppDialog.show(
@@ -381,7 +486,9 @@ class _ProductCard extends ConsumerWidget {
             name: product.name,
             imageUrl: product.imageUrl,
             stock: product.stock,
-            price: product.price,
+            price: displayPrice,
+            priceType: homeState.selectedPriceType,
+            unit: product.unit,
             initialQuantity: currentQty,
             onChangedQuantity: (val) {
               currentQty = val;

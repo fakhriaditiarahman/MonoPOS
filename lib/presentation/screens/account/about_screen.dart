@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../core/assets/assets.dart';
 import '../../../core/themes/app_sizes.dart';
+import '../../../generated/app_localizations.dart';
 import '../../../core/utilities/external_launcher.dart';
 
 class AboutScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About'),
+        title: Text(AppLocalizations.of(context)!.about_title),
         titleSpacing: 0,
       ),
       body: Center(
@@ -54,7 +55,7 @@ class _AboutScreenState extends State<AboutScreen> {
               ),
               const SizedBox(height: AppSizes.padding),
               Text(
-                'Flutter POS',
+                AppLocalizations.of(context)!.about_appName,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               Text(
@@ -66,7 +67,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 ),
               ),
               Text(
-                'version $version',
+                AppLocalizations.of(context)!.about_version(version),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -75,13 +76,13 @@ class _AboutScreenState extends State<AboutScreen> {
               ),
               const SizedBox(height: AppSizes.padding),
               Text(
-                'A Point of Sale (POS) application built with Flutter, demonstrating Clean Architecture principles and offline-first design patterns.',
+                AppLocalizations.of(context)!.about_description,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: AppSizes.padding * 2),
               Text(
-                "This project serves as a learning resource and reference implementation for building Flutter apps with proper architecture and automatic data synchronization between local storage (SQLite) and cloud database (Firestore).\n\nThe app prioritizes local-first operations, storing all data in SQLite and automatically syncing with Firestore when online. When offline, all user actions (create, update, delete) are recorded as QueuedActions in the local database and automatically executed in sequence when internet connectivity is restored.",
+                AppLocalizations.of(context)!.about_learningResource,
                 textAlign: TextAlign.justify,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -89,7 +90,7 @@ class _AboutScreenState extends State<AboutScreen> {
               Row(
                 children: [
                   Text(
-                    "Developed with ❤️ by",
+                    AppLocalizations.of(context)!.about_developedBy,
                     textAlign: TextAlign.justify,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -97,7 +98,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    "Elriz Wiraswara",
+                    AppLocalizations.of(context)!.about_developerName,
                     textAlign: TextAlign.justify,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -113,7 +114,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        "GitHub",
+                        AppLocalizations.of(context)!.about_github,
                         textAlign: TextAlign.justify,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
@@ -141,7 +142,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        "Website",
+                        AppLocalizations.of(context)!.about_website,
                         textAlign: TextAlign.justify,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,

@@ -1,6 +1,6 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter_pos/data/datasources/remote/product_remote_datasource_impl.dart';
-import 'package:flutter_pos/data/models/product_model.dart';
+import 'package:mono_pos/data/datasources/remote/product_remote_datasource_impl.dart';
+import 'package:mono_pos/data/models/product_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

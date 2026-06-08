@@ -1,5 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-
 import '../../domain/entities/user_entity.dart';
 
 class UserModel {
@@ -84,25 +82,6 @@ class UserModel {
       authProvider: AuthProvider.fromValue(authProvider),
       createdAt: createdAt,
       updatedAt: updatedAt,
-    );
-  }
-
-  /// Convert Firebase User to UserModel
-  factory UserModel.fromFirebaseUser(
-    firebase_auth.User firebaseUser, {
-    AuthProvider authProvider = AuthProvider.google,
-  }) {
-    return UserModel(
-      id: firebaseUser.uid,
-      email: firebaseUser.email,
-      phone: firebaseUser.phoneNumber,
-      name: firebaseUser.displayName,
-      gender: null,
-      birthdate: null,
-      imageUrl: firebaseUser.photoURL,
-      authProvider: authProvider.value,
-      createdAt: null,
-      updatedAt: null,
     );
   }
 }

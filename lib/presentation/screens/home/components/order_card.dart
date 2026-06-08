@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utilities/currency_formatter.dart';
+import '../../../../generated/app_localizations.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_dialog.dart';
 
@@ -12,6 +13,8 @@ class OrderCard extends StatefulWidget {
   final String imageUrl;
   final int stock;
   final int price;
+  final String priceType;
+  final String unit;
   final int initialQuantity;
   final VoidCallback? onTapCard;
   final VoidCallback? onTapRemove;
@@ -23,6 +26,8 @@ class OrderCard extends StatefulWidget {
     required this.imageUrl,
     required this.stock,
     required this.price,
+    this.priceType = 'retail',
+    this.unit = 'pcs',
     this.initialQuantity = 0,
     this.onTapCard,
     this.onTapRemove,
@@ -83,20 +88,39 @@ class _OrderCardState extends State<OrderCard> {
                       children: [
                         Row(
                           children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: widget.priceType == 'grosir'
+                                    ? Theme.of(context).colorScheme.primaryContainer
+                                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                widget.priceType == 'grosir'
+                                    ? AppLocalizations.of(context)!.home_grosir
+                                    : AppLocalizations.of(context)!.home_retail,
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
                             Text(
                               CurrencyFormatter.format(widget.price),
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '/pcs',
+                              '/${widget.unit}',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Stock: ${widget.stock}',
+                          '${AppLocalizations.of(context)!.cart_stock(widget.stock)} ${widget.unit}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
                         ),
                         const SizedBox(height: 6),
@@ -193,7 +217,7 @@ class _OrderCardState extends State<OrderCard> {
                   const SizedBox(height: 12),
                   if (widget.onTapRemove != null)
                     AppButton(
-                      text: 'Remove',
+                      text: AppLocalizations.of(context)!.cart_remove,
                       width: 70,
                       fontSize: 10,
                       borderRadius: BorderRadius.circular(4),
@@ -202,10 +226,10 @@ class _OrderCardState extends State<OrderCard> {
                       textColor: Theme.of(context).colorScheme.error,
                       onTap: () {
                         AppDialog.show(
-                          title: 'Confirm',
-                          text: 'Are you sure want to remove this product?',
-                          rightButtonText: 'Remove',
-                          leftButtonText: 'Cancel',
+                          title: AppLocalizations.of(context)!.cart_confirm,
+                          text: AppLocalizations.of(context)!.cart_removeProductConfirm,
+                          rightButtonText: AppLocalizations.of(context)!.cart_remove,
+                          leftButtonText: AppLocalizations.of(context)!.home_cancel,
                           onTapRightButton: (context) {
                             widget.onTapRemove!();
                             context.pop();

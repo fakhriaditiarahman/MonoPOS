@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/routes/app_routes.dart';
 import '../../core/themes/app_sizes.dart';
+import '../../generated/app_localizations.dart';
 import 'app_button.dart';
 import 'app_progress_indicator.dart';
 
@@ -66,11 +67,12 @@ class AppDialog {
     String? title,
     String? message,
     String? error,
-    String buttonText = 'Close',
+    String? buttonText,
     Function(BuildContext)? onTapButton,
   }) async {
     final context = AppRoutes.rootNavigatorKey.currentContext;
     if (context == null) throw Exception('No context available for dialog');
+    final l10n = AppLocalizations.of(context)!;
 
     return await showDialog(
       context: context,
@@ -79,13 +81,13 @@ class AppDialog {
         return PopScope(
           canPop: false,
           child: AppDialogWidget(
-            title: title ?? 'Oops!',
-            leftButtonText: buttonText,
+            title: title ?? l10n.shared_oops,
+            leftButtonText: buttonText ?? l10n.shared_close,
             onTapLeftButton: onTapButton,
             child: Column(
               children: [
                 Text(
-                  message ?? 'Something went wrong, please contact your system administrator or try restart the app',
+                  message ?? l10n.shared_somethingWrong,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),

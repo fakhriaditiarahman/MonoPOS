@@ -6,6 +6,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../../../app/di/app_providers.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utilities/currency_formatter.dart';
+import '../../../../generated/app_localizations.dart';
 import '../../../providers/home/home_notifier.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_dialog.dart';
@@ -57,7 +58,7 @@ class _BackButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AppButton(
-      text: 'Back',
+      text: AppLocalizations.of(context)!.cart_back,
       buttonColor: Theme.of(context).colorScheme.surface,
       borderColor: Theme.of(context).colorScheme.primary,
       textColor: Theme.of(context).colorScheme.primary,
@@ -79,9 +80,9 @@ class _PayButton extends ConsumerWidget {
     return AppButton(
       text: !homeState.isPanelExpanded
           ? homeState.orderedProducts.isNotEmpty
-                ? "${homeState.orderedProducts.length} Products = ${CurrencyFormatter.format(homeNotifier.getTotalAmount())}"
-                : 'Transaction'
-          : 'Pay',
+                ? "${AppLocalizations.of(context)!.cart_products(homeState.orderedProducts.length)} = ${CurrencyFormatter.format(homeNotifier.getTotalAmount())}"
+                : AppLocalizations.of(context)!.home_transaction
+          : AppLocalizations.of(context)!.home_pay,
       enabled: homeState.orderedProducts.isNotEmpty,
       onTap: () {
         if (homeState.isPanelExpanded) {
@@ -144,24 +145,24 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           autofocus: true,
           keyboardType: TextInputType.number,
           controller: _amountController,
-          labelText: 'Received Amount',
-          hintText: 'Received amount...',
+          labelText: AppLocalizations.of(context)!.cart_receivedAmount,
+          hintText: AppLocalizations.of(context)!.cart_receivedAmountHint,
           onChanged: (val) {
             homeNotifier.onChangedReceivedAmount(int.tryParse(val) ?? 0);
           },
         ),
         const SizedBox(height: AppSizes.padding),
         AppDropDown(
-          labelText: 'Payment Method',
+          labelText: AppLocalizations.of(context)!.cart_paymentMethod,
           selectedValue: homeState.selectedPaymentMethod,
-          dropdownItems: const [
+          dropdownItems: [
             DropdownMenuItem(
               value: 'bank',
-              child: Text('Bank'),
+              child: Text(AppLocalizations.of(context)!.cart_bank),
             ),
             DropdownMenuItem(
               value: 'cash',
-              child: Text('Cash'),
+              child: Text(AppLocalizations.of(context)!.cart_cash),
             ),
           ],
           onChanged: (v) => homeNotifier.onChangedPaymentMethod(v),
@@ -169,15 +170,15 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
         const SizedBox(height: AppSizes.padding),
         AppTextField(
           controller: _customerController,
-          labelText: 'Customer Name (Optional)',
-          hintText: 'e.g. Jhone Doe',
+          labelText: AppLocalizations.of(context)!.cart_customerName,
+          hintText: AppLocalizations.of(context)!.cart_customerNameHint,
           onChanged: (v) => homeNotifier.onChangedCustomerName(v),
         ),
         const SizedBox(height: AppSizes.padding),
         AppTextField(
           controller: _descriptionController,
-          labelText: 'Description (Optional)',
-          hintText: 'Description...',
+          labelText: AppLocalizations.of(context)!.cart_description,
+          hintText: AppLocalizations.of(context)!.cart_descriptionHint,
           onChanged: (v) => homeNotifier.onChangedDescription(v),
         ),
         const SizedBox(height: AppSizes.padding * 1.5),
@@ -185,7 +186,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           children: [
             Expanded(
               child: AppButton(
-                text: 'Cancel',
+                text: AppLocalizations.of(context)!.home_cancel,
                 buttonColor: Theme.of(context).colorScheme.surface,
                 borderColor: Theme.of(context).colorScheme.primary,
                 textColor: Theme.of(context).colorScheme.primary,
@@ -198,7 +199,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
             Expanded(
               flex: 2,
               child: AppButton(
-                text: 'Pay',
+                text: AppLocalizations.of(context)!.home_pay,
                 enabled: (int.tryParse(_amountController.text) ?? 0) >= homeNotifier.getTotalAmount(),
                 onTap: () {
                   final router = ref.read(appRoutesProvider).router;

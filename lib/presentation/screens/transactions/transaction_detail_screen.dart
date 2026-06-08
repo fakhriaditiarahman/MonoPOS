@@ -315,18 +315,40 @@ class _ProductItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          order.name,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                order.name,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: order.priceType == 'grosir'
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Text(
+                order.priceType == 'grosir' ? 'Grosir' : 'Retail',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSizes.padding / 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${CurrencyFormatter.format(order.price)} x ${order.quantity}',
+              '${CurrencyFormatter.format(order.price)} x ${order.quantity} ${order.unit}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             Text(

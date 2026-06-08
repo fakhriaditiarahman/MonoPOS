@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/themes/app_sizes.dart';
-import '../../providers/auth/auth_notifier.dart';
+import '../../../generated/app_localizations.dart';
+import '../../providers/language/language_notifier.dart';
 import '../../providers/main/main_notifier.dart';
 import '../../providers/theme/theme_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
-import '../../widgets/app_snack_bar.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -17,7 +17,7 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Account')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(AppSizes.padding),
         child: Column(
@@ -25,9 +25,9 @@ class AccountScreen extends StatelessWidget {
             _UserInfo(),
             _ProfileButton(),
             _ThemeButton(),
+            _LanguageButton(),
             _PrinterSettingsButton(),
             _AboutButton(),
-            _SignOutButton(),
           ],
         ),
       ),
@@ -55,7 +55,7 @@ class _UserInfo extends ConsumerWidget {
           ),
           const SizedBox(height: AppSizes.padding),
           Text(
-            user?.name ?? '(No Name)',
+            user?.name ?? AppLocalizations.of(context)!.settings_noName,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -92,7 +92,7 @@ class _ProfileButton extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSizes.padding / 1.5),
                 Text(
-                  'Profile',
+                  AppLocalizations.of(context)!.settings_profile,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -134,7 +134,7 @@ class _ThemeButton extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSizes.padding / 1.5),
                 Text(
-                  'Theme',
+                  AppLocalizations.of(context)!.settings_theme,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -149,12 +149,103 @@ class _ThemeButton extends StatelessWidget {
         ),
         onTap: () {
           AppDialog.show(
-            title: 'Theme',
-            leftButtonText: 'Close',
+            title: AppLocalizations.of(context)!.settings_theme,
+            leftButtonText: AppLocalizations.of(context)!.settings_close,
             child: const _ThemeDialogBody(),
           );
         },
       ),
+    );
+  }
+}
+
+class _LanguageButton extends ConsumerWidget {
+  const _LanguageButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentLocale = ref.watch(languageNotifierProvider.select((s) => s.locale));
+    final isEnglish = currentLocale.languageCode == 'en';
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.language,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  AppLocalizations.of(context)!.settings_language,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              isEnglish ? 'English' : 'Indonesia',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        onTap: () {
+          AppDialog.show(
+            title: AppLocalizations.of(context)!.settings_language,
+            leftButtonText: AppLocalizations.of(context)!.settings_close,
+            child: _LanguageDialogBody(
+              currentLang: currentLocale.languageCode,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _LanguageDialogBody extends ConsumerWidget {
+  final String currentLang;
+
+  const _LanguageDialogBody({required this.currentLang});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          title: const Text('Indonesia'),
+          leading: Radio<String>(
+            value: 'id',
+            groupValue: currentLang,
+            onChanged: (val) {
+              ref.read(languageNotifierProvider.notifier).setLanguage(val!);
+              context.pop();
+            },
+          ),
+        ),
+        ListTile(
+          title: const Text('English'),
+          leading: Radio<String>(
+            value: 'en',
+            groupValue: currentLang,
+            onChanged: (val) {
+              ref.read(languageNotifierProvider.notifier).setLanguage(val!);
+              context.pop();
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -180,7 +271,7 @@ class _PrinterSettingsButton extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSizes.padding / 1.5),
                 Text(
-                  'Printer Settings',
+                  AppLocalizations.of(context)!.settings_printerSettings,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -222,7 +313,7 @@ class _AboutButton extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSizes.padding / 1.5),
                 Text(
-                  'About',
+                  AppLocalizations.of(context)!.settings_about,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -260,80 +351,12 @@ class _ThemeDialogBody extends ConsumerWidget {
         ),
         const SizedBox(width: AppSizes.padding),
         Text(
-          'Dark Mode',
+          AppLocalizations.of(context)!.settings_darkMode,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
       ],
-    );
-  }
-}
-
-class _SignOutButton extends ConsumerWidget {
-  const _SignOutButton();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: AppButton(
-        buttonColor: Theme.of(context).colorScheme.surface,
-        borderColor: Theme.of(context).colorScheme.surfaceContainer,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.exit_to_app_rounded,
-                  size: 18,
-                ),
-                const SizedBox(width: AppSizes.padding / 1.5),
-                Text(
-                  'Sign Out',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 18,
-            ),
-          ],
-        ),
-        onTap: () {
-          AppDialog.show(
-            title: 'Confirm',
-            text: 'Are you sure want to sign out?',
-            leftButtonText: 'Cancel',
-            rightButtonText: 'Sign Out',
-            onTapRightButton: (context) async {
-              context.pop();
-
-              final isSyncronizing = ref.read(mainNotifierProvider).isSyncronizing;
-
-              if (isSyncronizing) {
-                AppSnackBar.showError('Cannot sign out while synchronizing data is in progress. Please wait a moment.');
-                return;
-              }
-
-              final res = await AppDialog.showProgress(() async {
-                return ref.read(authNotifierProvider.notifier).signOut();
-              });
-
-              if (res.isSuccess) {
-                if (!context.mounted) return;
-                context.go('/sign-in');
-              } else {
-                AppSnackBar.showError(res.error.toString());
-              }
-            },
-          );
-        },
-      ),
     );
   }
 }

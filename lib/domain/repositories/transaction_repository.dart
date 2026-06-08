@@ -2,8 +2,6 @@ import '../../core/common/result.dart';
 import '../entities/transaction_entity.dart';
 
 abstract class TransactionRepository {
-  Future<Result<int>> syncAllUserTransactions(String userId);
-
   Future<Result<TransactionEntity?>> getTransaction(int transactionId);
 
   Future<Result<int>> createTransaction(TransactionEntity transaction);

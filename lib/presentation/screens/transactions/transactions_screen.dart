@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/themes/app_sizes.dart';
+import '../../../generated/app_localizations.dart';
 import '../../providers/transactions/transactions_notifier.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/app_loading_more_indicator.dart';
@@ -57,7 +58,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: Text(AppLocalizations.of(context)!.transactions),
         elevation: 0,
         shadowColor: Colors.transparent,
       ),
@@ -92,11 +93,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   }
 
                   if (allTransactions.isEmpty) {
-                    return const SliverFillRemaining(
+                    return SliverFillRemaining(
                       hasScrollBody: false,
                       fillOverscroll: true,
                       child: AppEmptyState(
-                        subtitle: 'No transaction available',
+                        subtitle: AppLocalizations.of(context)!.transaction_noTransaction,
                       ),
                     );
                   }
@@ -132,7 +133,7 @@ class _SearchField extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return AppTextField(
       controller: controller,
-      hintText: 'Search Transaction ID...',
+      hintText: AppLocalizations.of(context)!.transaction_searchHint,
       type: AppTextFieldType.search,
       textInputAction: TextInputAction.search,
       onEditingComplete: () {

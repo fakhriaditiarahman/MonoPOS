@@ -4,6 +4,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utilities/currency_formatter.dart';
+import '../../../../generated/app_localizations.dart';
 import '../../../providers/home/home_notifier.dart';
 import '../../../widgets/app_empty_state.dart';
 import 'order_card.dart';
@@ -41,9 +42,9 @@ class _OrderList extends ConsumerWidget {
     if (homeState.orderedProducts.isEmpty) {
       return SizedBox(
         height: AppSizes.screenHeight(context) - 272,
-        child: const AppEmptyState(
-          title: 'Empty',
-          subtitle: 'No products added to cart',
+        child: AppEmptyState(
+          title: AppLocalizations.of(context)!.cart_empty,
+          subtitle: AppLocalizations.of(context)!.cart_noProducts,
         ),
       );
     }
@@ -62,6 +63,8 @@ class _OrderList extends ConsumerWidget {
                 imageUrl: homeState.orderedProducts[i].imageUrl,
                 stock: homeState.orderedProducts[i].stock,
                 price: homeState.orderedProducts[i].price,
+                priceType: homeState.orderedProducts[i].priceType,
+                unit: homeState.orderedProducts[i].unit,
                 initialQuantity: homeState.orderedProducts[i].quantity,
                 onChangedQuantity: (val) {
                   ref.read(homeNotifierProvider.notifier).onChangedOrderedProductQuantity(i, val);
@@ -101,7 +104,7 @@ class _OrderTotal extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Total (${homeState.orderedProducts.length})',
+            AppLocalizations.of(context)!.cart_total(homeState.orderedProducts.length),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),

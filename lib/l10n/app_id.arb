@@ -1,0 +1,216 @@
+{
+  "@@locale": "id",
+
+  "appTitle": "Flutter POS",
+
+  "home": "Beranda",
+  "products": "Produk",
+  "transactions": "Transaksi",
+  "settings": "Pengaturan",
+
+  "home_searchHint": "Cari Produk...",
+  "home_syncronizing": "Menyinkronkan",
+  "home_synced": "Tersinkron",
+  "home_pending": "Menunggu",
+  "home_onlineMode": "Mode daring",
+  "home_noInternet": "Tidak ada koneksi internet, berjalan dalam mode luring",
+  "home_enterAmount": "Masukkan Jumlah",
+  "home_addToCart": "Tambah ke Keranjang",
+  "home_cancel": "Batal",
+  "home_noProducts": "Tidak ada produk, tambah produk untuk melanjutkan",
+  "home_addProduct": "Tambah Produk",
+  "home_transaction": "Transaksi",
+  "home_pay": "Bayar",
+  "home_retail": "Eceran",
+  "home_grosir": "Grosir",
+
+  "cart_products": "{count} Produk",
+  "@cart_products": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cart_confirm": "Konfirmasi",
+  "cart_removeAllConfirm": "Yakin ingin menghapus semua produk?",
+  "cart_remove": "Hapus",
+  "cart_removeAll": "Hapus Semua",
+  "cart_empty": "Kosong",
+  "cart_noProducts": "Belum ada produk di keranjang",
+  "cart_total": "Total ({count})",
+  "@cart_total": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cart_back": "Kembali",
+  "cart_receivedAmount": "Jumlah Diterima",
+  "cart_receivedAmountHint": "Jumlah yang diterima...",
+  "cart_paymentMethod": "Metode Pembayaran",
+  "cart_bank": "Bank",
+  "cart_cash": "Tunai",
+  "cart_customerName": "Nama Pelanggan (Opsional)",
+  "cart_customerNameHint": "Misal: Budi Santoso",
+  "cart_description": "Deskripsi (Opsional)",
+  "cart_descriptionHint": "Deskripsi...",
+  "cart_stock": "Stok: {count}",
+  "@cart_stock": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "cart_removeProductConfirm": "Yakin ingin menghapus produk ini?",
+
+  "product_stockSold": "Stok {stock} | Terjual {sold}",
+  "@product_stockSold": {
+    "placeholders": {
+      "stock": {},
+      "sold": {}
+    }
+  },
+  "product_retailPrice": "Eceran: {price}",
+  "@product_retailPrice": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "product_grosirPrice": "Grosir: {price}",
+  "@product_grosirPrice": {
+    "placeholders": {
+      "price": {}
+    }
+  },
+  "product_outOfStock": "Stok habis",
+  "product_searchHint": "Cari Produk...",
+  "product_noProducts": "Tidak ada produk, tambah produk untuk melanjutkan",
+  "product_createTitle": "Buat Produk",
+  "product_editTitle": "Edit Produk",
+  "product_image": "Gambar Produk",
+  "product_nameLabel": "Nama",
+  "product_nameHint": "Nama produk...",
+  "product_retailPriceLabel": "Harga Eceran",
+  "product_retailPriceHint": "Harga eceran...",
+  "product_wholesalePriceLabel": "Harga Grosir (Opsional)",
+  "product_wholesalePriceHint": "Harga grosir...",
+  "product_stockLabel": "Stok",
+  "product_stockHint": "Stok produk...",
+  "product_unitLabel": "Satuan",
+  "product_barcodeLabel": "Barcode",
+  "product_barcodeHint": "Scan atau ketik barcode...",
+  "product_barcode": "Barcode",
+  "product_descriptionLabel": "Deskripsi",
+  "product_descriptionHint": "Deskripsi produk...",
+  "product_addButton": "Tambah Produk",
+  "product_updateButton": "Perbarui Produk",
+  "product_deleteButton": "Hapus",
+  "product_deleteConfirm": "Yakin ingin menghapus produk ini?",
+  "product_deleted": "Produk dihapus",
+  "product_created": "Produk dibuat",
+  "product_updated": "Produk diperbarui",
+  "product_detailTitle": "Detail Produk",
+  "product_editProduct": "Edit Produk",
+  "product_noName": "(Tanpa nama)",
+  "product_addedAt": "Ditambahkan pada {date}",
+  "@product_addedAt": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "product_lastUpdated": "Terakhir diperbarui pada {date}",
+  "@product_lastUpdated": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "product_price": "Harga",
+  "product_stock": "Stok",
+  "product_sold": "Terjual",
+  "product_description": "Deskripsi",
+  "product_noDescription": "(Tidak ada deskripsi)",
+  "product_notFound": "Tidak Ditemukan",
+
+  "transaction_searchHint": "Cari ID Transaksi...",
+  "transaction_noTransaction": "Tidak ada transaksi",
+  "transaction_detailTitle": "Detail Transaksi",
+  "transaction_reprint": "Cetak Ulang",
+  "transaction_created": "Transaksi Dibuat",
+  "transaction_id": "ID Transaksi",
+  "transaction_paymentMethod": "Metode Pembayaran",
+  "transaction_createdBy": "Dibuat Oleh",
+  "transaction_createdAt": "Dibuat Pada",
+  "transaction_customerName": "Nama Pelanggan",
+  "transaction_description": "Deskripsi",
+  "transaction_orderedProducts": "Produk Dipesan",
+  "transaction_total": "Total",
+  "transaction_paymentReceived": "Pembayaran Diterima",
+  "transaction_change": "Kembalian",
+  "transaction_notFound": "Tidak Ditemukan",
+  "transaction_products": "{count} Produk",
+  "@transaction_products": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+
+  "settings_title": "Pengaturan",
+  "settings_profile": "Profil",
+  "settings_theme": "Tema",
+  "settings_close": "Tutup",
+  "settings_darkMode": "Mode Gelap",
+  "settings_printerSettings": "Pengaturan Printer",
+  "settings_about": "Tentang",
+  "settings_language": "Bahasa",
+  "settings_english": "Inggris",
+  "settings_indonesian": "Indonesia",
+  "settings_noName": "(Tanpa Nama)",
+
+  "profile_editTitle": "Edit Profil",
+  "profile_image": "Gambar Profil",
+  "profile_nameLabel": "Nama",
+  "profile_nameHint": "Nama Anda...",
+  "profile_emailLabel": "Email",
+  "profile_emailHint": "Email Anda...",
+  "profile_phoneLabel": "Nomor Telepon",
+  "profile_phoneHint": "Nomor telepon Anda...",
+  "profile_update": "Perbarui",
+  "profile_cropPhoto": "Pangkas Foto",
+  "profile_updated": "Profil diperbarui",
+
+  "printer_title": "Pengaturan Printer",
+  "printer_paperSize": "Ukuran Kertas",
+  "printer_connectionTypes": "Tipe Koneksi",
+  "printer_selectConnection": "Pilih tipe koneksi",
+  "printer_usb": "USB",
+  "printer_bluetooth": "Bluetooth",
+  "printer_ble": "BLE",
+  "printer_network": "Jaringan",
+  "printer_allConnections": "Semua tipe koneksi",
+  "printer_availableDevices": "Perangkat Tersedia",
+  "printer_scanning": "Memindai printer...",
+  "printer_noDevice": "(Tidak ada printer terdeteksi)",
+
+  "about_title": "Tentang",
+  "about_appName": "Flutter POS",
+  "about_version": "versi {version}",
+  "@about_version": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "about_description": "Aplikasi Point of Sale (POS) yang dibangun dengan framework Flutter. Aplikasi ini mengelola data produk, transaksi, dan data pengguna. Data disimpan secara lokal menggunakan database SQLite dan dapat disinkronkan dengan server REST API.",
+  "about_learningResource": "Proyek ini berfungsi sebagai sumber belajar bagi pengembang Flutter yang ingin mempelajari tentang Clean Architecture, manajemen state Riverpod, navigasi GoRouter, dan integrasi database SQLite. Proyek ini bersumber terbuka dan tersedia di GitHub.",
+  "about_developedBy": "Dikembangkan dengan ❤️ oleh",
+  "about_developerName": "Fakhri Aditia Rahman",
+  "about_github": "GitHub",
+  "about_website": "Situs Web",
+
+  "welcome_title": "Selamat Datang!",
+  "welcome_subtitle": "Selamat datang di aplikasi Flutter POS",
+
+  "error_backToHome": "Kembali ke beranda",
+
+  "shared_oops": "Oops!",
+  "shared_somethingWrong": "Terjadi kesalahan, silakan hubungi pengembang.",
+  "shared_close": "Tutup",
+  "shared_nothingToShow": "Tidak ada yang ditampilkan",
+  "shared_somethingWrongRetry": "Terjadi kesalahan.\nSilakan coba lagi nanti."
+}

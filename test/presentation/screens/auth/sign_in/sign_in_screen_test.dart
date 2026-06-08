@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pos/app/di/app_providers.dart';
-import 'package:flutter_pos/app/routes/app_routes.dart';
-import 'package:flutter_pos/domain/entities/user_entity.dart' hide AuthProvider;
-import 'package:flutter_pos/presentation/providers/auth/auth_notifier.dart';
-import 'package:flutter_pos/presentation/providers/auth/auth_state.dart';
-import 'package:flutter_pos/presentation/providers/main/main_notifier.dart';
-import 'package:flutter_pos/presentation/providers/main/main_state.dart';
+import 'package:mono_pos/app/di/app_providers.dart';
+import 'package:mono_pos/app/routes/app_routes.dart';
+import 'package:mono_pos/domain/entities/user_entity.dart' hide AuthProvider;
+import 'package:mono_pos/presentation/providers/auth/auth_notifier.dart';
+import 'package:mono_pos/presentation/providers/auth/auth_state.dart';
+import 'package:mono_pos/presentation/providers/main/main_notifier.dart';
+import 'package:mono_pos/presentation/providers/main/main_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

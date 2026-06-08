@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utilities/currency_formatter.dart';
 import '../../../../domain/entities/product_entity.dart';
+import '../../../../generated/app_localizations.dart';
 
 class ProductsCard extends StatelessWidget {
   final ProductEntity product;
@@ -57,7 +58,7 @@ class ProductsCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    product.stock <= 0 ? _OutOfStock() : const SizedBox.shrink(),
+                    product.stock <= 0 ? const _OutOfStock() : const SizedBox.shrink(),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -77,16 +78,29 @@ class ProductsCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Stock ${product.stock}  |  Sold ${product.sold}',
+                      '${AppLocalizations.of(context)!.product_stockSold(product.stock, product.sold ?? 0)} ${product.unit}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 8),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
-                  CurrencyFormatter.format(product.price),
+                  AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(product.price)),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
+                if (product.wholesalePrice != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    AppLocalizations.of(
+                      context,
+                    )!.product_grosirPrice(CurrencyFormatter.format(product.wholesalePrice!)),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -130,7 +144,7 @@ class _OutOfStock extends StatelessWidget {
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
-                  'Out of stock',
+                  AppLocalizations.of(context)!.product_outOfStock,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Theme.of(context).colorScheme.outline,

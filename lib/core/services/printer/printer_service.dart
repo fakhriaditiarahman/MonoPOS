@@ -247,11 +247,11 @@ class PrinterService {
         for (final product in transaction.orderedProducts!) {
           ticket.row([
             PrintColumn(
-              text: product.name,
+              text: '${product.name} (${product.priceType == 'grosir' ? 'Grosir' : 'Retail'})',
               flex: 2,
             ),
             PrintColumn(
-              text: '${product.quantity}',
+              text: '${product.quantity} ${product.unit}',
               flex: 1,
               align: PrintAlign.center,
               style: const PrintTextStyle(),
