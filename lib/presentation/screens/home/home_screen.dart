@@ -16,6 +16,7 @@ import '../../widgets/app_loading_more_indicator.dart';
 import '../../widgets/app_progress_indicator.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_text_field.dart';
+import '../../../generated/app_localizations.dart';
 import '../products/components/products_card.dart';
 import 'components/barcode_scanner_screen.dart';
 import 'components/cart_panel_body.dart';
@@ -142,19 +143,14 @@ class _Body extends ConsumerWidget {
                 floating: true,
                 snap: true,
                 automaticallyImplyLeading: false,
-                collapsedHeight: 110,
+                collapsedHeight: 70,
                 titleSpacing: 0,
                 title: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
-                  child: Column(
-                    children: [
-                      _SearchField(controller: searchFieldController),
-                      const SizedBox(height: 6),
-                      const _PriceTypeToggle(),
-                    ],
-                  ),
+                  child: _SearchField(controller: searchFieldController),
                 ),
               ),
+
               SliverLayoutBuilder(
                 builder: (context, constraint) {
                   if (allProducts == null) {
@@ -397,71 +393,6 @@ class _SearchField extends ConsumerWidget {
   }
 }
 
-class _PriceTypeToggle extends ConsumerWidget {
-  const _PriceTypeToggle();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedPriceType = ref.watch(homeNotifierProvider.select((s) => s.selectedPriceType));
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => ref.read(homeNotifierProvider.notifier).onChangedPriceType('retail'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: selectedPriceType == 'retail' ? Theme.of(context).colorScheme.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  'Retail',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: selectedPriceType == 'retail'
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => ref.read(homeNotifierProvider.notifier).onChangedPriceType('grosir'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: selectedPriceType == 'grosir' ? Theme.of(context).colorScheme.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  'Grosir',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: selectedPriceType == 'grosir'
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.outline,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ProductCard extends ConsumerWidget {
   final ProductEntity product;
 
@@ -494,8 +425,8 @@ class _ProductCard extends ConsumerWidget {
               currentQty = val;
             },
           ),
-          rightButtonText: 'Add To Cart',
-          leftButtonText: 'Cancel',
+          rightButtonText: AppLocalizations.of(context)!.home_addToCart,
+          leftButtonText: AppLocalizations.of(context)!.home_cancel,
           onTapLeftButton: (context) {
             context.pop();
           },

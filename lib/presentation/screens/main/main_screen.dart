@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/di/app_providers.dart';
 import '../../../generated/app_localizations.dart';
 import '../../providers/main/main_notifier.dart';
-import '../welcome/welcome_screen.dart';
+import '../splash/splash_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   final Widget child;
@@ -33,7 +33,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     // Display loading while data is being loaded
     if (!isLoaded) {
-      return const WelcomeScreen();
+      return const SplashScreen();
     }
 
     return Scaffold(
@@ -64,7 +64,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   int _calculateSelectedIndex() {
-    final String location = ref.read(appRoutesProvider).router.state.uri.path;
+    final String location = ref.read(goRouterProvider).state.uri.path;
 
     if (location.startsWith('/home')) {
       return 0;
@@ -86,7 +86,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   void _onItemTapped(int index) {
-    final router = ref.read(appRoutesProvider).router;
+    final router = ref.read(goRouterProvider);
 
     switch (index) {
       case 0:

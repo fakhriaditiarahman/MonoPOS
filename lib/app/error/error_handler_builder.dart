@@ -7,7 +7,6 @@ import '../../core/services/logger/error_logger_service.dart';
 import '../../core/utilities/console_logger.dart';
 import '../../presentation/widgets/app_error_widget.dart';
 import '../di/app_providers.dart';
-import '../routes/app_routes.dart';
 import '../routes/params/error_screen_param.dart';
 
 class ErrorHandlerBuilder extends ConsumerStatefulWidget {
@@ -24,7 +23,6 @@ class ErrorHandlerBuilder extends ConsumerStatefulWidget {
 
 class ErrorHandlerBuilderState extends ConsumerState<ErrorHandlerBuilder> {
   ErrorLoggerService get _errorLoggerService => ref.read(errorLoggerServiceProvider);
-  AppRoutes get _appRoutes => ref.read(appRoutesProvider);
 
   @override
   void initState() {
@@ -56,8 +54,9 @@ class ErrorHandlerBuilderState extends ConsumerState<ErrorHandlerBuilder> {
     }
 
     // Prevent to push to ErrorScreen multiple times
-    if (_appRoutes.router.routeInformationProvider.value.uri.path != '/error') {
-      _appRoutes.router.go('/error', extra: ErrorScreenParam(flutterError: flutterError));
+    final router = ref.read(goRouterProvider);
+    if (router.routeInformationProvider.value.uri.path != '/error') {
+      router.go('/error', extra: ErrorScreenParam(flutterError: flutterError));
     }
   }
 
@@ -70,8 +69,9 @@ class ErrorHandlerBuilderState extends ConsumerState<ErrorHandlerBuilder> {
     if (!mounted) return false;
 
     // Prevent to push to ErrorScreen multiple times
-    if (_appRoutes.router.routeInformationProvider.value.uri.path != '/error') {
-      _appRoutes.router.go(
+    final router = ref.read(goRouterProvider);
+    if (router.routeInformationProvider.value.uri.path != '/error') {
+      router.go(
         '/error',
         extra: ErrorScreenParam(error: error, stackTrace: stackTrace),
       );

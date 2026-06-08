@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mono_pos/app/di/app_providers.dart';
-import 'package:mono_pos/app/routes/app_routes.dart';
 import 'package:mono_pos/domain/entities/user_entity.dart' hide AuthProvider;
 import 'package:mono_pos/presentation/providers/auth/auth_notifier.dart';
 import 'package:mono_pos/presentation/providers/auth/auth_state.dart';
@@ -10,8 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  late AppRoutes routes;
-
   Widget createTestWidget({
     AuthState authState = const AuthState(),
     MainState? mainState,
@@ -37,9 +34,9 @@ void main() {
       ],
       child: Consumer(
         builder: (context, ref, _) {
-          routes = ref.watch(appRoutesProvider);
+          final router = ref.watch(goRouterProvider);
           return MaterialApp.router(
-            routerConfig: routes.router,
+            routerConfig: router,
           );
         },
       ),

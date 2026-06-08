@@ -202,7 +202,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                 text: AppLocalizations.of(context)!.home_pay,
                 enabled: (int.tryParse(_amountController.text) ?? 0) >= homeNotifier.getTotalAmount(),
                 onTap: () {
-                  final router = ref.read(appRoutesProvider).router;
+                  final router = ref.read(goRouterProvider);
 
                   context.pop();
                   onPay(
