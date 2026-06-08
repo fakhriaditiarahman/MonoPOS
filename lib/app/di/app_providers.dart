@@ -1,5 +1,6 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/services/connectivity/ping_service.dart';
@@ -19,6 +20,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../presentation/providers/auth/auth_notifier.dart';
 import '../routes/app_routes.dart';
 
 // Startup overrides
@@ -30,7 +32,10 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
 final deviceInfoPluginProvider = Provider<DeviceInfoPlugin>((ref) => DeviceInfoPlugin());
 
 // Routes
-final appRoutesProvider = Provider<AppRoutes>((ref) => AppRoutes());
+final goRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+  return AppRoutes().build(isAuthenticated: authState.isAuthenticated);
+});
 
 // Services
 final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseService.instance);

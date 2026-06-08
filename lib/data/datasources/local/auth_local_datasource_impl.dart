@@ -16,19 +16,31 @@ class AuthLocalDataSourceImpl implements AuthDataSource {
   }
 
   @override
+  Future<Result<UserModel>> signInWithEmailPassword({
+    required String username,
+    required String password,
+  }) async {
+    if (username == 'admin' && password == 'admin123') {
+      return Result.success(
+        data: UserModel(
+          id: 'local-user-id',
+          name: 'Admin',
+          email: 'admin@localhost',
+          authProvider: 'local',
+        ),
+      );
+    }
+
+    return Result.failure(error: 'Username atau password salah!');
+  }
+
+  @override
   Future<Result<void>> signOut() async {
     return Result.success(data: null);
   }
 
   @override
   Future<Result<UserModel?>> getCurrentUser() async {
-    return Result.success(
-      data: UserModel(
-        id: 'local-user-id',
-        name: 'Admin',
-        email: 'admin@localhost',
-        authProvider: 'local',
-      ),
-    );
+    return Result.success(data: null);
   }
 }

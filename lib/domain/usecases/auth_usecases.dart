@@ -13,6 +13,22 @@ class SignInWithGoogleUsecase extends Usecase<Result, NoParam> {
   Future<Result<UserEntity?>> call(NoParam params) async => _authRepository.signInWithGoogle();
 }
 
+class SignInWithEmailPasswordUsecase {
+  SignInWithEmailPasswordUsecase(this._authRepository);
+
+  final AuthRepository _authRepository;
+
+  Future<Result<UserEntity>> call({
+    required String username,
+    required String password,
+  }) async {
+    return _authRepository.signInWithEmailPassword(
+      username: username,
+      password: password,
+    );
+  }
+}
+
 class SignOutUsecase extends Usecase<Result, NoParam> {
   SignOutUsecase(this._authRepository);
 

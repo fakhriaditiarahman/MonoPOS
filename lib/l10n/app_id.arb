@@ -203,9 +203,6 @@
   "about_github": "GitHub",
   "about_website": "Situs Web",
 
-  "welcome_title": "Selamat Datang!",
-  "welcome_subtitle": "Selamat datang di aplikasi Flutter POS",
-
   "error_backToHome": "Kembali ke beranda",
 
   "shared_oops": "Oops!",

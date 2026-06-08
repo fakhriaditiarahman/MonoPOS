@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domain/entities/user_entity.dart';
+import '../../../app/di/app_providers.dart';
+import '../../../domain/usecases/auth_usecases.dart';
+import '../../../domain/usecases/user_usecases.dart';
 import 'auth_state.dart';
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
@@ -10,13 +12,36 @@ final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
-    return AuthState(
-      user: UserEntity(
-        id: 'local-user-id',
-        name: 'Admin',
-        email: 'admin@localhost',
-        authProvider: AuthProvider.local,
-      ),
-    );
+    return const AuthState();
+  }
+
+  Future<void> signIn(String username, String password) async {
+    state = state.copyWith(isChecking: true, errorMessage: null);
+
+    final authRepository = ref.read(authRepositoryProvider);
+    final usecase = SignInWithEmailPasswordUsecase(authRepository);
+    final result = await usecase.call(username: username, password: password);
+
+    if (result.isSuccess) {
+      state = AuthState(user: result.data, isChecking: false);
+
+      final userRepository = ref.read(userRepositoryProvider);
+      final getUsecase = GetUserUsecase(userRepository);
+      final existingUser = await getUsecase.call(result.data!.id);
+
+      if (existingUser.isSuccess && existingUser.data == null) {
+        final createUsecase = CreateUserUsecase(userRepository);
+        await createUsecase.call(result.data!);
+      }
+    } else {
+      state = state.copyWith(
+        isChecking: false,
+        errorMessage: result.error?.toString(),
+      );
+    }
+  }
+
+  void signOut() {
+    state = const AuthState();
   }
 }

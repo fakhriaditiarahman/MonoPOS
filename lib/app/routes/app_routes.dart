@@ -13,7 +13,8 @@ import '../../presentation/screens/products/product_form_screen.dart';
 import '../../presentation/screens/products/products_screen.dart';
 import '../../presentation/screens/transactions/transaction_detail_screen.dart';
 import '../../presentation/screens/transactions/transactions_screen.dart';
-import '../../presentation/screens/welcome/welcome_screen.dart';
+import '../../presentation/screens/auth/login_screen.dart';
+import '../../presentation/screens/splash/splash_screen.dart';
 import 'params/error_screen_param.dart';
 
 /// App routes
@@ -23,23 +24,25 @@ class AppRoutes {
   static final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
   static final navNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'nav');
 
-  GoRouter? _router;
-  GoRouter get router {
-    _router ??= _build();
-    return _router!;
-  }
-
-  GoRouter _build() {
+  GoRouter build({required bool isAuthenticated}) {
     return GoRouter(
       initialLocation: '/',
       navigatorKey: rootNavigatorKey,
       errorBuilder: (context, state) => ErrorScreen(param: ErrorScreenParam(error: state.error)),
       redirect: (context, state) {
-        final isSplashRoute = state.fullPath == '/';
-        return isSplashRoute ? '/home' : null;
+        final path = state.fullPath;
+        final isLoginRoute = path == '/login';
+
+        if (path == '/') return null;
+
+        if (!isAuthenticated && !isLoginRoute) return '/login';
+        if (isAuthenticated && isLoginRoute) return '/home';
+
+        return null;
       },
       routes: [
         _splash(),
+        _login(),
         _main(),
         _error(),
       ],
@@ -49,7 +52,14 @@ class AppRoutes {
   GoRoute _splash() {
     return GoRoute(
       path: '/',
-      builder: (context, state) => const WelcomeScreen(),
+      builder: (context, state) => const SplashScreen(),
+    );
+  }
+
+  GoRoute _login() {
+    return GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
     );
   }
 

@@ -15,7 +15,7 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeNotifierProvider.select((s) => s.themeData));
     final locale = ref.watch(languageNotifierProvider.select((s) => s.locale));
-    final router = ref.watch(appRoutesProvider).router;
+    final router = ref.watch(goRouterProvider);
 
     return MaterialApp.router(
       title: 'Flutter POS',
