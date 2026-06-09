@@ -407,6 +407,8 @@ class _ProductCard extends ConsumerWidget {
 
     return ProductsCard(
       product: product,
+      displayPrice: displayPrice,
+      priceType: homeState.selectedPriceType,
       enabled: product.stock > 0 && (!isGrosir || hasWholesalePrice),
       onTap: () {
         int currentQty = homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0;

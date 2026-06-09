@@ -10,12 +10,16 @@ class ProductsCard extends StatelessWidget {
   final ProductEntity product;
   final VoidCallback? onTap;
   final bool enabled;
+  final int? displayPrice;
+  final String? priceType;
 
   const ProductsCard({
     super.key,
     required this.product,
     this.onTap,
     this.enabled = true,
+    this.displayPrice,
+    this.priceType,
   });
 
   @override
@@ -84,22 +88,34 @@ class ProductsCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(product.price)),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                if (product.wholesalePrice != null) ...[
-                  const SizedBox(height: 2),
+                if (displayPrice != null && priceType != null)
                   Text(
-                    AppLocalizations.of(
-                      context,
-                    )!.product_grosirPrice(CurrencyFormatter.format(product.wholesalePrice!)),
+                    priceType == 'grosir'
+                        ? AppLocalizations.of(context)!.product_grosirPrice(CurrencyFormatter.format(displayPrice!))
+                        : AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(displayPrice!)),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 10,
+                      color: priceType == 'grosir' ? Theme.of(context).colorScheme.primary : null,
                     ),
+                  )
+                else ...[
+                  Text(
+                    AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(product.price)),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
+                  if (product.wholesalePrice != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      AppLocalizations.of(
+                        context,
+                      )!.product_grosirPrice(CurrencyFormatter.format(product.wholesalePrice!)),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),

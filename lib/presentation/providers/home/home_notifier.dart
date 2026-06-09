@@ -68,7 +68,11 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     int price = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
 
     if (currentIndex != -1) {
-      orderedProducts[currentIndex] = orderedProducts[currentIndex].copyWith(quantity: qty);
+      orderedProducts[currentIndex] = orderedProducts[currentIndex].copyWith(
+        quantity: qty,
+        price: price,
+        priceType: state.selectedPriceType,
+      );
     } else {
       var order = OrderedProductEntity(
         id: DateTime.now().millisecondsSinceEpoch,
@@ -89,7 +93,23 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
   }
 
   void onChangedPriceType(String value) {
-    state = state.copyWith(selectedPriceType: value);
+    final products = ref.read(productsNotifierProvider).allProducts;
+    final productMap = {for (var p in products ?? <ProductEntity>[]) p.id: p};
+
+    final orderedProducts = state.orderedProducts.map((item) {
+      final product = productMap[item.productId];
+      if (product == null) return item.copyWith(priceType: value);
+
+      bool isGrosir = value == 'grosir';
+      int newPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
+
+      return item.copyWith(price: newPrice, priceType: value);
+    }).toList();
+
+    state = state.copyWith(
+      selectedPriceType: value,
+      orderedProducts: orderedProducts,
+    );
   }
 
   void onRemoveOrderedProduct(OrderedProductEntity val) {

@@ -67,6 +67,11 @@ class DatabaseService {
     try {
       await database.execute('ALTER TABLE Product ADD COLUMN barcode TEXT');
     } catch (_) {}
+
+    // Migration: add unit column to OrderedProduct
+    try {
+      await database.execute("ALTER TABLE OrderedProduct ADD COLUMN unit TEXT DEFAULT 'pcs'");
+    } catch (_) {}
   }
 
   @visibleForTesting
