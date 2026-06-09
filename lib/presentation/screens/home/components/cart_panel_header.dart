@@ -9,6 +9,73 @@ import '../../../providers/home/home_notifier.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_dialog.dart';
 
+class _PriceTypeToggle extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeState = ref.watch(homeNotifierProvider);
+    final isGrosir = homeState.selectedPriceType == 'grosir';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.32),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ToggleButton(
+            label: AppLocalizations.of(context)!.home_retail,
+            isSelected: !isGrosir,
+            onTap: () => ref.read(homeNotifierProvider.notifier).onChangedPriceType('retail'),
+          ),
+          _ToggleButton(
+            label: AppLocalizations.of(context)!.home_grosir,
+            isSelected: isGrosir,
+            onTap: () => ref.read(homeNotifierProvider.notifier).onChangedPriceType('grosir'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToggleButton extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ToggleButton({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isSelected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class CartPanelHeader extends ConsumerWidget {
   final PanelController panelController;
 
@@ -62,6 +129,14 @@ class CartPanelHeader extends ConsumerWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              _PriceTypeToggle(),
+            ],
+          ),
+          const SizedBox(height: AppSizes.padding / 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Spacer(),
               AppButton(
                 height: 26,
                 borderRadius: BorderRadius.circular(4),
