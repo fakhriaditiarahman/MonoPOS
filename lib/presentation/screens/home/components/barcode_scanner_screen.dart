@@ -36,11 +36,11 @@ class _BarcodeScannerScreenState extends ConsumerState<BarcodeScannerScreen> {
 
     if (!mounted) return;
 
-    if (result.isSuccess && result.data != null) {
-      Navigator.pop(context, barcode);
-    } else {
+    if (result.isFailure) {
       _isProcessing = false;
-      AppSnackBar.showError('Produk dengan barcode "$barcode" tidak ditemukan');
+      AppSnackBar.showError(result.error?.toString() ?? 'Gagal mencari produk');
+    } else {
+      Navigator.pop(context, barcode);
     }
   }
 

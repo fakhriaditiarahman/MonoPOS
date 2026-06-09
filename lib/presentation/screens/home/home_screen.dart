@@ -255,11 +255,11 @@ class _Title extends ConsumerWidget {
   }
 }
 
-class _ScanButton extends StatelessWidget {
+class _ScanButton extends ConsumerWidget {
   const _ScanButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.only(right: 0),
       child: AppButton(
@@ -272,12 +272,54 @@ class _ScanButton extends StatelessWidget {
           size: 16,
           color: Theme.of(context).colorScheme.primary,
         ),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final barcode = await Navigator.push<String>(
             context,
             MaterialPageRoute(
               builder: (_) => const BarcodeScannerScreen(),
             ),
+          );
+
+          if (barcode == null || barcode.isEmpty) return;
+
+          final products = ref.read(productsNotifierProvider).allProducts;
+          final product = products?.where((p) => p.barcode == barcode).firstOrNull;
+
+          if (product == null) {
+            if (!context.mounted) return;
+            AppSnackBar.showError('Produk dengan barcode "$barcode" tidak ditemukan');
+            return;
+          }
+
+          final homeState = ref.read(homeNotifierProvider);
+          int currentQty = homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0;
+          bool isGrosir = homeState.selectedPriceType == 'grosir';
+          int displayPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
+
+          if (!context.mounted) return;
+          AppDialog.show(
+            title: 'Enter Amount',
+            child: OrderCard(
+              name: product.name,
+              imageUrl: product.imageUrl,
+              stock: product.stock,
+              price: displayPrice,
+              priceType: homeState.selectedPriceType,
+              unit: product.unit,
+              initialQuantity: currentQty,
+              onChangedQuantity: (val) {
+                currentQty = val;
+              },
+            ),
+            rightButtonText: AppLocalizations.of(context)!.home_addToCart,
+            leftButtonText: AppLocalizations.of(context)!.home_cancel,
+            onTapLeftButton: (context) {
+              context.pop();
+            },
+            onTapRightButton: (context) {
+              ref.read(homeNotifierProvider.notifier).onAddOrderedProduct(product, currentQty == 0 ? 1 : currentQty);
+              context.pop();
+            },
           );
         },
       ),
