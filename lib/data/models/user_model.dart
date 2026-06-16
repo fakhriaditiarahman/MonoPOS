@@ -9,6 +9,8 @@ class UserModel {
   String? birthdate;
   String? imageUrl;
   String? authProvider;
+  String? password;
+  String? role;
   String? createdAt;
   String? updatedAt;
 
@@ -21,6 +23,8 @@ class UserModel {
     this.birthdate,
     this.imageUrl,
     this.authProvider,
+    this.password,
+    this.role,
     this.createdAt,
     this.updatedAt,
   });
@@ -35,6 +39,8 @@ class UserModel {
       birthdate: json['birthdate'],
       imageUrl: json['imageUrl'],
       authProvider: json['authProvider'],
+      password: json['password'],
+      role: json['role'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -50,6 +56,8 @@ class UserModel {
       'birthdate': birthdate,
       'imageUrl': imageUrl,
       'authProvider': authProvider,
+      'password': password,
+      'role': role,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -65,6 +73,8 @@ class UserModel {
       birthdate: entity.birthdate,
       imageUrl: entity.imageUrl,
       authProvider: entity.authProvider?.value,
+      password: entity.password,
+      role: entity.role?.value,
       createdAt: entity.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: entity.updatedAt ?? DateTime.now().toIso8601String(),
     );
@@ -80,6 +90,8 @@ class UserModel {
       birthdate: birthdate,
       imageUrl: imageUrl,
       authProvider: AuthProvider.fromValue(authProvider),
+      password: password,
+      role: UserRole.fromValue(role),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

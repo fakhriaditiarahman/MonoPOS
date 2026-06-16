@@ -1,5 +1,6 @@
 import 'package:app_image/app_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/themes/app_sizes.dart';
@@ -15,10 +16,13 @@ class OrderCard extends StatefulWidget {
   final int price;
   final String priceType;
   final String unit;
-  final int initialQuantity;
+  final double initialQuantity;
   final VoidCallback? onTapCard;
   final VoidCallback? onTapRemove;
-  final Function(int) onChangedQuantity;
+  final Function(double) onChangedQuantity;
+  final List<String>? availableUnits;
+  final String? selectedUnit;
+  final ValueChanged<String?>? onChangedUnit;
 
   const OrderCard({
     super.key,
@@ -32,6 +36,9 @@ class OrderCard extends StatefulWidget {
     this.onTapCard,
     this.onTapRemove,
     required this.onChangedQuantity,
+    this.availableUnits,
+    this.selectedUnit,
+    this.onChangedUnit,
   });
 
   @override
@@ -39,22 +46,48 @@ class OrderCard extends StatefulWidget {
 }
 
 class _OrderCardState extends State<OrderCard> {
-  int quantity = 1;
+  late double quantity;
+  final quantityController = TextEditingController();
 
   @override
   void initState() {
     quantity = widget.initialQuantity == 0 ? 1 : widget.initialQuantity;
+    quantityController.text = _formatQty(quantity);
     super.initState();
   }
 
   @override
   void didUpdateWidget(covariant OrderCard oldWidget) {
-    quantity = widget.initialQuantity == 0 ? 1 : widget.initialQuantity;
+    if (widget.initialQuantity != oldWidget.initialQuantity) {
+      quantity = widget.initialQuantity == 0 ? 1 : widget.initialQuantity;
+      quantityController.text = _formatQty(quantity);
+    }
     super.didUpdateWidget(oldWidget);
   }
 
   @override
+  void dispose() {
+    quantityController.dispose();
+    super.dispose();
+  }
+
+  String _formatQty(double val) {
+    return val == val.roundToDouble() ? val.toInt().toString() : val.toStringAsFixed(1);
+  }
+
+  void _updateQuantity(double val) {
+    if (val < 0) val = 0;
+    quantity = val;
+    quantityController.text = _formatQty(val);
+    setState(() {});
+    widget.onChangedQuantity(val);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final showUnitPicker = (widget.availableUnits?.length ?? 0) >= 1;
+    final hasMultipleUnits = (widget.availableUnits?.length ?? 0) > 1;
+
     return Material(
       borderRadius: BorderRadius.circular(AppSizes.radius),
       child: InkWell(
@@ -113,7 +146,7 @@ class _OrderCardState extends State<OrderCard> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '/${widget.unit}',
+                              '/${widget.selectedUnit ?? widget.unit}',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
                             ),
                           ],
@@ -124,23 +157,68 @@ class _OrderCardState extends State<OrderCard> {
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
                         ),
                         const SizedBox(height: 6),
+                        if (showUnitPicker)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Builder(
+                              builder: (ctx) {
+                                return GestureDetector(
+                                  onTap: () async {
+                                    final result = await showDialog<String>(
+                                      context: ctx,
+                                      builder: (dialogCtx) => SimpleDialog(
+                                        title: const Text('Pilih Satuan'),
+                                        children: widget.availableUnits!.map((u) {
+                                          return SimpleDialogOption(
+                                            onPressed: () => Navigator.pop(dialogCtx, u),
+                                            child: Text(u),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    );
+                                    if (result != null) {
+                                      widget.onChangedUnit?.call(result);
+                                    }
+                                  },
+                                  child: Container(
+                                    height: 30,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Theme.of(context).colorScheme.surfaceContainer,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          widget.selectedUnit ?? widget.unit,
+                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        if (hasMultipleUnits) ...[
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.arrow_drop_down,
+                                            size: 16,
+                                            color: Theme.of(context).colorScheme.outline,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         Container(
                           height: 36,
-                          constraints: const BoxConstraints(maxWidth: 112),
-                          child: Stack(
+                          constraints: const BoxConstraints(maxWidth: 160),
+                          child: Row(
                             children: [
-                              AppButton(
-                                width: double.infinity,
-                                height: 30,
-                                padding: EdgeInsets.zero,
-                                buttonColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-                                borderColor: Theme.of(context).colorScheme.surfaceContainer,
-                                borderRadius: BorderRadius.circular(4),
-                                child: Text(
-                                  '$quantity',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
                               AppButton(
                                 width: 30,
                                 height: 30,
@@ -155,40 +233,80 @@ class _OrderCardState extends State<OrderCard> {
                                   ),
                                 ),
                                 onTap: () {
-                                  if (quantity > 1) {
-                                    quantity -= 1;
-                                    setState(() {});
-
-                                    widget.onChangedQuantity(quantity);
-                                  }
+                                  _updateQuantity(quantity - (hasMultipleUnits ? 0.5 : 1));
                                 },
                               ),
-                              Positioned(
-                                right: 0,
-                                child: AppButton(
-                                  width: 30,
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: SizedBox(
                                   height: 30,
-                                  padding: EdgeInsets.zero,
-                                  buttonColor: Theme.of(context).colorScheme.surfaceContainer,
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Text(
-                                    '+',
-                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.primary,
+                                  child: TextField(
+                                    controller: quantityController,
+                                    textAlign: TextAlign.center,
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                                    ],
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.surfaceContainer,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                        borderSide: BorderSide(
+                                          color: Theme.of(context).colorScheme.surfaceContainer,
+                                        ),
+                                      ),
                                     ),
+                                    onChanged: (val) {
+                                      final parsed = double.tryParse(val);
+                                      if (parsed != null && parsed != quantity) {
+                                        quantity = parsed;
+                                        setState(() {});
+                                        widget.onChangedQuantity(parsed);
+                                      }
+                                    },
+                                    onSubmitted: (val) {
+                                      _updateQuantity(double.tryParse(val) ?? quantity);
+                                    },
                                   ),
-                                  onTap: () {
-                                    if (quantity < widget.stock) {
-                                      quantity += 1;
-                                      setState(() {});
-
-                                      widget.onChangedQuantity(quantity);
-                                    }
-                                  },
                                 ),
                               ),
+                              const SizedBox(width: 4),
+                              AppButton(
+                                width: 30,
+                                height: 30,
+                                padding: EdgeInsets.zero,
+                                buttonColor: Theme.of(context).colorScheme.surfaceContainer,
+                                borderRadius: BorderRadius.circular(4),
+                                child: Text(
+                                  '+',
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                                onTap: () {
+                                  _updateQuantity(quantity + (hasMultipleUnits ? 0.5 : 1));
+                                },
+                              ),
                             ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            CurrencyFormatter.format((widget.price * quantity).round()),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                         ),
                       ],

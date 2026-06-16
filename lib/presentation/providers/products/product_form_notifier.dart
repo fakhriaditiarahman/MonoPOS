@@ -6,6 +6,7 @@ import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
 import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../domain/entities/product_unit_entity.dart';
 import '../../../domain/usecases/product_usecases.dart';
 import '../auth/auth_notifier.dart';
 import 'product_form_state.dart';
@@ -27,9 +28,13 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     throw 'Unauthenticated!';
   }
 
+  int _unitIdCounter = 0;
+
   Future<void> initProductForm(int? productId) async {
     if (productId == null) {
       state = state.copyWith(isLoaded: true);
+      // Ensure default unit 'pcs' exists in new product
+      _ensureDefaultUnitInList('pcs');
       return;
     }
 
@@ -38,6 +43,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
     if (res.isSuccess) {
       var product = res.data;
+      final defaultUnit = product?.unit ?? 'pcs';
 
       state = state.copyWith(
         imageUrl: product?.imageUrl,
@@ -45,11 +51,15 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         price: product?.price,
         wholesalePrice: product?.wholesalePrice,
         stock: product?.stock,
-        unit: product?.unit ?? 'pcs',
+        unit: defaultUnit,
         barcode: product?.barcode,
         description: product?.description,
+        units: product?.units ?? [],
         isLoaded: true,
       );
+
+      // Ensure default unit is in the units list
+      _ensureDefaultUnitInList(defaultUnit);
     } else {
       throw res.error ?? 'Failed to load data';
     }
@@ -78,6 +88,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         unit: state.unit,
         barcode: state.barcode,
         description: state.description ?? '',
+        units: state.units,
       );
 
       var res = await CreateProductUsecase(productRepository).call(product);
@@ -115,6 +126,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         unit: state.unit,
         barcode: state.barcode,
         description: state.description ?? '',
+        units: state.units,
       );
 
       var res = await UpdateProductUsecase(productRepository).call(product);
@@ -164,6 +176,27 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
   void onChangedUnit(String value) {
     state = state.copyWith(unit: value);
+    _ensureDefaultUnitInList(value);
+  }
+
+  void _ensureDefaultUnitInList(String defaultUnit) {
+    // Ensure default unit exists in units list
+    final units = [...state.units];
+    final unitExists = units.any((u) => u.unitName == defaultUnit);
+
+    if (!unitExists) {
+      // Create default unit with 0 price initially (user must fill in)
+      final defaultUnitEntity = ProductUnitEntity(
+        unitName: defaultUnit,
+        conversionValue: 1,
+        price: state.price ?? 0, // Use current price
+        wholesalePrice: state.wholesalePrice,
+        isBase: true,
+        productId: 0,
+      );
+      units.add(defaultUnitEntity);
+      state = state.copyWith(units: units);
+    }
   }
 
   void onChangedBarcode(String value) {
@@ -172,5 +205,24 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
   void onChangedDesc(String value) {
     state = state.copyWith(description: value);
+  }
+
+  void addUnit(ProductUnitEntity unit) {
+    final units = [...state.units];
+    final newUnit = unit.copyWith(id: _unitIdCounter--);
+    units.add(newUnit);
+    state = state.copyWith(units: units);
+  }
+
+  void updateUnit(int index, ProductUnitEntity unit) {
+    final units = [...state.units];
+    units[index] = unit;
+    state = state.copyWith(units: units);
+  }
+
+  void removeUnit(int index) {
+    final units = [...state.units];
+    units.removeAt(index);
+    state = state.copyWith(units: units);
   }
 }

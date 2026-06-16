@@ -16,19 +16,27 @@ class AccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = AppSizes.isTablet(context) || AppSizes.isDesktop(context);
+
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(AppSizes.padding),
-        child: Column(
-          children: [
-            _UserInfo(),
-            _ProfileButton(),
-            _ThemeButton(),
-            _LanguageButton(),
-            _PrinterSettingsButton(),
-            _AboutButton(),
-          ],
+      body: Center(
+        child: Container(
+          constraints: isWide ? const BoxConstraints(maxWidth: 600) : null,
+          child: const SingleChildScrollView(
+            padding: EdgeInsets.all(AppSizes.padding),
+            child: Column(
+              children: [
+                _UserInfo(),
+                _ProfileButton(),
+                _StoreSettingsButton(),
+                _ThemeButton(),
+                _LanguageButton(),
+                _PrinterSettingsButton(),
+                _AboutButton(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -107,6 +115,48 @@ class _ProfileButton extends StatelessWidget {
         ),
         onTap: () {
           context.go('/account/profile');
+        },
+      ),
+    );
+  }
+}
+
+class _StoreSettingsButton extends StatelessWidget {
+  const _StoreSettingsButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.store_outlined,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  AppLocalizations.of(context)!.storeSettings_title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+            ),
+          ],
+        ),
+        onTap: () {
+          context.go('/account/store-settings');
         },
       ),
     );

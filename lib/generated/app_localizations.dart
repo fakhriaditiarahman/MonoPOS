@@ -686,6 +686,48 @@ abstract class AppLocalizations {
   /// **'{count} Products'**
   String transaction_products(Object count);
 
+  /// No description provided for @storeSettings_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Settings'**
+  String get storeSettings_title;
+
+  /// No description provided for @storeSettings_storeNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Name'**
+  String get storeSettings_storeNameLabel;
+
+  /// No description provided for @storeSettings_storeNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your store name...'**
+  String get storeSettings_storeNameHint;
+
+  /// No description provided for @storeSettings_storeAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get storeSettings_storeAddressLabel;
+
+  /// No description provided for @storeSettings_storeAddressHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your store address...'**
+  String get storeSettings_storeAddressHint;
+
+  /// No description provided for @storeSettings_receiptFooterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Footer'**
+  String get storeSettings_receiptFooterLabel;
+
+  /// No description provided for @storeSettings_receiptFooterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message at the bottom of receipt, e.g: Thank you for shopping'**
+  String get storeSettings_receiptFooterHint;
+
   /// No description provided for @settings_title.
   ///
   /// In en, this message translates to:

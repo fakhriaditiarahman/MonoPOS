@@ -9,4 +9,6 @@ abstract class UserDatasource {
   Future<Result<void>> deleteUser(String id);
 
   Future<Result<UserModel?>> getUser(String id);
+
+  Future<Result<UserModel?>> getUserByUsername(String username);
 }

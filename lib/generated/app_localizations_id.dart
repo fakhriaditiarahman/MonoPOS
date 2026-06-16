@@ -324,6 +324,28 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String get storeSettings_title => 'Pengaturan Toko';
+
+  @override
+  String get storeSettings_storeNameLabel => 'Nama Toko';
+
+  @override
+  String get storeSettings_storeNameHint => 'Nama toko Anda...';
+
+  @override
+  String get storeSettings_storeAddressLabel => 'Alamat';
+
+  @override
+  String get storeSettings_storeAddressHint => 'Alamat toko Anda...';
+
+  @override
+  String get storeSettings_receiptFooterLabel => 'Pesan Struk';
+
+  @override
+  String get storeSettings_receiptFooterHint =>
+      'Pesan di bagian bawah struk, misal: Terima kasih telah berbelanja';
+
+  @override
   String get settings_title => 'Pengaturan';
 
   @override

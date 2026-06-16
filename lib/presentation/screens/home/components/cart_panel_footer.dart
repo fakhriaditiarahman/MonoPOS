@@ -15,8 +15,9 @@ import '../../../widgets/app_text_field.dart';
 
 class CartPanelFooter extends ConsumerWidget {
   final PanelController panelController;
+  final bool isPanelUsed;
 
-  const CartPanelFooter({super.key, required this.panelController});
+  const CartPanelFooter({super.key, required this.panelController, this.isPanelUsed = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,13 +37,13 @@ class CartPanelFooter extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               child: SizedBox(
                 width: AppSizes.screenWidth(context) / 3 - AppSizes.padding / 2,
-                child: _BackButton(panelController: panelController),
+                child: _BackButton(panelController: panelController, isPanelUsed: isPanelUsed),
               ),
             ),
           ),
           Expanded(
             flex: 2,
-            child: _PayButton(panelController: panelController),
+            child: _PayButton(panelController: panelController, isPanelUsed: isPanelUsed),
           ),
         ],
       ),
@@ -52,8 +53,9 @@ class CartPanelFooter extends ConsumerWidget {
 
 class _BackButton extends ConsumerWidget {
   final PanelController panelController;
+  final bool isPanelUsed;
 
-  const _BackButton({required this.panelController});
+  const _BackButton({required this.panelController, this.isPanelUsed = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,15 +64,18 @@ class _BackButton extends ConsumerWidget {
       buttonColor: Theme.of(context).colorScheme.surface,
       borderColor: Theme.of(context).colorScheme.primary,
       textColor: Theme.of(context).colorScheme.primary,
-      onTap: () => panelController.close(),
+      onTap: () {
+        if (isPanelUsed) panelController.close();
+      },
     );
   }
 }
 
 class _PayButton extends ConsumerWidget {
   final PanelController panelController;
+  final bool isPanelUsed;
 
-  const _PayButton({required this.panelController});
+  const _PayButton({required this.panelController, this.isPanelUsed = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,20 +83,20 @@ class _PayButton extends ConsumerWidget {
     final homeNotifier = ref.read(homeNotifierProvider.notifier);
 
     return AppButton(
-      text: !homeState.isPanelExpanded
-          ? homeState.orderedProducts.isNotEmpty
-                ? "${AppLocalizations.of(context)!.cart_products(homeState.orderedProducts.length)} = ${CurrencyFormatter.format(homeNotifier.getTotalAmount())}"
-                : AppLocalizations.of(context)!.home_transaction
-          : AppLocalizations.of(context)!.home_pay,
+      text: !isPanelUsed || homeState.isPanelExpanded
+          ? AppLocalizations.of(context)!.home_pay
+          : homeState.orderedProducts.isNotEmpty
+          ? "${AppLocalizations.of(context)!.cart_products(homeState.orderedProducts.length)} = ${CurrencyFormatter.format(homeNotifier.getTotalAmount())}"
+          : AppLocalizations.of(context)!.home_transaction,
       enabled: homeState.orderedProducts.isNotEmpty,
       onTap: () {
-        if (homeState.isPanelExpanded) {
+        if (isPanelUsed && !homeState.isPanelExpanded) {
+          panelController.open();
+        } else {
           AppDialog.show(
             child: const _AdditionalInfoDialog(),
             showButtons: false,
           );
-        } else {
-          panelController.open();
         }
       },
     );

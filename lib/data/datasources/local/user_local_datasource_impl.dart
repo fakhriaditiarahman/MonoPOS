@@ -20,7 +20,6 @@ class UserLocalDatasourceImpl extends UserDatasource {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      // The id is uid from GoogleSignIn credential
       return Result.success(data: user.id);
     } catch (e) {
       return Result.failure(error: e);
@@ -66,6 +65,23 @@ class UserLocalDatasourceImpl extends UserDatasource {
         DatabaseConfig.userTableName,
         where: 'id = ?',
         whereArgs: [id],
+      );
+
+      if (res.isEmpty) return Result.success(data: null);
+
+      return Result.success(data: UserModel.fromJson(res.first));
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<UserModel?>> getUserByUsername(String username) async {
+    try {
+      var res = await _databaseService.database.query(
+        DatabaseConfig.userTableName,
+        where: 'id = ?',
+        whereArgs: [username],
       );
 
       if (res.isEmpty) return Result.success(data: null);

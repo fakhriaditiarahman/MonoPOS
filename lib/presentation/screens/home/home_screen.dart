@@ -6,6 +6,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../core/themes/app_sizes.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../domain/entities/product_unit_entity.dart';
 import '../../providers/home/home_notifier.dart';
 import '../../providers/main/main_notifier.dart';
 import '../../providers/products/products_notifier.dart';
@@ -54,7 +55,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void scrollListener() async {
     final productsState = ref.read(productsNotifierProvider);
 
-    // Automatically load more data on end of scroll position
     if (scrollController.offset == scrollController.position.maxScrollExtent) {
       await ref
           .read(productsNotifierProvider.notifier)
@@ -70,7 +70,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final homeNotifier = ref.read(homeNotifierProvider.notifier);
+    final isWide = AppSizes.isTablet(context) || AppSizes.isDesktop(context);
+
+    if (isWide) {
+      return Scaffold(
+        appBar: _AppBar(searchFieldController: searchFieldController),
+        body: Row(
+          children: [
+            Expanded(
+              flex: 3,
+              child: _ProductGrid(
+                scrollController: scrollController,
+                searchFieldController: searchFieldController,
+                onRefresh: onRefresh,
+              ),
+            ),
+            SizedBox(
+              width: 380,
+              child: _CartPanel(
+                panelController: panelController,
+                onRefresh: onRefresh,
+                isPanelUsed: false,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       body: SlidingUpPanel(
@@ -89,27 +115,88 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           topLeft: Radius.circular(AppSizes.radius * 2),
           topRight: Radius.circular(AppSizes.radius * 2),
         ),
-        body: _Body(
-          scrollController: scrollController,
-          searchFieldController: searchFieldController,
-          onRefresh: onRefresh,
+        body: Scaffold(
+          appBar: _AppBar(searchFieldController: searchFieldController),
+          body: _ProductGrid(
+            scrollController: scrollController,
+            searchFieldController: searchFieldController,
+            onRefresh: onRefresh,
+          ),
         ),
         header: CartPanelHeader(panelController: panelController),
         panel: CartPanelBody(panelController: panelController),
         footer: CartPanelFooter(panelController: panelController),
-        onPanelOpened: () => homeNotifier.onChangedIsPanelExpanded(true),
-        onPanelClosed: () => homeNotifier.onChangedIsPanelExpanded(false),
+        onPanelOpened: () => ref.read(homeNotifierProvider.notifier).onChangedIsPanelExpanded(true),
+        onPanelClosed: () => ref.read(homeNotifierProvider.notifier).onChangedIsPanelExpanded(false),
       ),
     );
   }
 }
 
-class _Body extends ConsumerWidget {
+class _AppBar extends ConsumerWidget implements PreferredSizeWidget {
+  final TextEditingController searchFieldController;
+
+  const _AppBar({required this.searchFieldController});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return AppBar(
+      title: const _Title(),
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      actions: const [
+        _ScanButton(),
+        _SyncButton(),
+        _NetworkInfo(),
+      ],
+    );
+  }
+}
+
+class _CartPanel extends StatelessWidget {
+  final PanelController panelController;
+  final Future<void> Function() onRefresh;
+  final bool isPanelUsed;
+
+  const _CartPanel({
+    required this.panelController,
+    required this.onRefresh,
+    this.isPanelUsed = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
+        border: Border(
+          left: BorderSide(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          ),
+        ),
+      ),
+      child: Column(
+        children: [
+          CartPanelHeader(panelController: panelController),
+          Expanded(
+            child: CartPanelBody(panelController: panelController, isPanelUsed: isPanelUsed),
+          ),
+          CartPanelFooter(panelController: panelController, isPanelUsed: isPanelUsed),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductGrid extends ConsumerWidget {
   final ScrollController scrollController;
   final TextEditingController searchFieldController;
   final Future<void> Function() onRefresh;
 
-  const _Body({
+  const _ProductGrid({
     required this.scrollController,
     required this.searchFieldController,
     required this.onRefresh,
@@ -120,90 +207,77 @@ class _Body extends ConsumerWidget {
     final allProducts = ref.watch(productsNotifierProvider.select((p) => p.allProducts));
     final isLoadingMore = ref.watch(productsNotifierProvider.select((p) => p.isLoadingMore));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const _Title(),
-        elevation: 0,
-        shadowColor: Colors.transparent,
-        actions: const [
-          _ScanButton(),
-          _SyncButton(),
-          _NetworkInfo(),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: onRefresh,
-        child: Scrollbar(
-          child: CustomScrollView(
-            controller: scrollController,
-            // Disable scroll when data is null or empty
-            physics: (allProducts?.isEmpty ?? true) ? const NeverScrollableScrollPhysics() : null,
-            slivers: [
-              SliverAppBar(
-                floating: true,
-                snap: true,
-                automaticallyImplyLeading: false,
-                collapsedHeight: 70,
-                titleSpacing: 0,
-                title: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
-                  child: _SearchField(controller: searchFieldController),
-                ),
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Scrollbar(
+        child: CustomScrollView(
+          controller: scrollController,
+          physics: (allProducts?.isEmpty ?? true) ? const NeverScrollableScrollPhysics() : null,
+          slivers: [
+            SliverAppBar(
+              floating: true,
+              snap: true,
+              automaticallyImplyLeading: false,
+              collapsedHeight: 70,
+              titleSpacing: 0,
+              title: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
+                child: _SearchField(controller: searchFieldController),
               ),
+            ),
 
-              SliverLayoutBuilder(
-                builder: (context, constraint) {
-                  if (allProducts == null) {
-                    return const SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: 140),
-                        child: AppProgressIndicator(),
-                      ),
-                    );
-                  }
-
-                  if (allProducts.isEmpty) {
-                    return SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 140),
-                        child: AppEmptyState(
-                          subtitle: 'No products available, add product to continue',
-                          buttonText: 'Add Product',
-                          onTapButton: () => context.push('/products/product-create'),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(AppSizes.padding, 2, AppSizes.padding, AppSizes.padding),
-                    sliver: SliverGrid.builder(
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 200,
-                        childAspectRatio: 1 / 1.5,
-                        crossAxisSpacing: AppSizes.padding / 2,
-                        mainAxisSpacing: AppSizes.padding / 2,
-                      ),
-                      itemCount: allProducts.length,
-                      itemBuilder: (context, i) {
-                        return _ProductCard(product: allProducts[i]);
-                      },
+            SliverLayoutBuilder(
+              builder: (context, constraint) {
+                if (allProducts == null) {
+                  return const SliverFillRemaining(
+                    hasScrollBody: false,
+                    fillOverscroll: true,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: 140),
+                      child: AppProgressIndicator(),
                     ),
                   );
-                },
+                }
+
+                if (allProducts.isEmpty) {
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    fillOverscroll: true,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 140),
+                      child: AppEmptyState(
+                        subtitle: 'No products available, add product to continue',
+                        buttonText: 'Add Product',
+                        onTapButton: () => context.push('/products/product-create'),
+                      ),
+                    ),
+                  );
+                }
+
+                return SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(AppSizes.padding, 2, AppSizes.padding, AppSizes.padding),
+                  sliver: SliverGrid.builder(
+                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 200,
+                      childAspectRatio: 1 / 1.5,
+                      crossAxisSpacing: AppSizes.padding / 2,
+                      mainAxisSpacing: AppSizes.padding / 2,
+                    ),
+                    itemCount: allProducts.length,
+                    itemBuilder: (context, i) {
+                      return _ProductCard(product: allProducts[i]);
+                    },
+                  ),
+                );
+              },
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.only(bottom: 140),
+              sliver: SliverToBoxAdapter(
+                child: AppLoadingMoreIndicator(isLoading: isLoadingMore),
               ),
-              SliverPadding(
-                padding: const EdgeInsets.only(bottom: 140),
-                sliver: SliverToBoxAdapter(
-                  child: AppLoadingMoreIndicator(isLoading: isLoadingMore),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -292,9 +366,35 @@ class _ScanButton extends ConsumerWidget {
           }
 
           final homeState = ref.read(homeNotifierProvider);
-          int currentQty = homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0;
+          double currentQty =
+              homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0.0;
           bool isGrosir = homeState.selectedPriceType == 'grosir';
-          int displayPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
+
+          List<ProductUnitEntity> scanEffectiveUnits;
+          if (product.units.isNotEmpty) {
+            scanEffectiveUnits = product.units;
+          } else {
+            scanEffectiveUnits = [
+              ProductUnitEntity(
+                unitName: product.unit,
+                conversionValue: 1,
+                price: product.price,
+                wholesalePrice: product.wholesalePrice,
+                isBase: true,
+                productId: product.id ?? 0,
+              ),
+            ];
+          }
+
+          var scanDefaultUnit = scanEffectiveUnits.firstWhere(
+            (u) => u.unitName == product.unit,
+            orElse: () => scanEffectiveUnits.first,
+          );
+          String scanSelectedUnit = scanDefaultUnit.unitName;
+          int scanConversionValue = scanDefaultUnit.conversionValue;
+          int scanDisplayPrice = isGrosir && scanDefaultUnit.wholesalePrice != null
+              ? scanDefaultUnit.wholesalePrice!
+              : scanDefaultUnit.price;
 
           if (!context.mounted) return;
           AppDialog.show(
@@ -303,10 +403,19 @@ class _ScanButton extends ConsumerWidget {
               name: product.name,
               imageUrl: product.imageUrl,
               stock: product.stock,
-              price: displayPrice,
+              price: scanDisplayPrice,
               priceType: homeState.selectedPriceType,
               unit: product.unit,
               initialQuantity: currentQty,
+              selectedUnit: scanSelectedUnit,
+              availableUnits: scanEffectiveUnits.map((u) => u.unitName).toList(),
+              onChangedUnit: (val) {
+                if (val == null) return;
+                var unit = scanEffectiveUnits.firstWhere((u) => u.unitName == val);
+                scanSelectedUnit = unit.unitName;
+                scanConversionValue = unit.conversionValue;
+                scanDisplayPrice = isGrosir && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
+              },
               onChangedQuantity: (val) {
                 currentQty = val;
               },
@@ -317,7 +426,15 @@ class _ScanButton extends ConsumerWidget {
               context.pop();
             },
             onTapRightButton: (context) {
-              ref.read(homeNotifierProvider.notifier).onAddOrderedProduct(product, currentQty == 0 ? 1 : currentQty);
+              ref
+                  .read(homeNotifierProvider.notifier)
+                  .onAddOrderedProduct(
+                    product,
+                    currentQty == 0 ? 1.0 : currentQty,
+                    unitName: scanSelectedUnit,
+                    conversionValue: scanConversionValue,
+                    overridePrice: scanDisplayPrice,
+                  );
               context.pop();
             },
           );
@@ -444,27 +561,65 @@ class _ProductCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeState = ref.watch(homeNotifierProvider);
     bool isGrosir = homeState.selectedPriceType == 'grosir';
-    int displayPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
-    bool hasWholesalePrice = product.wholesalePrice != null;
+
+    List<ProductUnitEntity> effectiveUnits;
+    if (product.units.isNotEmpty) {
+      effectiveUnits = product.units;
+    } else {
+      effectiveUnits = [
+        ProductUnitEntity(
+          unitName: product.unit,
+          conversionValue: 1,
+          price: product.price,
+          wholesalePrice: product.wholesalePrice,
+          isBase: true,
+          productId: product.id ?? 0,
+        ),
+      ];
+    }
+
+    var defaultUnit = effectiveUnits.firstWhere(
+      (u) => u.unitName == product.unit,
+      orElse: () => effectiveUnits.first,
+    );
+    String selectedUnit = defaultUnit.unitName;
+    int conversionValue = defaultUnit.conversionValue;
+    int displayPrice = isGrosir && defaultUnit.wholesalePrice != null ? defaultUnit.wholesalePrice! : defaultUnit.price;
+
+    int currentStock = product.stock;
 
     return ProductsCard(
       product: product,
       displayPrice: displayPrice,
       priceType: homeState.selectedPriceType,
-      enabled: product.stock > 0 && (!isGrosir || hasWholesalePrice),
+      enabled: product.stock > 0 && (!isGrosir || defaultUnit.wholesalePrice != null),
       onTap: () {
-        int currentQty = homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0;
+        double currentQty =
+            homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0;
+
+        String dialogSelectedUnit = selectedUnit;
+        int dialogConversionValue = conversionValue;
+        int dialogPrice = displayPrice;
 
         AppDialog.show(
           title: 'Enter Amount',
           child: OrderCard(
             name: product.name,
             imageUrl: product.imageUrl,
-            stock: product.stock,
-            price: displayPrice,
+            stock: currentStock,
+            price: dialogPrice,
             priceType: homeState.selectedPriceType,
             unit: product.unit,
             initialQuantity: currentQty,
+            selectedUnit: dialogSelectedUnit,
+            availableUnits: effectiveUnits.map((u) => u.unitName).toList(),
+            onChangedUnit: (val) {
+              if (val == null) return;
+              var unit = effectiveUnits.firstWhere((u) => u.unitName == val);
+              dialogSelectedUnit = unit.unitName;
+              dialogConversionValue = unit.conversionValue;
+              dialogPrice = isGrosir && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
+            },
             onChangedQuantity: (val) {
               currentQty = val;
             },
@@ -475,7 +630,15 @@ class _ProductCard extends ConsumerWidget {
             context.pop();
           },
           onTapRightButton: (context) {
-            ref.read(homeNotifierProvider.notifier).onAddOrderedProduct(product, currentQty == 0 ? 1 : currentQty);
+            ref
+                .read(homeNotifierProvider.notifier)
+                .onAddOrderedProduct(
+                  product,
+                  currentQty == 0 ? 1.0 : currentQty,
+                  unitName: dialogSelectedUnit,
+                  conversionValue: dialogConversionValue,
+                  overridePrice: dialogPrice,
+                );
             context.pop();
           },
         );

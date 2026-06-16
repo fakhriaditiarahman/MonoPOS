@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'product_unit_entity.dart';
+
 class ProductEntity extends Equatable {
   final int? id;
   final String createdById;
@@ -14,6 +16,7 @@ class ProductEntity extends Equatable {
   final String? description;
   final String? createdAt;
   final String? updatedAt;
+  final List<ProductUnitEntity> units;
 
   const ProductEntity({
     this.id,
@@ -29,6 +32,7 @@ class ProductEntity extends Equatable {
     this.description,
     this.createdAt,
     this.updatedAt,
+    this.units = const [],
   });
 
   ProductEntity copyWith({
@@ -45,6 +49,7 @@ class ProductEntity extends Equatable {
     String? description,
     String? createdAt,
     String? updatedAt,
+    List<ProductUnitEntity>? units,
   }) {
     return ProductEntity(
       id: id ?? this.id,
@@ -60,6 +65,7 @@ class ProductEntity extends Equatable {
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      units: units ?? this.units,
     );
   }
 
@@ -78,5 +84,6 @@ class ProductEntity extends Equatable {
     description,
     createdAt,
     updatedAt,
+    units,
   ];
 }

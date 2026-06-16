@@ -5,6 +5,7 @@ import '../../presentation/screens/account/about_screen.dart';
 import '../../presentation/screens/account/account_screen.dart';
 import '../../presentation/screens/account/printer_settings_screen.dart';
 import '../../presentation/screens/account/profile_form_screen.dart';
+import '../../presentation/screens/account/store_settings_screen.dart';
 import '../../presentation/screens/error/error_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/main/main_screen.dart';
@@ -144,6 +145,7 @@ class AppRoutes {
         _profileEdit(),
         _about(),
         _printerSettings(),
+        _storeSettings(),
       ],
     );
   }
@@ -226,6 +228,15 @@ class AppRoutes {
       path: 'printer-settings',
       builder: (context, state) {
         return const PrinterSettingsScreen();
+      },
+    );
+  }
+
+  GoRoute _storeSettings() {
+    return GoRoute(
+      path: 'store-settings',
+      builder: (context, state) {
+        return const StoreSettingsScreen();
       },
     );
   }

@@ -1,5 +1,17 @@
 import 'package:equatable/equatable.dart';
 
+enum UserRole {
+  admin('admin'),
+  kasir('kasir');
+
+  final String value;
+  const UserRole(this.value);
+
+  static UserRole? fromValue(String? value) {
+    return UserRole.values.where((e) => e.value == value).firstOrNull;
+  }
+}
+
 class UserEntity extends Equatable {
   final String id;
   final String? email;
@@ -9,6 +21,8 @@ class UserEntity extends Equatable {
   final String? birthdate;
   final String? imageUrl;
   final AuthProvider? authProvider;
+  final String? password;
+  final UserRole? role;
   final String? createdAt;
   final String? updatedAt;
 
@@ -21,6 +35,8 @@ class UserEntity extends Equatable {
     this.birthdate,
     this.imageUrl,
     this.authProvider,
+    this.password,
+    this.role,
     this.createdAt,
     this.updatedAt,
   });
@@ -34,6 +50,8 @@ class UserEntity extends Equatable {
     String? birthdate,
     String? imageUrl,
     AuthProvider? authProvider,
+    String? password,
+    UserRole? role,
     String? createdAt,
     String? updatedAt,
   }) {
@@ -46,6 +64,8 @@ class UserEntity extends Equatable {
       birthdate: birthdate ?? this.birthdate,
       imageUrl: imageUrl ?? this.imageUrl,
       authProvider: authProvider ?? this.authProvider,
+      password: password ?? this.password,
+      role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -61,6 +81,8 @@ class UserEntity extends Equatable {
     birthdate,
     imageUrl,
     authProvider,
+    password,
+    role,
     createdAt,
     updatedAt,
   ];

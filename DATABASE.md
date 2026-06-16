@@ -16,6 +16,8 @@ Database: SQLite (`app_database.db`), version: 1
 | birthdate    | TEXT     |                            |
 | imageUrl     | TEXT     |                            |
 | authProvider | TEXT     |                            |
+| password     | TEXT     |                            |
+| role         | TEXT     | DEFAULT 'kasir'            |
 | createdAt    | DATETIME | DEFAULT CURRENT_TIMESTAMP  |
 | updatedAt    | DATETIME | DEFAULT CURRENT_TIMESTAMP  |
 

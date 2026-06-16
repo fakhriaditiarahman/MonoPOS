@@ -53,8 +53,9 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
             var product = ProductModel.fromJson(rawProduct.first);
 
             // Update product stock and sold
-            int stock = product.stock - orderedProduct.quantity;
-            int sold = product.sold + orderedProduct.quantity;
+            int deduction = (orderedProduct.quantity * orderedProduct.conversionValue).toInt();
+            int stock = product.stock - deduction;
+            int sold = product.sold + deduction;
 
             batch.update(
               DatabaseConfig.productTableName,
@@ -119,8 +120,9 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
             var product = ProductModel.fromJson(rawProduct.first);
 
             // Update product stock and sold
-            int stock = product.stock - orderedProduct.quantity;
-            int sold = product.sold + orderedProduct.quantity;
+            int deduction = (orderedProduct.quantity * orderedProduct.conversionValue).toInt();
+            int stock = product.stock - deduction;
+            int sold = product.sold + deduction;
 
             batch.update(
               DatabaseConfig.productTableName,
@@ -167,8 +169,9 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
           if (productResults.isNotEmpty) {
             var product = ProductModel.fromJson(productResults.first);
 
-            int revertedStock = product.stock + orderedProduct.quantity;
-            int revertedSold = product.sold - orderedProduct.quantity;
+            int revertDeduction = (orderedProduct.quantity * orderedProduct.conversionValue).toInt();
+            int revertedStock = product.stock + revertDeduction;
+            int revertedSold = product.sold - revertDeduction;
 
             // Update product stock and sold count
             await trx.update(

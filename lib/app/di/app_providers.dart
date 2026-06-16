@@ -53,7 +53,7 @@ final printerServiceProvider = Provider<PrinterService>(
 // Datasources
 // Local Datasources
 final authLocalDataSourceProvider = Provider<AuthLocalDataSourceImpl>(
-  (ref) => AuthLocalDataSourceImpl(),
+  (ref) => AuthLocalDataSourceImpl(ref.watch(userLocalDatasourceProvider)),
 );
 final productLocalDatasourceProvider = Provider<ProductLocalDatasourceImpl>(
   (ref) => ProductLocalDatasourceImpl(ref.watch(databaseServiceProvider)),

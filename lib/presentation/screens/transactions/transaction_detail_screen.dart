@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mono_pos/generated/app_localizations.dart';
 
 import '../../../app/di/app_providers.dart';
+import '../../../core/constants/constants.dart';
 import '../../../core/extensions/string_casing_extension.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
@@ -38,7 +40,7 @@ class TransactionDetailScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Reprint',
+            tooltip: AppLocalizations.of(context)!.transaction_reprint,
             onPressed: () => _reprint(ref),
           ),
         ],
@@ -55,7 +57,7 @@ class TransactionDetailScreen extends ConsumerWidget {
           }
 
           if (snapshot.data == null) {
-            return const AppEmptyState(title: 'Not Found');
+            return AppEmptyState(title: AppLocalizations.of(context)!.transaction_notFound);
           }
 
           final transaction = snapshot.data!;
@@ -66,6 +68,8 @@ class TransactionDetailScreen extends ConsumerWidget {
               children: [
                 const _StatusSection(),
                 const SizedBox(height: AppSizes.padding * 2),
+                const _StoreInfoSection(),
+                const SizedBox(height: AppSizes.padding),
                 _TransactionDetail(transaction: transaction),
                 const SizedBox(height: AppSizes.padding),
                 _PaymentDetail(transaction: transaction),
@@ -93,13 +97,70 @@ class _StatusSection extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.padding / 2),
         Text(
-          'Transaction Created',
+          AppLocalizations.of(context)!.transaction_created,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _StoreInfoSection extends ConsumerWidget {
+  const _StoreInfoSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final storeName = prefs.getString(Constants.storeNameKey) ?? '';
+    final storeAddress = prefs.getString(Constants.storeAddressKey) ?? '';
+    final receiptFooter = prefs.getString(Constants.receiptFooterKey) ?? '';
+
+    if (storeName.isEmpty && storeAddress.isEmpty && receiptFooter.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSizes.padding),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radius),
+      ),
+      child: Column(
+        children: [
+          if (storeName.isNotEmpty)
+            Text(
+              storeName,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          if (storeAddress.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                storeAddress,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          if (receiptFooter.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSizes.padding),
+              child: Text(
+                receiptFooter,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -124,7 +185,7 @@ class _TransactionDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Transaction ID',
+                AppLocalizations.of(context)!.transaction_id,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -142,7 +203,7 @@ class _TransactionDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Payment Method',
+                AppLocalizations.of(context)!.transaction_paymentMethod,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -156,7 +217,7 @@ class _TransactionDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Created By',
+                AppLocalizations.of(context)!.transaction_createdBy,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -170,7 +231,7 @@ class _TransactionDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Created At',
+                AppLocalizations.of(context)!.transaction_createdAt,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -184,7 +245,7 @@ class _TransactionDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Customer Name',
+                AppLocalizations.of(context)!.transaction_customerName,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -198,7 +259,7 @@ class _TransactionDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Description',
+                AppLocalizations.of(context)!.transaction_description,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -233,7 +294,7 @@ class _PaymentDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Ordered Products',
+                AppLocalizations.of(context)!.transaction_orderedProducts,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -258,7 +319,7 @@ class _PaymentDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total',
+                AppLocalizations.of(context)!.transaction_total,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -276,7 +337,7 @@ class _PaymentDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Payment Received',
+                AppLocalizations.of(context)!.transaction_paymentReceived,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -290,7 +351,7 @@ class _PaymentDetail extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Change',
+                AppLocalizations.of(context)!.transaction_change,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
@@ -334,7 +395,9 @@ class _ProductItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
-                order.priceType == 'grosir' ? 'Grosir' : 'Retail',
+                order.priceType == 'grosir'
+                    ? AppLocalizations.of(context)!.home_grosir
+                    : AppLocalizations.of(context)!.home_retail,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   fontSize: 8,
                   fontWeight: FontWeight.bold,
@@ -348,7 +411,7 @@ class _ProductItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${CurrencyFormatter.format(order.price)} x ${order.quantity} ${order.unit}',
+              '${CurrencyFormatter.format(order.price)} x ${order.quantity == order.quantity.roundToDouble() ? order.quantity.toInt().toString() : order.quantity.toStringAsFixed(1)} ${order.unit}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             Text(

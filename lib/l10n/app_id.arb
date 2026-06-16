@@ -151,6 +151,14 @@
     }
   },
 
+  "storeSettings_title": "Pengaturan Toko",
+  "storeSettings_storeNameLabel": "Nama Toko",
+  "storeSettings_storeNameHint": "Nama toko Anda...",
+  "storeSettings_storeAddressLabel": "Alamat",
+  "storeSettings_storeAddressHint": "Alamat toko Anda...",
+  "storeSettings_receiptFooterLabel": "Pesan Struk",
+  "storeSettings_receiptFooterHint": "Pesan di bagian bawah struk, misal: Terima kasih telah berbelanja",
+
   "settings_title": "Pengaturan",
   "settings_profile": "Profil",
   "settings_theme": "Tema",

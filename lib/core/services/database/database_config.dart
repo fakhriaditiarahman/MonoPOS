@@ -7,6 +7,7 @@ class DatabaseConfig {
 
   static const String userTableName = 'User';
   static const String productTableName = 'Product';
+  static const String productUnitTableName = 'ProductUnit';
   static const String transactionTableName = 'Transaction';
   static const String orderedProductTableName = 'OrderedProduct';
   static const String queuedActionTableName = 'QueuedAction';
@@ -22,6 +23,8 @@ CREATE TABLE IF NOT EXISTS '$userTableName' (
     'birthdate' TEXT,
     'imageUrl' TEXT,
     'authProvider' TEXT,
+    'password' TEXT,
+    'role' TEXT DEFAULT 'kasir',
     'createdAt' DATETIME DEFAULT CURRENT_TIMESTAMP,
     'updatedAt' DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ('id')
@@ -46,6 +49,23 @@ CREATE TABLE IF NOT EXISTS '$productTableName' (
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ('id'),
     FOREIGN KEY ('createdById') REFERENCES 'User' ('id')
+);
+''';
+
+  static const String createProductUnitTable =
+      '''
+CREATE TABLE IF NOT EXISTS '$productUnitTableName' (
+    'id' INTEGER NOT NULL,
+    'productId' INTEGER NOT NULL,
+    'unitName' TEXT NOT NULL,
+    'conversionValue' INTEGER NOT NULL DEFAULT 1,
+    'price' INTEGER NOT NULL,
+    'wholesalePrice' INTEGER,
+    'isBase' INTEGER NOT NULL DEFAULT 0,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ('id'),
+    FOREIGN KEY ('productId') REFERENCES 'Product' ('id')
 );
 ''';
 
@@ -74,12 +94,14 @@ CREATE TABLE IF NOT EXISTS '$orderedProductTableName' (
     'id' INTEGER NOT NULL,
     'transactionId' INTEGER,
     'productId' INTEGER,
-    'quantity' INTEGER,
+    'quantity' REAL NOT NULL DEFAULT 1,
     'stock' INTEGER,
     'name' TEXT,
     'imageUrl' TEXT,
     'price' INTEGER,
     'priceType' TEXT DEFAULT 'retail',
+    'unit' TEXT DEFAULT 'pcs',
+    'conversionValue' INTEGER NOT NULL DEFAULT 1,
     'createdAt' DATETIME DEFAULT CURRENT_TIMESTAMP,
     'updatedAt' DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ('id'),

@@ -41,84 +41,92 @@ class ProductsCard extends StatelessWidget {
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
             ),
           ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 146, maxHeight: 226),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 1,
-                      child: AppImage(
-                        image: product.imageUrl,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(width: 0.5, color: Theme.of(context).colorScheme.surfaceContainerHighest),
-                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-                        errorWidget: Icon(
-                          Icons.image,
-                          color: Theme.of(context).colorScheme.surfaceDim,
-                          size: 32,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 1,
+                    child: AppImage(
+                      image: product.imageUrl,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(width: 0.5, color: Theme.of(context).colorScheme.surfaceContainerHighest),
+                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+                      errorWidget: Icon(
+                        Icons.image,
+                        color: Theme.of(context).colorScheme.surfaceDim,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                  product.stock <= 0 ? const _OutOfStock() : const SizedBox.shrink(),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                product.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.inventory_2,
+                    size: 8,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${AppLocalizations.of(context)!.product_stockSold(product.stock, product.sold ?? 0)} ${product.unit}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 8),
+                  ),
+                  if (product.units.length > 1)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 1),
+                      child: Text(
+                        product.units.map((u) => u.unitName).join(', '),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontSize: 7,
+                          color: Theme.of(context).colorScheme.outline,
                         ),
                       ),
                     ),
-                    product.stock <= 0 ? const _OutOfStock() : const SizedBox.shrink(),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                ],
+              ),
+              const SizedBox(height: 4),
+              if (displayPrice != null && priceType != null)
                 Text(
-                  product.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  priceType == 'grosir'
+                      ? AppLocalizations.of(context)!.product_grosirPrice(CurrencyFormatter.format(displayPrice!))
+                      : AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(displayPrice!)),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: priceType == 'grosir' ? Theme.of(context).colorScheme.primary : null,
+                  ),
+                )
+              else ...[
+                Text(
+                  AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(product.price)),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.inventory_2,
-                      size: 8,
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${AppLocalizations.of(context)!.product_stockSold(product.stock, product.sold ?? 0)} ${product.unit}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 8),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                if (displayPrice != null && priceType != null)
+                if (product.wholesalePrice != null) ...[
+                  const SizedBox(height: 2),
                   Text(
-                    priceType == 'grosir'
-                        ? AppLocalizations.of(context)!.product_grosirPrice(CurrencyFormatter.format(displayPrice!))
-                        : AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(displayPrice!)),
+                    AppLocalizations.of(
+                      context,
+                    )!.product_grosirPrice(CurrencyFormatter.format(product.wholesalePrice!)),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: priceType == 'grosir' ? Theme.of(context).colorScheme.primary : null,
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 10,
                     ),
-                  )
-                else ...[
-                  Text(
-                    AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(product.price)),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  if (product.wholesalePrice != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      AppLocalizations.of(
-                        context,
-                      )!.product_grosirPrice(CurrencyFormatter.format(product.wholesalePrice!)),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
                 ],
               ],
-            ),
+            ],
           ),
         ),
       ),

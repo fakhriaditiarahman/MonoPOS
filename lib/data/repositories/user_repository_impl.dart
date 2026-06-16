@@ -58,4 +58,16 @@ class UserRepositoryImpl extends UserRepository {
       return Result.failure(error: e);
     }
   }
+
+  @override
+  Future<Result<UserEntity?>> getUserByUsername(String username) async {
+    try {
+      var local = await userLocalDatasource.getUserByUsername(username);
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: local.data?.toEntity());
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
 }
