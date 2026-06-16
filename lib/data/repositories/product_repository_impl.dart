@@ -1,8 +1,10 @@
 import '../../../core/common/result.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../domain/entities/product_unit_entity.dart';
 import '../../../domain/repositories/product_repository.dart';
 import '../datasources/local/product_local_datasource_impl.dart';
 import '../models/product_model.dart';
+import '../models/product_unit_model.dart';
 
 class ProductRepositoryImpl extends ProductRepository {
   final ProductLocalDatasourceImpl productLocalDatasource;
@@ -92,6 +94,31 @@ class ProductRepositoryImpl extends ProductRepository {
   Future<Result<void>> updateProduct(ProductEntity product) async {
     try {
       final local = await productLocalDatasource.updateProduct(ProductModel.fromEntity(product));
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<ProductUnitEntity>>> getProductUnits(int productId) async {
+    try {
+      final local = await productLocalDatasource.getProductUnits(productId);
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: local.data!.map((e) => e.toEntity()).toList());
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<void>> saveProductUnits(int productId, List<ProductUnitEntity> units) async {
+    try {
+      final models = units.map((e) => ProductUnitModel.fromEntity(e)).toList();
+      final local = await productLocalDatasource.saveProductUnits(productId, models);
       if (local.isFailure) return Result.failure(error: local.error!);
 
       return Result.success(data: null);

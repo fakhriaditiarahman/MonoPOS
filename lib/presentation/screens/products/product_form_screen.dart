@@ -10,6 +10,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/themes/app_sizes.dart';
+import '../../../domain/entities/product_unit_entity.dart';
 import '../../providers/products/product_form_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
@@ -149,49 +150,57 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       ),
       body: !isLoaded
           ? const AppProgressIndicator()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ImageSection(onTapImage: onTapImage),
-                  _NameField(
-                    controller: nameController,
-                    onChanged: notifier.onChangedName,
+          : Center(
+              child: Container(
+                constraints: AppSizes.isTablet(context) || AppSizes.isDesktop(context)
+                    ? const BoxConstraints(maxWidth: 600)
+                    : null,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSizes.padding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ImageSection(onTapImage: onTapImage),
+                      _NameField(
+                        controller: nameController,
+                        onChanged: notifier.onChangedName,
+                      ),
+                      _RetailPriceField(
+                        controller: priceController,
+                        onChanged: notifier.onChangedPrice,
+                      ),
+                      _WholesalePriceField(
+                        controller: wholesalePriceController,
+                        onChanged: notifier.onChangedWholesalePrice,
+                      ),
+                      _StockField(
+                        controller: stockController,
+                        onChanged: notifier.onChangedStock,
+                      ),
+                      _BarcodeField(
+                        controller: barcodeController,
+                        onChanged: notifier.onChangedBarcode,
+                      ),
+                      _UnitField(
+                        onChanged: notifier.onChangedUnit,
+                      ),
+                      _UnitManagementSection(),
+                      _DescriptionField(
+                        controller: descController,
+                        onChanged: notifier.onChangedDesc,
+                      ),
+                      _CreateOrUpdateButton(
+                        id: widget.id,
+                        onCreateProduct: createProduct,
+                        onUpdatedProduct: updatedProduct,
+                      ),
+                      _DeleteButton(
+                        id: widget.id,
+                        onDeleteProduct: deleteProduct,
+                      ),
+                    ],
                   ),
-                  _RetailPriceField(
-                    controller: priceController,
-                    onChanged: notifier.onChangedPrice,
-                  ),
-                  _WholesalePriceField(
-                    controller: wholesalePriceController,
-                    onChanged: notifier.onChangedWholesalePrice,
-                  ),
-                  _StockField(
-                    controller: stockController,
-                    onChanged: notifier.onChangedStock,
-                  ),
-                  _BarcodeField(
-                    controller: barcodeController,
-                    onChanged: notifier.onChangedBarcode,
-                  ),
-                  _UnitField(
-                    onChanged: notifier.onChangedUnit,
-                  ),
-                  _DescriptionField(
-                    controller: descController,
-                    onChanged: notifier.onChangedDesc,
-                  ),
-                  _CreateOrUpdateButton(
-                    id: widget.id,
-                    onCreateProduct: createProduct,
-                    onUpdatedProduct: updatedProduct,
-                  ),
-                  _DeleteButton(
-                    id: widget.id,
-                    onDeleteProduct: deleteProduct,
-                  ),
-                ],
+                ),
               ),
             ),
     );
@@ -427,7 +436,7 @@ class _UnitField extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppDropDown(
-        labelText: AppLocalizations.of(context)!.product_unitLabel,
+        labelText: '${AppLocalizations.of(context)!.product_unitLabel} (default)',
         selectedValue: selectedUnit,
         dropdownItems: const [
           DropdownMenuItem(value: 'pcs', child: Text('pcs')),
@@ -446,6 +455,236 @@ class _UnitField extends ConsumerWidget {
           if (v != null) onChanged(v);
         },
       ),
+    );
+  }
+}
+
+class _UnitManagementSection extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final units = ref.watch(productFormNotifierProvider.select((s) => s.units));
+    final notifier = ref.read(productFormNotifierProvider.notifier);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Satuan & Harga',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              AppButton(
+                text: '+ Tambah Satuan',
+                height: 30,
+                fontSize: 11,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                borderRadius: BorderRadius.circular(4),
+                onTap: () => _showUnitDialog(context, ref, null, -1),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (units.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(AppSizes.radius),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                ),
+              ),
+              child: Text(
+                'Belum ada satuan. Tambah minimal 1 satuan.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+            ),
+          ...List.generate(units.length, (i) {
+            final unit = units[i];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(AppSizes.radius),
+                  border: Border.all(
+                    color: unit.isBase
+                        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                unit.unitName,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              if (unit.isBase) ...[
+                                const SizedBox(width: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: Text(
+                                    'base',
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '1 ${unit.unitName} = ${unit.conversionValue} ${_findBaseUnitName(units)}',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontSize: 10,
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                          Text(
+                            'Retail: ${unit.price} ${unit.wholesalePrice != null ? "| Grosir: ${unit.wholesalePrice}" : ""}',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontSize: 10,
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    AppIconButton(
+                      icon: Icons.edit,
+                      iconSize: 14,
+                      onTap: () => _showUnitDialog(context, ref, unit, i),
+                    ),
+                    const SizedBox(width: 4),
+                    AppIconButton(
+                      icon: Icons.delete_outline,
+                      iconSize: 14,
+                      onTap: () => notifier.removeUnit(i),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  String _findBaseUnitName(List<ProductUnitEntity> units) {
+    final base = units.where((u) => u.isBase).firstOrNull;
+    return base?.unitName ?? 'unit';
+  }
+
+  void _showUnitDialog(BuildContext context, WidgetRef ref, ProductUnitEntity? existing, int index) {
+    final nameController = TextEditingController(text: existing?.unitName ?? '');
+    final conversionController = TextEditingController(text: existing?.conversionValue.toString() ?? '1');
+    final priceController = TextEditingController(text: existing?.price.toString() ?? '');
+    final wholesalePriceController = TextEditingController(text: existing?.wholesalePrice?.toString() ?? '');
+    bool isBase = existing?.isBase ?? false;
+
+    final units = ref.read(productFormNotifierProvider).units;
+    final hasBase = units.any((u) => u.isBase);
+
+    AppDialog.show(
+      title: existing == null ? 'Tambah Satuan' : 'Edit Satuan',
+      child: StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppTextField(
+                controller: nameController,
+                labelText: 'Nama Satuan',
+                hintText: 'contoh: pcs, dus, kg',
+              ),
+              const SizedBox(height: AppSizes.padding),
+              AppTextField(
+                controller: conversionController,
+                labelText: 'Nilai Konversi',
+                hintText: '1 ${nameController.text} = ? base unit',
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: AppSizes.padding),
+              AppTextField(
+                controller: priceController,
+                labelText: 'Harga Retail',
+                type: AppTextFieldType.currency,
+              ),
+              const SizedBox(height: AppSizes.padding),
+              AppTextField(
+                controller: wholesalePriceController,
+                labelText: 'Harga Grosir (opsional)',
+                type: AppTextFieldType.currency,
+              ),
+              if (!hasBase || isBase) ...[
+                const SizedBox(height: AppSizes.padding),
+                CheckboxListTile(
+                  title: const Text('Satuan dasar (base)'),
+                  subtitle: Text(
+                    'Stok dihitung dalam satuan ini',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10),
+                  ),
+                  value: isBase,
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  onChanged: (v) {
+                    setDialogState(() => isBase = v ?? false);
+                  },
+                ),
+              ],
+            ],
+          );
+        },
+      ),
+      rightButtonText: 'Simpan',
+      leftButtonText: 'Batal',
+      onTapLeftButton: (ctx) => ctx.pop(),
+      onTapRightButton: (ctx) {
+        final notifier = ref.read(productFormNotifierProvider.notifier);
+        final unit = ProductUnitEntity(
+          unitName: nameController.text,
+          conversionValue: int.tryParse(conversionController.text) ?? 1,
+          price: int.tryParse(priceController.text) ?? 0,
+          wholesalePrice: int.tryParse(wholesalePriceController.text),
+          isBase: isBase,
+          productId: 0,
+        );
+
+        if (existing != null) {
+          notifier.updateUnit(index, unit);
+        } else {
+          notifier.addUnit(unit);
+        }
+
+        ctx.pop();
+      },
     );
   }
 }
@@ -489,7 +728,7 @@ class _CreateOrUpdateButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isFormValid = ref.watch(
       productFormNotifierProvider.select((s) {
-        return (s.name?.isNotEmpty ?? false) && (s.price ?? 0) > 0 && (s.stock ?? 0) > 0;
+        return (s.name?.isNotEmpty ?? false) && (s.price ?? 0) > 0 && (s.stock ?? 0) > 0 && s.units.isNotEmpty;
       }),
     );
 

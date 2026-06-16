@@ -4,13 +4,14 @@ class OrderedProductModel {
   int id;
   int transactionId;
   int productId;
-  int quantity;
+  double quantity;
   int stock;
   String name;
   String imageUrl;
   int price;
   String priceType;
   String unit;
+  int conversionValue;
   String? createdAt;
   String? updatedAt;
 
@@ -25,6 +26,7 @@ class OrderedProductModel {
     required this.price,
     this.priceType = 'retail',
     this.unit = 'pcs',
+    this.conversionValue = 1,
     this.createdAt,
     this.updatedAt,
   });
@@ -34,13 +36,14 @@ class OrderedProductModel {
       id: json['id'],
       transactionId: json['transactionId'],
       productId: json['productId'],
-      quantity: json['quantity'],
+      quantity: (json['quantity'] as num).toDouble(),
       stock: json['stock'],
       name: json['name'],
       imageUrl: json['imageUrl'],
       price: json['price'],
       priceType: json['priceType'] ?? 'retail',
       unit: json['unit'] ?? 'pcs',
+      conversionValue: json['conversionValue'] ?? 1,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -58,6 +61,7 @@ class OrderedProductModel {
       'price': price,
       'priceType': priceType,
       'unit': unit,
+      'conversionValue': conversionValue,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -75,6 +79,7 @@ class OrderedProductModel {
       price: entity.price,
       priceType: entity.priceType,
       unit: entity.unit,
+      conversionValue: entity.conversionValue,
       createdAt: entity.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: entity.updatedAt ?? DateTime.now().toIso8601String(),
     );
@@ -92,6 +97,7 @@ class OrderedProductModel {
       price: price,
       priceType: priceType,
       unit: unit,
+      conversionValue: conversionValue,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

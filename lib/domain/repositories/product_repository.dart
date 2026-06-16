@@ -1,5 +1,6 @@
 import '../../core/common/result.dart';
 import '../entities/product_entity.dart';
+import '../entities/product_unit_entity.dart';
 
 abstract class ProductRepository {
   Future<Result<ProductEntity?>> getProduct(int productId);
@@ -20,4 +21,8 @@ abstract class ProductRepository {
     int? offset,
     String? contains,
   });
+
+  Future<Result<List<ProductUnitEntity>>> getProductUnits(int productId);
+
+  Future<Result<void>> saveProductUnits(int productId, List<ProductUnitEntity> units);
 }

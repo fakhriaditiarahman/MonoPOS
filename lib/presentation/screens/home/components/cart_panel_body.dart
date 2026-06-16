@@ -11,8 +11,9 @@ import 'order_card.dart';
 
 class CartPanelBody extends StatelessWidget {
   final PanelController panelController;
+  final bool isPanelUsed;
 
-  const CartPanelBody({super.key, required this.panelController});
+  const CartPanelBody({super.key, required this.panelController, this.isPanelUsed = true});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class CartPanelBody extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _OrderList(panelController: panelController),
+          _OrderList(panelController: panelController, isPanelUsed: isPanelUsed),
           const _OrderTotal(),
         ],
       ),
@@ -32,8 +33,9 @@ class CartPanelBody extends StatelessWidget {
 
 class _OrderList extends ConsumerWidget {
   final PanelController panelController;
+  final bool isPanelUsed;
 
-  const _OrderList({required this.panelController});
+  const _OrderList({required this.panelController, this.isPanelUsed = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,7 +74,7 @@ class _OrderList extends ConsumerWidget {
                 onTapRemove: () {
                   final isLast = homeState.orderedProducts.length == 1;
                   ref.read(homeNotifierProvider.notifier).onRemoveOrderedProduct(homeState.orderedProducts[i]);
-                  if (isLast) panelController.close();
+                  if (isLast && isPanelUsed) panelController.close();
                 },
               ),
             );

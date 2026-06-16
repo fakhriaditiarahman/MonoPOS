@@ -1,4 +1,5 @@
 import '../../domain/entities/product_entity.dart';
+import 'product_unit_model.dart';
 
 class ProductModel {
   int id;
@@ -12,6 +13,7 @@ class ProductModel {
   String unit;
   String? barcode;
   String? description;
+  List<ProductUnitModel> units;
   String? createdAt;
   String? updatedAt;
 
@@ -27,6 +29,7 @@ class ProductModel {
     this.unit = 'pcs',
     this.barcode,
     this.description,
+    this.units = const [],
     this.createdAt,
     this.updatedAt,
   });
@@ -36,7 +39,7 @@ class ProductModel {
       id: json['id'],
       createdById: json['createdById'],
       name: json['name'],
-      imageUrl: json['imageUrl'],
+      imageUrl: json['imageUrl'] ?? '',
       stock: json['stock'],
       sold: json['sold'],
       price: json['price'],
@@ -44,6 +47,7 @@ class ProductModel {
       unit: json['unit'] ?? 'pcs',
       barcode: json['barcode'],
       description: json['description'],
+      units: json['units'] != null ? (json['units'] as List).map((e) => ProductUnitModel.fromJson(e)).toList() : [],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -62,6 +66,7 @@ class ProductModel {
       'unit': unit,
       'barcode': barcode,
       'description': description,
+      'units': units.map((e) => e.toJson()).toList(),
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -80,6 +85,7 @@ class ProductModel {
       unit: entity.unit,
       barcode: entity.barcode,
       description: entity.description,
+      units: entity.units.map((e) => ProductUnitModel.fromEntity(e)).toList(),
       createdAt: entity.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: entity.updatedAt ?? DateTime.now().toIso8601String(),
     );
@@ -98,6 +104,7 @@ class ProductModel {
       unit: unit,
       barcode: barcode,
       description: description,
+      units: units.map((e) => e.toEntity()).toList(),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

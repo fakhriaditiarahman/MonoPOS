@@ -151,6 +151,14 @@
     }
   },
 
+  "storeSettings_title": "Store Settings",
+  "storeSettings_storeNameLabel": "Store Name",
+  "storeSettings_storeNameHint": "Your store name...",
+  "storeSettings_storeAddressLabel": "Address",
+  "storeSettings_storeAddressHint": "Your store address...",
+  "storeSettings_receiptFooterLabel": "Receipt Footer",
+  "storeSettings_receiptFooterHint": "Message at the bottom of receipt, e.g: Thank you for shopping",
+
   "settings_title": "Settings",
   "settings_profile": "Profile",
   "settings_theme": "Theme",

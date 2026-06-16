@@ -38,6 +38,9 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = AppSizes.isTablet(context) || AppSizes.isDesktop(context);
+    final effectiveHeight = height ?? (isWide ? 48 : null);
+
     return Opacity(
       opacity: enabled ? 1.0 : 0.5,
       child: Material(
@@ -48,7 +51,7 @@ class AppButton extends StatelessWidget {
           borderRadius: borderRadius ?? BorderRadius.circular(AppSizes.radius),
           child: Ink(
             width: width,
-            height: height,
+            height: effectiveHeight,
             padding: padding,
             decoration: BoxDecoration(
               color: enabled

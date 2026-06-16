@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../../../domain/entities/product_unit_entity.dart';
+
 class ProductFormState {
   final File? imageFile;
   final String? imageUrl;
@@ -10,6 +12,7 @@ class ProductFormState {
   final String unit;
   final String? barcode;
   final String? description;
+  final List<ProductUnitEntity> units;
   final bool isLoaded;
 
   const ProductFormState({
@@ -22,6 +25,7 @@ class ProductFormState {
     this.unit = 'pcs',
     this.barcode,
     this.description,
+    this.units = const [],
     this.isLoaded = false,
   });
 
@@ -35,6 +39,7 @@ class ProductFormState {
     String? unit,
     String? barcode,
     String? description,
+    List<ProductUnitEntity>? units,
     bool? isLoaded,
   }) {
     return ProductFormState(
@@ -47,6 +52,7 @@ class ProductFormState {
       unit: unit ?? this.unit,
       barcode: barcode ?? this.barcode,
       description: description ?? this.description,
+      units: units ?? this.units,
       isLoaded: isLoaded ?? this.isLoaded,
     );
   }

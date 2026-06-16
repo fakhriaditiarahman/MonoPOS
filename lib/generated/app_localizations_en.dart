@@ -327,6 +327,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get storeSettings_title => 'Store Settings';
+
+  @override
+  String get storeSettings_storeNameLabel => 'Store Name';
+
+  @override
+  String get storeSettings_storeNameHint => 'Your store name...';
+
+  @override
+  String get storeSettings_storeAddressLabel => 'Address';
+
+  @override
+  String get storeSettings_storeAddressHint => 'Your store address...';
+
+  @override
+  String get storeSettings_receiptFooterLabel => 'Receipt Footer';
+
+  @override
+  String get storeSettings_receiptFooterHint =>
+      'Message at the bottom of receipt, e.g: Thank you for shopping';
+
+  @override
   String get settings_title => 'Settings';
 
   @override

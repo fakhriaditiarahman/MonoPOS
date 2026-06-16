@@ -61,17 +61,29 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     state = state.copyWith(isPanelExpanded: val);
   }
 
-  void onAddOrderedProduct(ProductEntity product, int qty) {
+  void onAddOrderedProduct(
+    ProductEntity product,
+    double qty, {
+    String? unitName,
+    int? conversionValue,
+    int? overridePrice,
+  }) {
     final orderedProducts = [...state.orderedProducts];
     var currentIndex = orderedProducts.indexWhere((e) => e.productId == product.id);
     bool isGrosir = state.selectedPriceType == 'grosir';
-    int price = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
+
+    String selectedUnit = unitName ?? product.unit;
+    int conversion = conversionValue ?? 1;
+
+    int price = overridePrice ?? (isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price);
 
     if (currentIndex != -1) {
       orderedProducts[currentIndex] = orderedProducts[currentIndex].copyWith(
         quantity: qty,
         price: price,
         priceType: state.selectedPriceType,
+        unit: selectedUnit,
+        conversionValue: conversion,
       );
     } else {
       var order = OrderedProductEntity(
@@ -83,7 +95,8 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         imageUrl: product.imageUrl,
         price: price,
         priceType: state.selectedPriceType,
-        unit: product.unit,
+        unit: selectedUnit,
+        conversionValue: conversion,
       );
 
       orderedProducts.add(order);
@@ -101,8 +114,17 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       if (product == null) return item.copyWith(priceType: value);
 
       bool isGrosir = value == 'grosir';
-      int newPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
 
+      if (product.units.isNotEmpty) {
+        var unit = product.units.firstWhere(
+          (u) => u.unitName == item.unit,
+          orElse: () => product.units.first,
+        );
+        int newPrice = isGrosir && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
+        return item.copyWith(price: newPrice, priceType: value);
+      }
+
+      int newPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
       return item.copyWith(price: newPrice, priceType: value);
     }).toList();
 
@@ -122,7 +144,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     state = const HomeState();
   }
 
-  void onChangedOrderedProductQuantity(int index, int value) {
+  void onChangedOrderedProductQuantity(int index, double value) {
     final orderedProducts = [...state.orderedProducts];
     orderedProducts[index] = orderedProducts[index].copyWith(quantity: value);
     state = state.copyWith(orderedProducts: orderedProducts);
@@ -146,6 +168,6 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
 
   int getTotalAmount() {
     if (state.orderedProducts.isEmpty) return 0;
-    return state.orderedProducts.map((e) => e.price * e.quantity).reduce((a, b) => a + b);
+    return state.orderedProducts.map((e) => (e.price * e.quantity).round()).reduce((a, b) => a + b);
   }
 }

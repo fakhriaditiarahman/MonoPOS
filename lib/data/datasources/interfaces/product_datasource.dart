@@ -1,5 +1,6 @@
 import '../../../core/common/result.dart';
 import '../../models/product_model.dart';
+import '../../models/product_unit_model.dart';
 
 abstract class ProductDatasource {
   Future<Result<int>> createProduct(ProductModel product);
@@ -22,4 +23,10 @@ abstract class ProductDatasource {
     int? offset,
     String? contains,
   });
+
+  Future<Result<void>> saveProductUnits(int productId, List<ProductUnitModel> units);
+
+  Future<Result<List<ProductUnitModel>>> getProductUnits(int productId);
+
+  Future<Result<void>> deleteProductUnits(int productId);
 }

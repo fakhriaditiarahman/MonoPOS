@@ -104,17 +104,24 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
       ),
       body: !isLoaded
           ? const AppProgressIndicator()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.padding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ImageSection(onTapImage: onTapImage),
-                  _NameField(controller: nameController, onChanged: account.onChangedName),
-                  _EmailField(controller: emailController, onChanged: account.onChangedEmail),
-                  _PhoneField(controller: phoneController, onChanged: account.onChangedPhone),
-                  _UpdateButton(onTap: updatedUser),
-                ],
+          : Center(
+              child: Container(
+                constraints: AppSizes.isTablet(context) || AppSizes.isDesktop(context)
+                    ? const BoxConstraints(maxWidth: 600)
+                    : null,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(AppSizes.padding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ImageSection(onTapImage: onTapImage),
+                      _NameField(controller: nameController, onChanged: account.onChangedName),
+                      _EmailField(controller: emailController, onChanged: account.onChangedEmail),
+                      _PhoneField(controller: phoneController, onChanged: account.onChangedPhone),
+                      _UpdateButton(onTap: updatedUser),
+                    ],
+                  ),
+                ),
               ),
             ),
     );

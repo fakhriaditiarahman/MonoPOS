@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utilities/currency_formatter.dart';
 import '../../../core/utilities/date_time_formatter.dart';
+import '../../../domain/entities/product_entity.dart';
 import '../../providers/products/product_detail_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_empty_state.dart';
@@ -45,30 +46,38 @@ class ProductDetailScreen extends ConsumerWidget {
 
           final product = snapshot.data!;
 
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _ProductImage(imageUrl: product.imageUrl),
-                Padding(
-                  padding: const EdgeInsets.all(AppSizes.padding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _ProductName(
-                        productName: product.name,
-                        createdAt: product.createdAt,
-                        updatedAt: product.updatedAt,
+          return Center(
+            child: Container(
+              constraints: AppSizes.isTablet(context) || AppSizes.isDesktop(context)
+                  ? const BoxConstraints(maxWidth: 600)
+                  : null,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _ProductImage(imageUrl: product.imageUrl),
+                    Padding(
+                      padding: const EdgeInsets.all(AppSizes.padding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _ProductName(
+                            productName: product.name,
+                            createdAt: product.createdAt,
+                            updatedAt: product.updatedAt,
+                          ),
+                          _ProductPrice(price: product.price),
+                          _ProductBarcode(barcode: product.barcode),
+                          _ProductStock(stock: product.stock, unit: product.unit),
+                          _ProductSold(sold: product.sold),
+                          if (product.units.length > 1) _ProductUnits(product: product),
+                          _ProductDescription(description: product.description),
+                        ],
                       ),
-                      _ProductPrice(price: product.price),
-                      _ProductBarcode(barcode: product.barcode),
-                      _ProductStock(stock: product.stock, unit: product.unit),
-                      _ProductSold(sold: product.sold),
-                      _ProductDescription(description: product.description),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -299,6 +308,77 @@ class _ProductSold extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProductUnits extends StatelessWidget {
+  final ProductEntity product;
+
+  const _ProductUnits({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Satuan',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 4),
+          ...product.units.map((unit) {
+            final base = product.units.firstWhere((u) => u.isBase, orElse: () => product.units.first);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: unit.isBase
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      unit.unitName,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '1 ${unit.unitName} = ${unit.conversionValue} ${base.unitName}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const Spacer(),
+                  Text(
+                    CurrencyFormatter.format(unit.price),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (unit.wholesalePrice != null) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      'Grosir: ${CurrencyFormatter.format(unit.wholesalePrice!)}',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontSize: 10,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

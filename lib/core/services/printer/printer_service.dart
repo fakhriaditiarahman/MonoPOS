@@ -186,8 +186,12 @@ class PrinterService {
     try {
       final ticket = await Ticket.create(paperSize);
 
+      final storeName = _sharedPreferences.getString(Constants.storeNameKey) ?? 'FLUTTER POS';
+      final storeAddress = _sharedPreferences.getString(Constants.storeAddressKey) ?? '';
+      final receiptFooter = _sharedPreferences.getString(Constants.receiptFooterKey) ?? '';
+
       ticket.text(
-        'FLUTTER POS',
+        storeName,
         align: PrintAlign.center,
         style: const PrintTextStyle(
           bold: true,
@@ -195,13 +199,15 @@ class PrinterService {
           width: TextSize.size2,
         ),
       );
-      ticket.text(
-        'https://github.com/elrizwiraswara/flutter_pos',
-        align: PrintAlign.center,
-        style: PrintTextStyle(
-          fontType: FontType.fontB,
-        ),
-      );
+      if (storeAddress.isNotEmpty) {
+        ticket.text(
+          storeAddress,
+          align: PrintAlign.center,
+          style: PrintTextStyle(
+            fontType: FontType.fontB,
+          ),
+        );
+      }
 
       ticket.emptyLines();
 
@@ -251,7 +257,8 @@ class PrinterService {
               flex: 2,
             ),
             PrintColumn(
-              text: '${product.quantity} ${product.unit}',
+              text:
+                  '${product.quantity == product.quantity.roundToDouble() ? product.quantity.toInt().toString() : product.quantity.toStringAsFixed(1)} ${product.unit}',
               flex: 1,
               align: PrintAlign.center,
               style: const PrintTextStyle(),
@@ -262,7 +269,7 @@ class PrinterService {
               align: PrintAlign.right,
             ),
             PrintColumn(
-              text: CurrencyFormatter.format(product.price * product.quantity),
+              text: CurrencyFormatter.format((product.price * product.quantity).round()),
               flex: 2,
               align: PrintAlign.right,
             ),
@@ -311,8 +318,9 @@ class PrinterService {
       ticket.emptyLines();
       ticket.qrcode('${transaction.id}', size: QRSize.size3);
       ticket.emptyLines();
-      ticket.text('Thank you for your purchase!', align: PrintAlign.center);
-      ticket.text('Yatta!', align: PrintAlign.center);
+      if (receiptFooter.isNotEmpty) {
+        ticket.text(receiptFooter, align: PrintAlign.center);
+      }
       ticket.cut(linesBefore: 2);
 
       return await printTicket(ticket);
