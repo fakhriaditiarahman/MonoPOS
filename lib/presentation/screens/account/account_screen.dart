@@ -30,9 +30,11 @@ class AccountScreen extends StatelessWidget {
                 _UserInfo(),
                 _ProfileButton(),
                 _StoreSettingsButton(),
+                _RevenueButton(),
                 _ThemeButton(),
                 _LanguageButton(),
                 _PrinterSettingsButton(),
+                _PaymentSettingsButton(),
                 _AboutButton(),
               ],
             ),
@@ -157,6 +159,48 @@ class _StoreSettingsButton extends StatelessWidget {
         ),
         onTap: () {
           context.go('/account/store-settings');
+        },
+      ),
+    );
+  }
+}
+
+class _RevenueButton extends StatelessWidget {
+  const _RevenueButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.trending_up,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  AppLocalizations.of(context)!.revenue_title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+            ),
+          ],
+        ),
+        onTap: () {
+          context.go('/account/revenue');
         },
       ),
     );
@@ -336,6 +380,48 @@ class _PrinterSettingsButton extends StatelessWidget {
         ),
         onTap: () {
           context.go('/account/printer-settings');
+        },
+      ),
+    );
+  }
+}
+
+class _PaymentSettingsButton extends StatelessWidget {
+  const _PaymentSettingsButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.payment_outlined,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  'Payment Gateway',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+            ),
+          ],
+        ),
+        onTap: () {
+          context.go('/account/payment-settings');
         },
       ),
     );

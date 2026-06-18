@@ -63,10 +63,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Spacer(flex: 2),
-              const Icon(
-                Icons.storefront,
-                size: 100,
-                color: Colors.white,
+              Image.asset(
+                'assets/images/logomonopos-removebg-preview.png',
+                width: 120,
+                height: 120,
               ),
               const SizedBox(height: 24),
               Text(

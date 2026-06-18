@@ -57,3 +57,18 @@ class DeleteTransactionUsecase extends Usecase<Result<void>, int> {
   @override
   Future<Result<void>> call(int params) async => _transactionRepository.deleteTransaction(params);
 }
+
+class UpdatePaymentStatusUsecase {
+  UpdatePaymentStatusUsecase(this._transactionRepository);
+
+  final TransactionRepository _transactionRepository;
+
+  Future<Result<void>> call(int transactionId, String status, {String? paymentQR, String? paymentExternalId}) async {
+    return _transactionRepository.updatePaymentStatus(
+      transactionId,
+      status,
+      paymentQR: paymentQR,
+      paymentExternalId: paymentExternalId,
+    );
+  }
+}

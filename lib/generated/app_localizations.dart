@@ -680,6 +680,36 @@ abstract class AppLocalizations {
   /// **'Not Found'**
   String get transaction_notFound;
 
+  /// No description provided for @revenue_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue Report'**
+  String get revenue_title;
+
+  /// No description provided for @revenue_totalRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Revenue'**
+  String get revenue_totalRevenue;
+
+  /// No description provided for @revenue_transactions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Transactions'**
+  String revenue_transactions(Object count);
+
+  /// No description provided for @revenue_products.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Products'**
+  String revenue_products(Object count);
+
+  /// No description provided for @revenue_noData.
+  ///
+  /// In en, this message translates to:
+  /// **'No revenue data available'**
+  String get revenue_noData;
+
   /// No description provided for @transaction_products.
   ///
   /// In en, this message translates to:

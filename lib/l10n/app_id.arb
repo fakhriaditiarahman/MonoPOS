@@ -144,6 +144,22 @@
   "transaction_paymentReceived": "Pembayaran Diterima",
   "transaction_change": "Kembalian",
   "transaction_notFound": "Tidak Ditemukan",
+  "revenue_title": "Laporan Pendapatan",
+  "revenue_totalRevenue": "Total Pendapatan",
+  "revenue_transactions": "{count} Transaksi",
+  "@revenue_transactions": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "revenue_products": "{count} Produk",
+  "@revenue_products": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "revenue_noData": "Belum ada data pendapatan",
+
   "transaction_products": "{count} Produk",
   "@transaction_products": {
     "placeholders": {

@@ -138,6 +138,19 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     }
   }
 
+  Future<void> onPayQris({
+    required GoRouter router,
+    required HomeNotifier homeNotifier,
+  }) async {
+    var res = await AppDialog.showProgress(() {
+      return homeNotifier.createQrisTransaction(router);
+    });
+
+    if (res.isFailure) {
+      AppDialog.showError(error: res.error?.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final homeState = ref.watch(homeNotifierProvider);
@@ -146,17 +159,43 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppTextField(
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          controller: _amountController,
-          labelText: AppLocalizations.of(context)!.cart_receivedAmount,
-          hintText: AppLocalizations.of(context)!.cart_receivedAmountHint,
-          onChanged: (val) {
-            homeNotifier.onChangedReceivedAmount(int.tryParse(val) ?? 0);
-          },
-        ),
-        const SizedBox(height: AppSizes.padding),
+        if (homeState.selectedPaymentMethod != 'qris') ...[
+          AppTextField(
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            controller: _amountController,
+            labelText: AppLocalizations.of(context)!.cart_receivedAmount,
+            hintText: AppLocalizations.of(context)!.cart_receivedAmountHint,
+            onChanged: (val) {
+              homeNotifier.onChangedReceivedAmount(int.tryParse(val) ?? 0);
+            },
+          ),
+          const SizedBox(height: AppSizes.padding),
+        ],
+        if (homeState.selectedPaymentMethod == 'qris')
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSizes.padding),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSizes.padding),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(AppSizes.radius),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.qr_code, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: AppSizes.padding / 2),
+                  const Expanded(
+                    child: Text(
+                      'QRIS: Pelanggan scan QR setelah pembayaran',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         AppDropDown(
           labelText: AppLocalizations.of(context)!.cart_paymentMethod,
           selectedValue: homeState.selectedPaymentMethod,
@@ -168,6 +207,10 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
             DropdownMenuItem(
               value: 'cash',
               child: Text(AppLocalizations.of(context)!.cart_cash),
+            ),
+            const DropdownMenuItem(
+              value: 'qris',
+              child: Text('QRIS'),
             ),
           ],
           onChanged: (v) => homeNotifier.onChangedPaymentMethod(v),
@@ -205,15 +248,24 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
               flex: 2,
               child: AppButton(
                 text: AppLocalizations.of(context)!.home_pay,
-                enabled: (int.tryParse(_amountController.text) ?? 0) >= homeNotifier.getTotalAmount(),
+                enabled: homeState.selectedPaymentMethod == 'qris'
+                    ? true
+                    : (int.tryParse(_amountController.text) ?? 0) >= homeNotifier.getTotalAmount(),
                 onTap: () {
                   final router = ref.read(goRouterProvider);
 
                   context.pop();
-                  onPay(
-                    homeNotifier: homeNotifier,
-                    router: router,
-                  );
+                  if (homeState.selectedPaymentMethod == 'qris') {
+                    onPayQris(
+                      homeNotifier: homeNotifier,
+                      router: router,
+                    );
+                  } else {
+                    onPay(
+                      homeNotifier: homeNotifier,
+                      router: router,
+                    );
+                  }
                 },
               ),
             ),

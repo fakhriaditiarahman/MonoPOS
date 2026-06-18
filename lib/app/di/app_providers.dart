@@ -7,6 +7,7 @@ import '../../core/services/connectivity/ping_service.dart';
 import '../../core/services/database/database_service.dart';
 import '../../core/services/info/device_info_service.dart';
 import '../../core/services/logger/error_logger_service.dart';
+import '../../core/services/payment/midtrans_payment_service.dart';
 import '../../core/services/printer/printer_service.dart';
 import '../../data/datasources/local/auth_local_datasource_impl.dart';
 import '../../data/datasources/local/product_local_datasource_impl.dart';
@@ -48,6 +49,10 @@ final errorLoggerServiceProvider = Provider<ErrorLoggerService>(
 );
 final printerServiceProvider = Provider<PrinterService>(
   (ref) => PrinterService(ref.watch(sharedPreferencesProvider)),
+);
+
+final midtransPaymentServiceProvider = Provider<MidtransPaymentService>(
+  (ref) => MidtransPaymentService(ref.watch(sharedPreferencesProvider)),
 );
 
 // Datasources

@@ -83,6 +83,11 @@ class DatabaseService {
       await database.execute("ALTER TABLE User ADD COLUMN role TEXT DEFAULT 'kasir'");
     } catch (_) {}
 
+    // Migration: add columns to Transaction (check existence first)
+    await _addColumnIfNotExists('Transaction', 'paymentStatus', "TEXT DEFAULT 'paid'");
+    await _addColumnIfNotExists('Transaction', 'paymentQR', 'TEXT');
+    await _addColumnIfNotExists('Transaction', 'paymentExternalId', 'TEXT');
+
     // Seed initial users
     await _seedUsers();
 
@@ -247,6 +252,19 @@ class DatabaseService {
   }
 
   @visibleForTesting
+  Future<void> _addColumnIfNotExists(String table, String column, String type) async {
+    try {
+      final result = await database.rawQuery("PRAGMA table_info('$table')");
+      final exists = result.any((row) => row['name'] == column);
+      if (!exists) {
+        await database.execute("ALTER TABLE '$table' ADD COLUMN '$column' $type");
+        cw('Added column $column to $table');
+      }
+    } catch (e) {
+      ce('Migration add column $column failed: $e');
+    }
+  }
+
   Future<void> initTestDatabase({required Database testDatabase}) async {
     database = testDatabase;
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
@@ -7,6 +8,7 @@ import '../../../domain/entities/product_entity.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/usecases/transaction_usecases.dart';
 import '../auth/auth_notifier.dart';
+import '../payment/payment_notifier.dart';
 import '../products/products_notifier.dart';
 import 'home_state.dart';
 
@@ -44,12 +46,48 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       var res = await CreateTransactionUsecase(transactionRepository).call(transaction);
 
       if (res.isSuccess) {
-        // Auto print receipt (fire-and-forget, ignore failure)
         ref.read(printerServiceProvider).printTransaction(transaction);
       }
 
-      // Refresh products
       ref.read(productsNotifierProvider.notifier).getAllProducts();
+
+      return res;
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  Future<Result<int>> createQrisTransaction(GoRouter router) async {
+    try {
+      final authState = ref.read(authNotifierProvider);
+      if (!authState.isAuthenticated) throw 'Unauthenticated!';
+      final user = authState.user!;
+
+      var transaction = TransactionEntity(
+        id: DateTime.now().millisecondsSinceEpoch,
+        paymentMethod: 'qris',
+        customerName: state.customerName,
+        description: state.description,
+        orderedProducts: state.orderedProducts,
+        createdById: user.id,
+        createdBy: user,
+        receivedAmount: getTotalAmount(),
+        returnAmount: 0,
+        totalOrderedProduct: state.orderedProducts.length,
+        totalAmount: getTotalAmount(),
+        paymentStatus: 'pending',
+      );
+
+      final qrisNotifier = ref.read(qrisPaymentNotifierProvider.notifier);
+      var res = await qrisNotifier.startQrisPayment(
+        transaction: transaction,
+        totalAmount: getTotalAmount(),
+      );
+
+      if (res.isSuccess) {
+        ref.read(productsNotifierProvider.notifier).getAllProducts();
+        router.go('/payment/qris');
+      }
 
       return res;
     } catch (e) {

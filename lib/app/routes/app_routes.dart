@@ -3,12 +3,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/screens/account/about_screen.dart';
 import '../../presentation/screens/account/account_screen.dart';
+import '../../presentation/screens/account/payment_settings_screen.dart';
 import '../../presentation/screens/account/printer_settings_screen.dart';
 import '../../presentation/screens/account/profile_form_screen.dart';
 import '../../presentation/screens/account/store_settings_screen.dart';
+import '../../presentation/screens/revenue/revenue_screen.dart';
 import '../../presentation/screens/error/error_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/main/main_screen.dart';
+import '../../presentation/screens/payment/qris_payment_screen.dart';
 import '../../presentation/screens/products/product_detail_screen.dart';
 import '../../presentation/screens/products/product_form_screen.dart';
 import '../../presentation/screens/products/products_screen.dart';
@@ -45,6 +48,7 @@ class AppRoutes {
         _splash(),
         _login(),
         _main(),
+        _qrisPayment(),
         _error(),
       ],
     );
@@ -61,6 +65,14 @@ class AppRoutes {
     return GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
+    );
+  }
+
+  GoRoute _qrisPayment() {
+    return GoRoute(
+      path: '/payment/qris',
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const QrisPaymentScreen(),
     );
   }
 
@@ -146,6 +158,8 @@ class AppRoutes {
         _about(),
         _printerSettings(),
         _storeSettings(),
+        _paymentSettings(),
+        _revenue(),
       ],
     );
   }
@@ -237,6 +251,24 @@ class AppRoutes {
       path: 'store-settings',
       builder: (context, state) {
         return const StoreSettingsScreen();
+      },
+    );
+  }
+
+  GoRoute _paymentSettings() {
+    return GoRoute(
+      path: 'payment-settings',
+      builder: (context, state) {
+        return const PaymentSettingsScreen();
+      },
+    );
+  }
+
+  GoRoute _revenue() {
+    return GoRoute(
+      path: 'revenue',
+      builder: (context, state) {
+        return const RevenueScreen();
       },
     );
   }

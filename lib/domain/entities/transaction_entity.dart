@@ -17,6 +17,9 @@ class TransactionEntity extends Equatable {
   final int totalOrderedProduct;
   final String? createdAt;
   final String? updatedAt;
+  final String paymentStatus;
+  final String? paymentQR;
+  final String? paymentExternalId;
 
   const TransactionEntity({
     this.id,
@@ -32,6 +35,9 @@ class TransactionEntity extends Equatable {
     required this.totalOrderedProduct,
     this.createdAt,
     this.updatedAt,
+    this.paymentStatus = 'paid',
+    this.paymentQR,
+    this.paymentExternalId,
   });
 
   TransactionEntity copyWith({
@@ -48,6 +54,9 @@ class TransactionEntity extends Equatable {
     int? totalOrderedProduct,
     String? createdAt,
     String? updatedAt,
+    String? paymentStatus,
+    String? paymentQR,
+    String? paymentExternalId,
   }) {
     return TransactionEntity(
       id: id ?? this.id,
@@ -63,6 +72,9 @@ class TransactionEntity extends Equatable {
       totalOrderedProduct: totalOrderedProduct ?? this.totalOrderedProduct,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      paymentQR: paymentQR ?? this.paymentQR,
+      paymentExternalId: paymentExternalId ?? this.paymentExternalId,
     );
   }
 
@@ -81,5 +93,8 @@ class TransactionEntity extends Equatable {
     totalOrderedProduct,
     createdAt,
     updatedAt,
+    paymentStatus,
+    paymentQR,
+    paymentExternalId,
   ];
 }
