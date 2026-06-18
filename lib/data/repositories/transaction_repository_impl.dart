@@ -65,12 +65,55 @@ class TransactionRepositoryImpl extends TransactionRepository {
   }
 
   @override
+  Future<Result<void>> updatePaymentStatus(
+    int transactionId,
+    String status, {
+    String? paymentQR,
+    String? paymentExternalId,
+  }) async {
+    try {
+      final local = await transactionLocalDatasource.updatePaymentStatus(
+        transactionId,
+        status,
+        paymentQR: paymentQR,
+        paymentExternalId: paymentExternalId,
+      );
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
   Future<Result<void>> deleteTransaction(int transactionId) async {
     try {
       final local = await transactionLocalDatasource.deleteTransaction(transactionId);
       if (local.isFailure) return Result.failure(error: local.error!);
 
       return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<TransactionEntity>>> getTransactionsByDateRange(
+    String userId, {
+    required String startDate,
+    required String endDate,
+  }) async {
+    try {
+      var local = await transactionLocalDatasource.getTransactionsByDateRange(
+        userId,
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: local.data!.map((e) => e.toEntity()).toList());
     } catch (e) {
       return Result.failure(error: e);
     }

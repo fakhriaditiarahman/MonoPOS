@@ -319,6 +319,25 @@ class AppLocalizationsId extends AppLocalizations {
   String get transaction_notFound => 'Tidak Ditemukan';
 
   @override
+  String get revenue_title => 'Laporan Pendapatan';
+
+  @override
+  String get revenue_totalRevenue => 'Total Pendapatan';
+
+  @override
+  String revenue_transactions(Object count) {
+    return '$count Transaksi';
+  }
+
+  @override
+  String revenue_products(Object count) {
+    return '$count Produk';
+  }
+
+  @override
+  String get revenue_noData => 'Belum ada data pendapatan';
+
+  @override
   String transaction_products(Object count) {
     return '$count Produk';
   }

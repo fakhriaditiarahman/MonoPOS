@@ -322,6 +322,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transaction_notFound => 'Not Found';
 
   @override
+  String get revenue_title => 'Revenue Report';
+
+  @override
+  String get revenue_totalRevenue => 'Total Revenue';
+
+  @override
+  String revenue_transactions(Object count) {
+    return '$count Transactions';
+  }
+
+  @override
+  String revenue_products(Object count) {
+    return '$count Products';
+  }
+
+  @override
+  String get revenue_noData => 'No revenue data available';
+
+  @override
   String transaction_products(Object count) {
     return '$count Products';
   }

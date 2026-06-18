@@ -386,39 +386,18 @@ class _ScanButton extends ConsumerWidget {
             ];
           }
 
-          var scanDefaultUnit = scanEffectiveUnits.firstWhere(
-            (u) => u.unitName == product.unit,
-            orElse: () => scanEffectiveUnits.first,
-          );
-          String scanSelectedUnit = scanDefaultUnit.unitName;
-          int scanConversionValue = scanDefaultUnit.conversionValue;
-          int scanDisplayPrice = isGrosir && scanDefaultUnit.wholesalePrice != null
-              ? scanDefaultUnit.wholesalePrice!
-              : scanDefaultUnit.price;
-
           if (!context.mounted) return;
+
+          final scanDialogKey = GlobalKey<_AddToCartDialogState>();
+
           AppDialog.show(
             title: 'Enter Amount',
-            child: OrderCard(
-              name: product.name,
-              imageUrl: product.imageUrl,
-              stock: product.stock,
-              price: scanDisplayPrice,
-              priceType: homeState.selectedPriceType,
-              unit: product.unit,
+            child: _AddToCartDialog(
+              key: scanDialogKey,
+              product: product,
               initialQuantity: currentQty,
-              selectedUnit: scanSelectedUnit,
-              availableUnits: scanEffectiveUnits.map((u) => u.unitName).toList(),
-              onChangedUnit: (val) {
-                if (val == null) return;
-                var unit = scanEffectiveUnits.firstWhere((u) => u.unitName == val);
-                scanSelectedUnit = unit.unitName;
-                scanConversionValue = unit.conversionValue;
-                scanDisplayPrice = isGrosir && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
-              },
-              onChangedQuantity: (val) {
-                currentQty = val;
-              },
+              isGrosir: isGrosir,
+              effectiveUnits: scanEffectiveUnits,
             ),
             rightButtonText: AppLocalizations.of(context)!.home_addToCart,
             leftButtonText: AppLocalizations.of(context)!.home_cancel,
@@ -426,14 +405,17 @@ class _ScanButton extends ConsumerWidget {
               context.pop();
             },
             onTapRightButton: (context) {
+              var state = scanDialogKey.currentState;
+              if (state == null) return;
+
               ref
                   .read(homeNotifierProvider.notifier)
                   .onAddOrderedProduct(
                     product,
-                    currentQty == 0 ? 1.0 : currentQty,
-                    unitName: scanSelectedUnit,
-                    conversionValue: scanConversionValue,
-                    overridePrice: scanDisplayPrice,
+                    state.quantity == 0 ? 1.0 : state.quantity,
+                    unitName: state.selectedUnit,
+                    conversionValue: state.conversionValue,
+                    overridePrice: state.price,
                   );
               context.pop();
             },
@@ -528,6 +510,79 @@ class _NetworkInfo extends ConsumerWidget {
   }
 }
 
+class _AddToCartDialog extends StatefulWidget {
+  final ProductEntity product;
+  final double initialQuantity;
+  final bool isGrosir;
+  final List<ProductUnitEntity> effectiveUnits;
+
+  const _AddToCartDialog({
+    super.key,
+    required this.product,
+    required this.initialQuantity,
+    required this.isGrosir,
+    required this.effectiveUnits,
+  });
+
+  @override
+  State<_AddToCartDialog> createState() => _AddToCartDialogState();
+}
+
+class _AddToCartDialogState extends State<_AddToCartDialog> {
+  late double _quantity;
+  late String _selectedUnit;
+  late int _conversionValue;
+  late int _price;
+
+  double get quantity => _quantity;
+  String get selectedUnit => _selectedUnit;
+  int get conversionValue => _conversionValue;
+  int get price => _price;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantity = widget.initialQuantity == 0 ? 1 : widget.initialQuantity;
+
+    var defaultUnit = widget.effectiveUnits.firstWhere(
+      (u) => u.unitName == widget.product.unit,
+      orElse: () => widget.effectiveUnits.first,
+    );
+    _selectedUnit = defaultUnit.unitName;
+    _conversionValue = defaultUnit.conversionValue;
+    _price = widget.isGrosir && defaultUnit.wholesalePrice != null ? defaultUnit.wholesalePrice! : defaultUnit.price;
+  }
+
+  void _onChangedUnit(String? val) {
+    if (val == null) return;
+    var unit = widget.effectiveUnits.firstWhere((u) => u.unitName == val);
+    setState(() {
+      _selectedUnit = unit.unitName;
+      _conversionValue = unit.conversionValue;
+      _price = widget.isGrosir && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OrderCard(
+      name: widget.product.name,
+      imageUrl: widget.product.imageUrl,
+      stock: widget.product.stock,
+      price: _price,
+      priceType: widget.isGrosir ? 'grosir' : 'retail',
+      unit: widget.product.unit,
+      initialQuantity: _quantity,
+      selectedUnit: _selectedUnit,
+      availableUnits: widget.effectiveUnits.map((u) => u.unitName).toList(),
+      onChangedUnit: _onChangedUnit,
+      onChangedQuantity: (val) {
+        _quantity = val;
+      },
+    );
+  }
+}
+
 class _SearchField extends ConsumerWidget {
   final TextEditingController controller;
 
@@ -582,11 +637,7 @@ class _ProductCard extends ConsumerWidget {
       (u) => u.unitName == product.unit,
       orElse: () => effectiveUnits.first,
     );
-    String selectedUnit = defaultUnit.unitName;
-    int conversionValue = defaultUnit.conversionValue;
     int displayPrice = isGrosir && defaultUnit.wholesalePrice != null ? defaultUnit.wholesalePrice! : defaultUnit.price;
-
-    int currentStock = product.stock;
 
     return ProductsCard(
       product: product,
@@ -597,32 +648,16 @@ class _ProductCard extends ConsumerWidget {
         double currentQty =
             homeState.orderedProducts.where((e) => e.productId == product.id).firstOrNull?.quantity ?? 0;
 
-        String dialogSelectedUnit = selectedUnit;
-        int dialogConversionValue = conversionValue;
-        int dialogPrice = displayPrice;
+        final dialogKey = GlobalKey<_AddToCartDialogState>();
 
         AppDialog.show(
           title: 'Enter Amount',
-          child: OrderCard(
-            name: product.name,
-            imageUrl: product.imageUrl,
-            stock: currentStock,
-            price: dialogPrice,
-            priceType: homeState.selectedPriceType,
-            unit: product.unit,
+          child: _AddToCartDialog(
+            key: dialogKey,
+            product: product,
             initialQuantity: currentQty,
-            selectedUnit: dialogSelectedUnit,
-            availableUnits: effectiveUnits.map((u) => u.unitName).toList(),
-            onChangedUnit: (val) {
-              if (val == null) return;
-              var unit = effectiveUnits.firstWhere((u) => u.unitName == val);
-              dialogSelectedUnit = unit.unitName;
-              dialogConversionValue = unit.conversionValue;
-              dialogPrice = isGrosir && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
-            },
-            onChangedQuantity: (val) {
-              currentQty = val;
-            },
+            isGrosir: isGrosir,
+            effectiveUnits: effectiveUnits,
           ),
           rightButtonText: AppLocalizations.of(context)!.home_addToCart,
           leftButtonText: AppLocalizations.of(context)!.home_cancel,
@@ -630,14 +665,17 @@ class _ProductCard extends ConsumerWidget {
             context.pop();
           },
           onTapRightButton: (context) {
+            var state = dialogKey.currentState;
+            if (state == null) return;
+
             ref
                 .read(homeNotifierProvider.notifier)
                 .onAddOrderedProduct(
                   product,
-                  currentQty == 0 ? 1.0 : currentQty,
-                  unitName: dialogSelectedUnit,
-                  conversionValue: dialogConversionValue,
-                  overridePrice: dialogPrice,
+                  state.quantity == 0 ? 1.0 : state.quantity,
+                  unitName: state.selectedUnit,
+                  conversionValue: state.conversionValue,
+                  overridePrice: state.price,
                 );
             context.pop();
           },

@@ -144,6 +144,22 @@
   "transaction_paymentReceived": "Payment Received",
   "transaction_change": "Change",
   "transaction_notFound": "Not Found",
+  "revenue_title": "Revenue Report",
+  "revenue_totalRevenue": "Total Revenue",
+  "revenue_transactions": "{count} Transactions",
+  "@revenue_transactions": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "revenue_products": "{count} Products",
+  "@revenue_products": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "revenue_noData": "No revenue data available",
+
   "transaction_products": "{count} Products",
   "@transaction_products": {
     "placeholders": {

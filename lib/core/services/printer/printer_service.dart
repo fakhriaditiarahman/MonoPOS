@@ -329,6 +329,64 @@ class PrinterService {
     }
   }
 
+  Future<Result<void>> printQrCode({
+    required String qrData,
+    required int totalAmount,
+    String? storeName,
+    String? merchantName,
+  }) async {
+    try {
+      final ticket = await Ticket.create(paperSize);
+
+      final name = storeName ?? _sharedPreferences.getString(Constants.storeNameKey) ?? 'FLUTTER POS';
+      final merchant = merchantName ?? '';
+
+      ticket.text(
+        name,
+        align: PrintAlign.center,
+        style: const PrintTextStyle(
+          bold: true,
+          height: TextSize.size2,
+          width: TextSize.size2,
+        ),
+      );
+
+      if (merchant.isNotEmpty) {
+        ticket.emptyLines();
+        ticket.text('Merchant: $merchant', align: PrintAlign.center);
+      }
+
+      ticket.emptyLines();
+      ticket.text(
+        'Total Pembayaran',
+        align: PrintAlign.center,
+        style: const PrintTextStyle(fontType: FontType.fontB),
+      );
+      ticket.text(
+        CurrencyFormatter.format(totalAmount),
+        align: PrintAlign.center,
+        style: const PrintTextStyle(
+          bold: true,
+          height: TextSize.size2,
+          width: TextSize.size2,
+        ),
+      );
+
+      ticket.emptyLines(2);
+      ticket.text('Scan QRIS untuk membayar', align: PrintAlign.center);
+      ticket.emptyLines();
+      ticket.qrcode(qrData, size: QRSize.size4);
+      ticket.emptyLines();
+      ticket.text('* Pembayaran akan terdeteksi otomatis *', align: PrintAlign.center);
+
+      ticket.cut(linesBefore: 2);
+
+      return await printTicket(ticket);
+    } catch (e) {
+      return Result.failure(error: e.toString());
+    }
+  }
+
   Future<Result<void>> testPrint() async {
     try {
       final ticket = await Ticket.create(paperSize);

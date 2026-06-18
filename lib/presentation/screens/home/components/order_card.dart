@@ -153,7 +153,7 @@ class _OrderCardState extends State<OrderCard> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${AppLocalizations.of(context)!.cart_stock(widget.stock)} ${widget.unit}',
+                          '${AppLocalizations.of(context)!.cart_stock(widget.stock)} ${widget.selectedUnit ?? widget.unit}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
                         ),
                         const SizedBox(height: 6),

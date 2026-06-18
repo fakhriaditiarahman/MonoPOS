@@ -145,6 +145,31 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
   }
 
   @override
+  Future<Result<void>> updatePaymentStatus(
+    int id,
+    String status, {
+    String? paymentQR,
+    String? paymentExternalId,
+  }) async {
+    try {
+      var values = <String, dynamic>{'paymentStatus': status};
+      if (paymentQR != null) values['paymentQR'] = paymentQR;
+      if (paymentExternalId != null) values['paymentExternalId'] = paymentExternalId;
+
+      await _databaseService.database.update(
+        DatabaseConfig.transactionTableName,
+        values,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
   Future<Result<void>> deleteTransaction(int id) async {
     try {
       await _databaseService.database.transaction((trx) async {
@@ -289,6 +314,53 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
           );
 
           // Set created by to transaction
+          if (rawCreatedBy.isNotEmpty) {
+            transaction.createdBy = UserModel.fromJson(rawCreatedBy.first);
+          }
+        }
+
+        return transactions;
+      });
+
+      return Result.success(data: transactions);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<TransactionModel>>> getTransactionsByDateRange(
+    String userId, {
+    required String startDate,
+    required String endDate,
+  }) async {
+    try {
+      final transactions = await _databaseService.database.transaction((trx) async {
+        var rawTransactions = await trx.query(
+          DatabaseConfig.transactionTableName,
+          where: 'createdById = ? AND createdAt >= ? AND createdAt <= ?',
+          whereArgs: [userId, startDate, endDate],
+          orderBy: 'createdAt DESC',
+        );
+
+        var transactions = rawTransactions.map((e) => TransactionModel.fromJson(e)).toList();
+
+        for (var transaction in transactions) {
+          var rawOrderedProducts = await trx.query(
+            DatabaseConfig.orderedProductTableName,
+            where: 'transactionId = ?',
+            whereArgs: [transaction.id],
+          );
+
+          var orderedProducts = rawOrderedProducts.map((e) => OrderedProductModel.fromJson(e)).toList();
+          transaction.orderedProducts = orderedProducts;
+
+          var rawCreatedBy = await trx.query(
+            DatabaseConfig.userTableName,
+            where: 'id = ?',
+            whereArgs: [transaction.createdById],
+          );
+
           if (rawCreatedBy.isNotEmpty) {
             transaction.createdBy = UserModel.fromJson(rawCreatedBy.first);
           }

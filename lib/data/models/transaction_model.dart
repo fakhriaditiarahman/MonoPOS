@@ -16,6 +16,9 @@ class TransactionModel {
   int totalOrderedProduct;
   String? createdAt;
   String? updatedAt;
+  String paymentStatus;
+  String? paymentQR;
+  String? paymentExternalId;
 
   TransactionModel({
     required this.id,
@@ -31,6 +34,9 @@ class TransactionModel {
     required this.totalOrderedProduct,
     this.createdAt,
     this.updatedAt,
+    this.paymentStatus = 'paid',
+    this.paymentQR,
+    this.paymentExternalId,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -50,6 +56,9 @@ class TransactionModel {
       totalOrderedProduct: json['totalOrderedProduct'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
+      paymentStatus: json['paymentStatus'] ?? 'paid',
+      paymentQR: json['paymentQR'],
+      paymentExternalId: json['paymentExternalId'],
     );
   }
 
@@ -68,6 +77,9 @@ class TransactionModel {
       'totalOrderedProduct': totalOrderedProduct,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'paymentStatus': paymentStatus,
+      'paymentQR': paymentQR,
+      'paymentExternalId': paymentExternalId,
     };
   }
 
@@ -86,6 +98,9 @@ class TransactionModel {
       totalOrderedProduct: entity.totalOrderedProduct,
       createdAt: entity.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: entity.updatedAt ?? DateTime.now().toIso8601String(),
+      paymentStatus: entity.paymentStatus,
+      paymentQR: entity.paymentQR,
+      paymentExternalId: entity.paymentExternalId,
     );
   }
 
@@ -104,6 +119,9 @@ class TransactionModel {
       totalOrderedProduct: totalOrderedProduct,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      paymentStatus: paymentStatus,
+      paymentQR: paymentQR,
+      paymentExternalId: paymentExternalId,
     );
   }
 }

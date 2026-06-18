@@ -12,6 +12,12 @@ class Constants {
   static const String storeAddressKey = 'store_address';
   static const String receiptFooterKey = 'receipt_footer';
 
+  // Midtrans / Payment Gateway settings
+  static const String midtransServerKey = 'midtrans_server_key';
+  static const String midtransClientKey = 'midtrans_client_key';
+  static const String midtransIsProduction = 'midtrans_is_production';
+  static const String midtransMerchantName = 'midtrans_merchant_name';
+
   static const int minSyncIntervalToleranceForCriticalInMinutes = 5;
   static const int minSyncIntervalToleranceForLessCriticalInMinutes = 100;
 

@@ -6,6 +6,8 @@ abstract class TransactionDatasource {
 
   Future<Result<void>> updateTransaction(TransactionModel transaction);
 
+  Future<Result<void>> updatePaymentStatus(int id, String status, {String? paymentQR, String? paymentExternalId});
+
   Future<Result<void>> deleteTransaction(int id);
 
   Future<Result<TransactionModel?>> getTransaction(int id);
@@ -19,5 +21,11 @@ abstract class TransactionDatasource {
     int limit,
     int? offset,
     String? contains,
+  });
+
+  Future<Result<List<TransactionModel>>> getTransactionsByDateRange(
+    String userId, {
+    required String startDate,
+    required String endDate,
   });
 }

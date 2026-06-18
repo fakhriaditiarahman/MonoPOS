@@ -43,10 +43,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.admin_panel_settings,
-                      size: 72,
-                      color: theme.colorScheme.primary,
+                    Image.asset(
+                      'assets/images/logomonopos-removebg-preview.png',
+                      width: 120,
+                      height: 120,
                     ),
                     const SizedBox(height: 8),
                     Text(

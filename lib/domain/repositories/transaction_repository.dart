@@ -8,6 +8,13 @@ abstract class TransactionRepository {
 
   Future<Result<void>> updateTransaction(TransactionEntity transaction);
 
+  Future<Result<void>> updatePaymentStatus(
+    int transactionId,
+    String status, {
+    String? paymentQR,
+    String? paymentExternalId,
+  });
+
   Future<Result<void>> deleteTransaction(int transactionId);
 
   Future<Result<List<TransactionEntity>>> getUserTransactions(
@@ -17,5 +24,11 @@ abstract class TransactionRepository {
     int limit,
     int? offset,
     String? contains,
+  });
+
+  Future<Result<List<TransactionEntity>>> getTransactionsByDateRange(
+    String userId, {
+    required String startDate,
+    required String endDate,
   });
 }
