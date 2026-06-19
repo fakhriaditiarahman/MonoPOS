@@ -1,11 +1,12 @@
-import 'package:mono_pos/core/services/connectivity/ping_service.dart';
 import 'package:mono_pos/core/common/result.dart';
+import 'package:mono_pos/core/services/sync/sync_service.dart';
+import 'package:mono_pos/data/datasources/interfaces/product_datasource.dart';
 import 'package:mono_pos/data/datasources/local/product_local_datasource_impl.dart';
-import 'package:mono_pos/data/datasources/local/queued_action_local_datasource_impl.dart';
-import 'package:mono_pos/data/datasources/remote/product_remote_datasource_impl.dart';
 import 'package:mono_pos/data/models/product_model.dart';
+import 'package:mono_pos/data/models/product_unit_model.dart';
 import 'package:mono_pos/data/repositories/product_repository_impl.dart';
 import 'package:mono_pos/domain/entities/product_entity.dart';
+import 'package:mono_pos/domain/repositories/queued_action_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -13,25 +14,24 @@ import 'package:mockito/mockito.dart';
 import 'product_repository_impl_test.mocks.dart';
 
 @GenerateMocks([
-  PingService,
+  SyncService,
   ProductLocalDatasourceImpl,
-  ProductRemoteDatasourceImpl,
-  QueuedActionLocalDatasourceImpl,
+  ProductDatasource,
+  QueuedActionRepository,
 ])
 void main() {
   late ProductRepositoryImpl repository;
-  late MockPingService mockPingService;
+  late MockSyncService mockSyncService;
   late MockProductLocalDatasourceImpl mockLocalDatasource;
-  late MockProductRemoteDatasourceImpl mockRemoteDatasource;
-  late MockQueuedActionLocalDatasourceImpl mockQueuedActionDatasource;
+  late MockProductDatasource mockRemoteDatasource;
+  late MockQueuedActionRepository mockQueuedActionRepository;
 
   setUp(() {
-    mockPingService = MockPingService();
+    mockSyncService = MockSyncService();
     mockLocalDatasource = MockProductLocalDatasourceImpl();
-    mockRemoteDatasource = MockProductRemoteDatasourceImpl();
-    mockQueuedActionDatasource = MockQueuedActionLocalDatasourceImpl();
+    mockRemoteDatasource = MockProductDatasource();
+    mockQueuedActionRepository = MockQueuedActionRepository();
 
-    // Provide dummy values for Mockito
     provideDummy<Result<List<ProductModel>>>(
       Result.success(data: <ProductModel>[]),
     );
@@ -51,101 +51,19 @@ void main() {
     provideDummy<Result<int>>(
       Result.success(data: 0),
     );
+    provideDummy<Result<List<ProductUnitModel>>>(
+      Result.success(data: <ProductUnitModel>[]),
+    );
     provideDummy<Result<void>>(
       Result.success(data: null),
     );
 
     repository = ProductRepositoryImpl(
-      pingService: mockPingService,
       productLocalDatasource: mockLocalDatasource,
       productRemoteDatasource: mockRemoteDatasource,
-      queuedActionLocalDatasource: mockQueuedActionDatasource,
+      syncService: mockSyncService,
+      queuedActionRepository: mockQueuedActionRepository,
     );
-  });
-
-  group('syncAllUserProducts', () {
-    const userId = 'user123';
-    final localProducts = [
-      ProductModel(
-        id: 1,
-        createdById: userId,
-        name: 'Product 1',
-        imageUrl: 'https://example.com/image1.jpg',
-        stock: 10,
-        sold: 5,
-        price: 10000,
-        description: 'Local product 1',
-        createdAt: '2025-01-01T10:00:00Z',
-        updatedAt: '2025-01-01T10:00:00Z',
-      ),
-    ];
-    final remoteProducts = [
-      ProductModel(
-        id: 2,
-        createdById: userId,
-        name: 'Product 2',
-        imageUrl: 'https://example.com/image2.jpg',
-        stock: 20,
-        sold: 10,
-        price: 20000,
-        description: 'Remote product 2',
-        createdAt: '2025-01-01T11:00:00Z',
-        updatedAt: '2025-01-01T11:00:00Z',
-      ),
-    ];
-
-    test('returns 0 when not connected', () async {
-      when(mockPingService.isConnected).thenReturn(false);
-
-      final result = await repository.syncAllUserProducts(userId);
-
-      expect(result.isSuccess, true);
-      expect(result.data, 0);
-      verifyNever(mockLocalDatasource.getAllUserProducts(any));
-      verifyNever(mockRemoteDatasource.getAllUserProducts(any));
-    });
-
-    test('syncs all products when connected', () async {
-      when(mockPingService.isConnected).thenReturn(true);
-      when(mockLocalDatasource.getAllUserProducts(userId)).thenAnswer((_) async => Result.success(data: localProducts));
-      when(
-        mockRemoteDatasource.getAllUserProducts(userId),
-      ).thenAnswer((_) async => Result.success(data: remoteProducts));
-      when(mockRemoteDatasource.createProduct(any)).thenAnswer((_) async => Result.success(data: 1));
-      when(mockLocalDatasource.createProduct(any)).thenAnswer((_) async => Result.success(data: 1));
-
-      final result = await repository.syncAllUserProducts(userId);
-
-      expect(result.isSuccess, true);
-      expect(result.data, 2); // Both products synced
-      verify(mockLocalDatasource.getAllUserProducts(userId)).called(1);
-      verify(mockRemoteDatasource.getAllUserProducts(userId)).called(1);
-    });
-
-    test('returns failure when local datasource fails', () async {
-      when(mockPingService.isConnected).thenReturn(true);
-      when(
-        mockLocalDatasource.getAllUserProducts(userId),
-      ).thenAnswer((_) async => Result.failure(error: 'Local error'));
-
-      final result = await repository.syncAllUserProducts(userId);
-
-      expect(result.isFailure, true);
-      expect(result.error, 'Local error');
-    });
-
-    test('returns failure when remote datasource fails', () async {
-      when(mockPingService.isConnected).thenReturn(true);
-      when(mockLocalDatasource.getAllUserProducts(userId)).thenAnswer((_) async => Result.success(data: localProducts));
-      when(
-        mockRemoteDatasource.getAllUserProducts(userId),
-      ).thenAnswer((_) async => Result.failure(error: 'Remote error'));
-
-      final result = await repository.syncAllUserProducts(userId);
-
-      expect(result.isFailure, true);
-      expect(result.error, 'Remote error');
-    });
   });
 
   group('getUserProducts', () {
@@ -159,28 +77,12 @@ void main() {
         stock: 15,
         sold: 3,
         price: 15000,
-        description: 'Local product description',
         createdAt: '2025-01-01T10:00:00Z',
         updatedAt: '2025-01-01T10:00:00Z',
       ),
     ];
-    final remoteProducts = [
-      ProductModel(
-        id: 1,
-        createdById: userId,
-        name: 'Remote Product',
-        imageUrl: 'https://example.com/remote.jpg',
-        stock: 20,
-        sold: 5,
-        price: 15000,
-        description: 'Remote product description',
-        createdAt: '2025-01-01T10:00:00Z',
-        updatedAt: '2025-01-01T11:00:00Z',
-      ),
-    ];
 
-    test('returns local products when not connected', () async {
-      when(mockPingService.isConnected).thenReturn(false);
+    test('returns local products on success', () async {
       when(
         mockLocalDatasource.getUserProducts(
           userId,
@@ -197,52 +99,9 @@ void main() {
       expect(result.isSuccess, true);
       expect(result.data!.length, 1);
       expect(result.data!.first.name, 'Local Product');
-      verifyNever(
-        mockRemoteDatasource.getUserProducts(
-          any,
-          orderBy: anyNamed('orderBy'),
-          sortBy: anyNamed('sortBy'),
-          limit: anyNamed('limit'),
-          offset: anyNamed('offset'),
-          contains: anyNamed('contains'),
-        ),
-      );
-    });
-
-    test('returns remote products when synced to local', () async {
-      when(mockPingService.isConnected).thenReturn(true);
-      when(
-        mockLocalDatasource.getUserProducts(
-          userId,
-          orderBy: anyNamed('orderBy'),
-          sortBy: anyNamed('sortBy'),
-          limit: anyNamed('limit'),
-          offset: anyNamed('offset'),
-          contains: anyNamed('contains'),
-        ),
-      ).thenAnswer((_) async => Result.success(data: localProducts));
-      when(
-        mockRemoteDatasource.getUserProducts(
-          userId,
-          orderBy: anyNamed('orderBy'),
-          sortBy: anyNamed('sortBy'),
-          limit: anyNamed('limit'),
-          offset: anyNamed('offset'),
-          contains: anyNamed('contains'),
-        ),
-      ).thenAnswer((_) async => Result.success(data: remoteProducts));
-      when(mockLocalDatasource.updateProduct(any)).thenAnswer((_) async => Result.success(data: null));
-      when(mockRemoteDatasource.updateProduct(any)).thenAnswer((_) async => Result.success(data: null));
-
-      final result = await repository.getUserProducts(userId);
-
-      expect(result.isSuccess, true);
-      expect(result.data!.length, 1);
-      expect(result.data!.first.name, 'Remote Product');
     });
 
     test('passes query parameters correctly', () async {
-      when(mockPingService.isConnected).thenReturn(false);
       when(
         mockLocalDatasource.getUserProducts(
           userId,
@@ -274,6 +133,24 @@ void main() {
         ),
       ).called(1);
     });
+
+    test('returns failure when local datasource fails', () async {
+      when(
+        mockLocalDatasource.getUserProducts(
+          userId,
+          orderBy: anyNamed('orderBy'),
+          sortBy: anyNamed('sortBy'),
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+          contains: anyNamed('contains'),
+        ),
+      ).thenAnswer((_) async => Result.failure(error: 'Database error'));
+
+      final result = await repository.getUserProducts(userId);
+
+      expect(result.isFailure, true);
+      expect(result.error, 'Database error');
+    });
   });
 
   group('getProduct', () {
@@ -286,25 +163,11 @@ void main() {
       stock: 10,
       sold: 2,
       price: 10000,
-      description: 'Local description',
       createdAt: '2025-01-01T10:00:00Z',
       updatedAt: '2025-01-01T10:00:00Z',
     );
-    final remoteProduct = ProductModel(
-      id: productId,
-      createdById: 'user123',
-      name: 'Remote Product',
-      imageUrl: 'https://example.com/remote.jpg',
-      stock: 15,
-      sold: 5,
-      price: 12000,
-      description: 'Remote description',
-      createdAt: '2025-01-01T10:00:00Z',
-      updatedAt: '2025-01-01T12:00:00Z',
-    );
 
-    test('returns local product when not connected', () async {
-      when(mockPingService.isConnected).thenReturn(false);
+    test('returns local product on success', () async {
       when(mockLocalDatasource.getProduct(productId)).thenAnswer((_) async => Result.success(data: localProduct));
 
       final result = await repository.getProduct(productId);
@@ -313,18 +176,47 @@ void main() {
       expect(result.data!.name, 'Local Product');
     });
 
-    test('syncs and returns remote product when remote is newer', () async {
-      when(mockPingService.isConnected).thenReturn(true);
-      when(mockLocalDatasource.getProduct(productId)).thenAnswer((_) async => Result.success(data: localProduct));
-      when(mockRemoteDatasource.getProduct(productId)).thenAnswer((_) async => Result.success(data: remoteProduct));
-      when(mockLocalDatasource.updateProduct(any)).thenAnswer((_) async => Result.success(data: null));
-      when(mockRemoteDatasource.updateProduct(any)).thenAnswer((_) async => Result.success(data: null));
+    test('returns failure when local datasource fails', () async {
+      when(mockLocalDatasource.getProduct(productId)).thenAnswer((_) async => Result.failure(error: 'Not found'));
 
       final result = await repository.getProduct(productId);
 
+      expect(result.isFailure, true);
+      expect(result.error, 'Not found');
+    });
+  });
+
+  group('getProductByBarcode', () {
+    const barcode = '123456789';
+    final localProduct = ProductModel(
+      id: 1,
+      createdById: 'user123',
+      name: 'Barcode Product',
+      imageUrl: '',
+      stock: 5,
+      sold: 0,
+      price: 5000,
+      barcode: barcode,
+      createdAt: '2025-01-01T10:00:00Z',
+      updatedAt: '2025-01-01T10:00:00Z',
+    );
+
+    test('returns product by barcode on success', () async {
+      when(mockLocalDatasource.getProductByBarcode(barcode)).thenAnswer((_) async => Result.success(data: localProduct));
+
+      final result = await repository.getProductByBarcode(barcode);
+
       expect(result.isSuccess, true);
-      expect(result.data!.name, 'Remote Product');
-      verify(mockLocalDatasource.updateProduct(remoteProduct)).called(1);
+      expect(result.data!.barcode, barcode);
+    });
+
+    test('returns null when not found', () async {
+      when(mockLocalDatasource.getProductByBarcode(barcode)).thenAnswer((_) async => Result.success(data: null));
+
+      final result = await repository.getProductByBarcode(barcode);
+
+      expect(result.isSuccess, true);
+      expect(result.data, isNull);
     });
   });
 
@@ -333,17 +225,14 @@ void main() {
       id: null,
       createdById: 'user123',
       name: 'New Product',
-      imageUrl: 'https://example.com/new.jpg',
+      imageUrl: '',
       stock: 25,
       sold: 0,
       price: 25000,
-      description: 'New product description',
-      createdAt: '2025-01-01T10:00:00Z',
-      updatedAt: '2025-01-01T10:00:00Z',
     );
 
-    test('creates product locally and remotely when connected', () async {
-      when(mockPingService.isConnected).thenReturn(true);
+    test('creates locally and syncs remote when online', () async {
+      when(mockSyncService.isOnline).thenReturn(true);
       when(mockLocalDatasource.createProduct(any)).thenAnswer((_) async => Result.success(data: 1));
       when(mockRemoteDatasource.createProduct(any)).thenAnswer((_) async => Result.success(data: 1));
 
@@ -353,30 +242,45 @@ void main() {
       expect(result.data, 1);
       verify(mockLocalDatasource.createProduct(any)).called(1);
       verify(mockRemoteDatasource.createProduct(any)).called(1);
-      verifyNever(mockQueuedActionDatasource.createQueuedAction(any));
+      verifyNever(mockQueuedActionRepository.createQueuedAction(any));
     });
 
-    test('creates product locally and queues action when not connected', () async {
-      when(mockPingService.isConnected).thenReturn(false);
+    test('creates locally and queues action when offline', () async {
+      when(mockSyncService.isOnline).thenReturn(false);
       when(mockLocalDatasource.createProduct(any)).thenAnswer((_) async => Result.success(data: 1));
-      when(mockQueuedActionDatasource.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
+      when(mockQueuedActionRepository.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
 
       final result = await repository.createProduct(product);
 
       expect(result.isSuccess, true);
       verify(mockLocalDatasource.createProduct(any)).called(1);
-      verify(mockQueuedActionDatasource.createQueuedAction(any)).called(1);
+      verify(mockQueuedActionRepository.createQueuedAction(any)).called(1);
       verifyNever(mockRemoteDatasource.createProduct(any));
     });
 
+    test('queues action when remote call fails', () async {
+      when(mockSyncService.isOnline).thenReturn(true);
+      when(mockLocalDatasource.createProduct(any)).thenAnswer((_) async => Result.success(data: 1));
+      when(mockRemoteDatasource.createProduct(any)).thenAnswer((_) async => Result.failure(error: 'Server error'));
+      when(mockQueuedActionRepository.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
+
+      final result = await repository.createProduct(product);
+
+      expect(result.isSuccess, true);
+      verify(mockRemoteDatasource.createProduct(any)).called(1);
+      verify(mockQueuedActionRepository.createQueuedAction(any)).called(1);
+    });
+
     test('returns failure when local creation fails', () async {
-      when(mockPingService.isConnected).thenReturn(true);
-      when(mockLocalDatasource.createProduct(any)).thenAnswer((_) async => Result.failure(error: 'Local error'));
+      when(mockSyncService.isOnline).thenReturn(true);
+      when(mockLocalDatasource.createProduct(any)).thenAnswer((_) async => Result.failure(error: 'Database error'));
 
       final result = await repository.createProduct(product);
 
       expect(result.isFailure, true);
-      expect(result.error, 'Local error');
+      expect(result.error, 'Database error');
+      verifyNever(mockRemoteDatasource.createProduct(any));
+      verifyNever(mockQueuedActionRepository.createQueuedAction(any));
     });
   });
 
@@ -385,17 +289,14 @@ void main() {
       id: 1,
       createdById: 'user123',
       name: 'Updated Product',
-      imageUrl: 'https://example.com/updated.jpg',
+      imageUrl: '',
       stock: 30,
       sold: 8,
       price: 30000,
-      description: 'Updated product description',
-      createdAt: '2025-01-01T10:00:00Z',
-      updatedAt: '2025-01-01T12:00:00Z',
     );
 
-    test('updates product locally and remotely when connected', () async {
-      when(mockPingService.isConnected).thenReturn(true);
+    test('updates locally and syncs remote when online', () async {
+      when(mockSyncService.isOnline).thenReturn(true);
       when(mockLocalDatasource.updateProduct(any)).thenAnswer((_) async => Result.success(data: null));
       when(mockRemoteDatasource.updateProduct(any)).thenAnswer((_) async => Result.success(data: null));
 
@@ -404,28 +305,38 @@ void main() {
       expect(result.isSuccess, true);
       verify(mockLocalDatasource.updateProduct(any)).called(1);
       verify(mockRemoteDatasource.updateProduct(any)).called(1);
-      verifyNever(mockQueuedActionDatasource.createQueuedAction(any));
+      verifyNever(mockQueuedActionRepository.createQueuedAction(any));
     });
 
-    test('updates product locally and queues action when not connected', () async {
-      when(mockPingService.isConnected).thenReturn(false);
+    test('updates locally and queues action when offline', () async {
+      when(mockSyncService.isOnline).thenReturn(false);
       when(mockLocalDatasource.updateProduct(any)).thenAnswer((_) async => Result.success(data: null));
-      when(mockQueuedActionDatasource.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
+      when(mockQueuedActionRepository.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
 
       final result = await repository.updateProduct(product);
 
       expect(result.isSuccess, true);
       verify(mockLocalDatasource.updateProduct(any)).called(1);
-      verify(mockQueuedActionDatasource.createQueuedAction(any)).called(1);
+      verify(mockQueuedActionRepository.createQueuedAction(any)).called(1);
       verifyNever(mockRemoteDatasource.updateProduct(any));
+    });
+
+    test('returns failure when local update fails', () async {
+      when(mockSyncService.isOnline).thenReturn(true);
+      when(mockLocalDatasource.updateProduct(any)).thenAnswer((_) async => Result.failure(error: 'Update failed'));
+
+      final result = await repository.updateProduct(product);
+
+      expect(result.isFailure, true);
+      expect(result.error, 'Update failed');
     });
   });
 
   group('deleteProduct', () {
     const productId = 1;
 
-    test('deletes product locally and remotely when connected', () async {
-      when(mockPingService.isConnected).thenReturn(true);
+    test('deletes locally and syncs remote when online', () async {
+      when(mockSyncService.isOnline).thenReturn(true);
       when(mockLocalDatasource.deleteProduct(productId)).thenAnswer((_) async => Result.success(data: null));
       when(mockRemoteDatasource.deleteProduct(productId)).thenAnswer((_) async => Result.success(data: null));
 
@@ -434,33 +345,83 @@ void main() {
       expect(result.isSuccess, true);
       verify(mockLocalDatasource.deleteProduct(productId)).called(1);
       verify(mockRemoteDatasource.deleteProduct(productId)).called(1);
-      verifyNever(mockQueuedActionDatasource.createQueuedAction(any));
+      verifyNever(mockQueuedActionRepository.createQueuedAction(any));
     });
 
-    test('deletes product locally and queues action when not connected', () async {
-      when(mockPingService.isConnected).thenReturn(false);
+    test('deletes locally and queues action when offline', () async {
+      when(mockSyncService.isOnline).thenReturn(false);
       when(mockLocalDatasource.deleteProduct(productId)).thenAnswer((_) async => Result.success(data: null));
-      when(mockQueuedActionDatasource.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
+      when(mockQueuedActionRepository.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
 
       final result = await repository.deleteProduct(productId);
 
       expect(result.isSuccess, true);
       verify(mockLocalDatasource.deleteProduct(productId)).called(1);
-      verify(mockQueuedActionDatasource.createQueuedAction(any)).called(1);
+      verify(mockQueuedActionRepository.createQueuedAction(any)).called(1);
       verifyNever(mockRemoteDatasource.deleteProduct(productId));
     });
 
-    test('returns failure when remote deletion fails', () async {
-      when(mockPingService.isConnected).thenReturn(true);
-      when(mockLocalDatasource.deleteProduct(productId)).thenAnswer((_) async => Result.success(data: null));
-      when(
-        mockRemoteDatasource.deleteProduct(productId),
-      ).thenAnswer((_) async => Result.failure(error: 'Remote error'));
+    test('returns failure when local deletion fails', () async {
+      when(mockSyncService.isOnline).thenReturn(true);
+      when(mockLocalDatasource.deleteProduct(productId)).thenAnswer((_) async => Result.failure(error: 'Delete failed'));
 
       final result = await repository.deleteProduct(productId);
 
       expect(result.isFailure, true);
-      expect(result.error, 'Remote error');
+      expect(result.error, 'Delete failed');
+    });
+  });
+
+  group('getProductUnits', () {
+    const productId = 1;
+
+    test('returns product units on success', () async {
+      when(mockLocalDatasource.getProductUnits(productId)).thenAnswer((_) async => Result.success(data: []));
+
+      final result = await repository.getProductUnits(productId);
+
+      expect(result.isSuccess, true);
+    });
+  });
+
+  group('saveProductUnits', () {
+    const productId = 1;
+
+    test('saves units locally and syncs remote when online', () async {
+      when(mockSyncService.isOnline).thenReturn(true);
+      when(mockLocalDatasource.saveProductUnits(any, any)).thenAnswer((_) async => Result.success(data: null));
+      when(mockRemoteDatasource.saveProductUnits(any, any)).thenAnswer((_) async => Result.success(data: null));
+
+      final result = await repository.saveProductUnits(productId, []);
+
+      expect(result.isSuccess, true);
+      verify(mockLocalDatasource.saveProductUnits(any, any)).called(1);
+      verify(mockRemoteDatasource.saveProductUnits(any, any)).called(1);
+    });
+  });
+
+  group('_syncRemote edge cases', () {
+    test('queues action when remote call throws exception', () async {
+      final product = ProductEntity(
+        id: null,
+        createdById: 'user123',
+        name: 'Test',
+        imageUrl: '',
+        stock: 10,
+        sold: 0,
+        price: 10000,
+      );
+
+      when(mockSyncService.isOnline).thenReturn(true);
+      when(mockLocalDatasource.createProduct(any)).thenAnswer((_) async => Result.success(data: 1));
+      when(mockRemoteDatasource.createProduct(any)).thenThrow(Exception('Network error'));
+      when(mockQueuedActionRepository.createQueuedAction(any)).thenAnswer((_) async => Result.success(data: 1));
+
+      final result = await repository.createProduct(product);
+
+      expect(result.isSuccess, true);
+      verify(mockRemoteDatasource.createProduct(any)).called(1);
+      verify(mockQueuedActionRepository.createQueuedAction(any)).called(1);
     });
   });
 }

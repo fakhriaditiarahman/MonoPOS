@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
+import '../../../core/services/sync/sync_service.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
@@ -434,47 +435,44 @@ class _SyncButton extends ConsumerWidget {
     final isHasQueuedActions = ref.watch(mainNotifierProvider.select((p) => p.isHasQueuedActions));
     final isSyncronizing = ref.watch(mainNotifierProvider.select((p) => p.isSyncronizing));
 
+    final (IconData icon, Color color, String label) = isSyncronizing
+        ? (Icons.sync, Theme.of(context).colorScheme.primary, 'Sync...')
+        : isHasQueuedActions
+        ? (Icons.sync_problem_sharp, Colors.orange, 'Pending')
+        : (Icons.cloud_done_sharp, Theme.of(context).colorScheme.primary, 'Synced');
+
     return Padding(
       padding: const EdgeInsets.only(right: AppSizes.padding / 4),
       child: AppButton(
         height: 26,
         borderRadius: BorderRadius.circular(4),
         padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding / 2),
-        buttonColor: isHasQueuedActions && !isSyncronizing
+        buttonColor: isSyncronizing || isHasQueuedActions
             ? Theme.of(context).colorScheme.surfaceContainer
             : Theme.of(context).colorScheme.shadow.withValues(alpha: 0.06),
         child: Row(
           children: [
-            Icon(
-              isSyncronizing
-                  ? Icons.sync
-                  : isHasQueuedActions
-                  ? Icons.cloud_done_sharp
-                  : Icons.sync_problem_sharp,
-              size: 12,
-              color: isHasQueuedActions && !isSyncronizing
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline,
-            ),
+            Icon(icon, size: 12, color: color),
             const SizedBox(width: AppSizes.padding / 4),
             Text(
-              isSyncronizing
-                  ? 'Syncronizing'
-                  : isHasQueuedActions
-                  ? 'Synced'
-                  : 'Pending',
+              label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isHasQueuedActions && !isSyncronizing
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.outline,
+                color: color,
               ),
             ),
           ],
         ),
         onTap: () {
           ref.read(mainNotifierProvider.notifier).getUserData();
+          final syncState = ref.read(mainNotifierProvider);
+          final msg = syncState.isSyncronizing
+              ? 'Sync: Mengirim data antrian...'
+              : syncState.isHasQueuedActions
+              ? 'Sync: ${syncState.isHasInternet ? "Ada antrian, mengirim..." : "Tidak ada koneksi, menunggu online"}'
+              : 'Sync: Semua data sudah tersinkronisasi';
+          AppSnackBar.show(msg);
         },
       ),
     );
@@ -486,7 +484,18 @@ class _NetworkInfo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isHasInternet = ref.watch(mainNotifierProvider.select((provider) => provider.isHasInternet));
+    final mainState = ref.watch(mainNotifierProvider);
+    final isOnline = mainState.isHasInternet;
+    final syncMode = mainState.syncMode;
+
+    final (IconData icon, Color color, String label) = switch (syncMode) {
+      SyncMode.online => (Icons.wifi_rounded, Colors.green, 'Online'),
+      SyncMode.offline => (Icons.wifi_off_rounded, Colors.red, 'Offline'),
+      SyncMode.auto =>
+        isOnline
+            ? (Icons.wifi_rounded, Theme.of(context).colorScheme.primary, 'Auto')
+            : (Icons.wifi_off_rounded, Theme.of(context).colorScheme.outline, 'Auto'),
+    };
 
     return Padding(
       padding: const EdgeInsets.only(right: AppSizes.padding),
@@ -494,16 +503,38 @@ class _NetworkInfo extends ConsumerWidget {
         height: 26,
         borderRadius: BorderRadius.circular(4),
         padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding / 2),
-        buttonColor: isHasInternet
-            ? Theme.of(context).colorScheme.surfaceContainer
-            : Theme.of(context).colorScheme.shadow.withValues(alpha: 0.06),
-        child: Icon(
-          isHasInternet ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-          size: 12,
-          color: isHasInternet ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
+        buttonColor: syncMode == SyncMode.offline || (!isOnline && syncMode == SyncMode.auto)
+            ? Theme.of(context).colorScheme.shadow.withValues(alpha: 0.06)
+            : Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
         ),
         onTap: () {
-          AppSnackBar.show(isHasInternet ? 'Online mode' : 'No internet connection, running in offline mode');
+          ref.read(mainNotifierProvider.notifier).toggleSyncMode();
+          final newMode = ref.read(mainNotifierProvider).syncMode;
+          final newIsOnline = ref.read(mainNotifierProvider).isHasInternet;
+
+          final msg = switch (newMode) {
+            SyncMode.online => 'Mode Online — Semua data langsung sync ke server',
+            SyncMode.offline => 'Mode Offline — Data hanya disimpan lokal',
+            SyncMode.auto =>
+              newIsOnline
+                  ? 'Mode Auto (Online) — Sync otomatis saat ada koneksi'
+                  : 'Mode Auto (Offline) — Data akan diantrekan, sync saat online',
+          };
+
+          AppSnackBar.show(msg);
         },
       ),
     );

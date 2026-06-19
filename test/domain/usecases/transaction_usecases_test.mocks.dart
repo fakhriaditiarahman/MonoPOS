@@ -9,7 +9,8 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
 import 'package:mono_pos/core/common/result.dart' as _i4;
 import 'package:mono_pos/domain/entities/transaction_entity.dart' as _i5;
-import 'package:mono_pos/domain/repositories/transaction_repository.dart' as _i2;
+import 'package:mono_pos/domain/repositories/transaction_repository.dart'
+    as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -28,7 +29,8 @@ import 'package:mono_pos/domain/repositories/transaction_repository.dart' as _i2
 /// A class which mocks [TransactionRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTransactionRepository extends _i1.Mock implements _i2.TransactionRepository {
+class MockTransactionRepository extends _i1.Mock
+    implements _i2.TransactionRepository {
   MockTransactionRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -79,6 +81,35 @@ class MockTransactionRepository extends _i1.Mock implements _i2.TransactionRepos
           as _i3.Future<_i4.Result<void>>);
 
   @override
+  _i3.Future<_i4.Result<void>> updatePaymentStatus(
+    int? transactionId,
+    String? status, {
+    String? paymentQR,
+    String? paymentExternalId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #updatePaymentStatus,
+              [transactionId, status],
+              {#paymentQR: paymentQR, #paymentExternalId: paymentExternalId},
+            ),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(
+                  #updatePaymentStatus,
+                  [transactionId, status],
+                  {
+                    #paymentQR: paymentQR,
+                    #paymentExternalId: paymentExternalId,
+                  },
+                ),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
+
+  @override
   _i3.Future<_i4.Result<void>> deleteTransaction(int? transactionId) =>
       (super.noSuchMethod(
             Invocation.method(#deleteTransaction, [transactionId]),
@@ -112,22 +143,50 @@ class MockTransactionRepository extends _i1.Mock implements _i2.TransactionRepos
                 #contains: contains,
               },
             ),
-            returnValue: _i3.Future<_i4.Result<List<_i5.TransactionEntity>>>.value(
-              _i6.dummyValue<_i4.Result<List<_i5.TransactionEntity>>>(
-                this,
-                Invocation.method(
-                  #getUserTransactions,
-                  [userId],
-                  {
-                    #orderBy: orderBy,
-                    #sortBy: sortBy,
-                    #limit: limit,
-                    #offset: offset,
-                    #contains: contains,
-                  },
+            returnValue:
+                _i3.Future<_i4.Result<List<_i5.TransactionEntity>>>.value(
+                  _i6.dummyValue<_i4.Result<List<_i5.TransactionEntity>>>(
+                    this,
+                    Invocation.method(
+                      #getUserTransactions,
+                      [userId],
+                      {
+                        #orderBy: orderBy,
+                        #sortBy: sortBy,
+                        #limit: limit,
+                        #offset: offset,
+                        #contains: contains,
+                      },
+                    ),
+                  ),
                 ),
-              ),
+          )
+          as _i3.Future<_i4.Result<List<_i5.TransactionEntity>>>);
+
+  @override
+  _i3.Future<_i4.Result<List<_i5.TransactionEntity>>>
+  getTransactionsByDateRange(
+    String? userId, {
+    required String? startDate,
+    required String? endDate,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #getTransactionsByDateRange,
+              [userId],
+              {#startDate: startDate, #endDate: endDate},
             ),
+            returnValue:
+                _i3.Future<_i4.Result<List<_i5.TransactionEntity>>>.value(
+                  _i6.dummyValue<_i4.Result<List<_i5.TransactionEntity>>>(
+                    this,
+                    Invocation.method(
+                      #getTransactionsByDateRange,
+                      [userId],
+                      {#startDate: startDate, #endDate: endDate},
+                    ),
+                  ),
+                ),
           )
           as _i3.Future<_i4.Result<List<_i5.TransactionEntity>>>);
 }

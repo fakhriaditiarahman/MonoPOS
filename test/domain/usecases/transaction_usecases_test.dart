@@ -26,62 +26,6 @@ void main() {
     mockTransactionRepository = MockTransactionRepository();
   });
 
-  group('SyncAllUserTransactionsUsecase', () {
-    late SyncAllUserTransactionsUsecase usecase;
-
-    setUp(() {
-      usecase = SyncAllUserTransactionsUsecase(mockTransactionRepository);
-    });
-
-    test('should sync all user transactions successfully', () async {
-      // arrange
-      const userId = 'user123';
-      const syncedCount = 15;
-      final result = Result<int>.success(data: syncedCount);
-
-      when(mockTransactionRepository.syncAllUserTransactions(userId)).thenAnswer((_) async => result);
-
-      // act
-      final response = await usecase.call(userId);
-
-      // assert
-      expect(response, result);
-      expect(response.data, syncedCount);
-      verify(mockTransactionRepository.syncAllUserTransactions(userId));
-      verifyNoMoreInteractions(mockTransactionRepository);
-    });
-
-    test('should return failure when sync fails', () async {
-      // arrange
-      const userId = 'user123';
-      final result = Result<int>.failure(error: 'Sync failed');
-
-      when(mockTransactionRepository.syncAllUserTransactions(userId)).thenAnswer((_) async => result);
-
-      // act
-      final response = await usecase.call(userId);
-
-      // assert
-      expect(response.isFailure, true);
-      verify(mockTransactionRepository.syncAllUserTransactions(userId));
-    });
-
-    test('should handle network error during sync', () async {
-      // arrange
-      const userId = 'user123';
-      final result = Result<int>.failure(error: 'Network error');
-
-      when(mockTransactionRepository.syncAllUserTransactions(userId)).thenAnswer((_) async => result);
-
-      // act
-      final response = await usecase.call(userId);
-
-      // assert
-      expect(response.isFailure, true);
-      verify(mockTransactionRepository.syncAllUserTransactions(userId));
-    });
-  });
-
   group('GetUserTransactionsUsecase', () {
     late GetUserTransactionsUsecase usecase;
 
