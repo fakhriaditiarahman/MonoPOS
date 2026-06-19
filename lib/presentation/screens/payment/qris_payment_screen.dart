@@ -145,25 +145,18 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
               ),
             ),
             child: Center(
-              child: state.qrCode.isNotEmpty
-                  ? (state.qrCode.startsWith('http://') || state.qrCode.startsWith('https://')
-                        ? Image.network(
-                            state.qrCode,
-                            width: 220,
-                            height: 220,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return _FallbackQrDisplay(qrData: state.qrCode);
-                            },
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const AppProgressIndicator();
-                            },
-                          )
-                        : _FallbackQrDisplay(qrData: state.qrCode))
-                  : const AppProgressIndicator(),
+              child: state.qrCode.isNotEmpty ? _buildQrDisplay(state.qrCode) : const AppProgressIndicator(),
             ),
           ),
+          if (state.qrisNmid.isNotEmpty) ...[
+            const SizedBox(height: AppSizes.padding / 2),
+            Text(
+              'NMID: ${state.qrisNmid}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ],
           const SizedBox(height: AppSizes.padding),
           Text(
             'Scan QRIS di atas untuk membayar',
@@ -198,14 +191,44 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
           ),
           const SizedBox(height: AppSizes.padding),
           Text(
-            'Menunggu pembayaran...',
+            state.autoCheckDone ? 'Tekan tombol di bawah setelah pelanggan membayar' : 'Menunggu pembayaran...',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.outline,
             ),
           ),
+          if (state.autoCheckDone) ...[
+            const SizedBox(height: AppSizes.padding * 2),
+            AppButton(
+              text: state.isManualChecking ? 'Memeriksa...' : 'Cek Pembayaran',
+              enabled: !state.isManualChecking,
+              onTap: () {
+                ref.read(qrisPaymentNotifierProvider.notifier).checkPaymentManually();
+              },
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  Widget _buildQrDisplay(String qrData) {
+    if (qrData.startsWith('http://') || qrData.startsWith('https://')) {
+      return Image.network(
+        qrData,
+        width: 220,
+        height: 220,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return _FallbackQrDisplay(qrData: qrData);
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const AppProgressIndicator();
+        },
+      );
+    }
+
+    return _FallbackQrDisplay(qrData: qrData);
   }
 
   void _showCancelDialog() {

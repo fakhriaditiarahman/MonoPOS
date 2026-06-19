@@ -16,6 +16,7 @@ final qrisPaymentNotifierProvider = NotifierProvider.autoDispose<QrisPaymentNoti
 class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
   Timer? _pollTimer;
   Timer? _elapsedTimer;
+  int _totalAmount = 0;
 
   @override
   QrisPaymentState build() {
@@ -31,6 +32,7 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
     required int totalAmount,
   }) async {
     state = state.copyWith(isPolling: true);
+    _totalAmount = totalAmount;
 
     try {
       final transactionRepo = ref.read(transactionRepositoryProvider);
@@ -45,50 +47,52 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
       final transactionId = saveResult.data!;
       final orderId = transactionId.toString();
 
-      final midtrans = ref.read(midtransPaymentServiceProvider);
-      final chargeResult = await midtrans.createQrisCharge(
+      final interactiveQris = ref.read(interactiveQrisPaymentServiceProvider);
+      final invoiceResult = await interactiveQris.createQrisInvoice(
         orderId: orderId,
         grossAmount: totalAmount,
       );
 
-      if (chargeResult.isFailure) {
+      if (invoiceResult.isFailure) {
         await DeleteTransactionUsecase(transactionRepo).call(transactionId);
-        return Result.failure(error: chargeResult.error ?? 'Failed to create QRIS charge');
+        return Result.failure(error: invoiceResult.error ?? 'Failed to create QRIS invoice');
       }
 
-      final qrisData = chargeResult.data!;
+      final qrisData = invoiceResult.data!;
 
       await UpdatePaymentStatusUsecase(transactionRepo).call(
         transactionId,
         'pending',
-        paymentQR: qrisData.qrCode,
-        paymentExternalId: qrisData.transactionId,
+        paymentQR: qrisData.qrisContent,
+        paymentExternalId: qrisData.qrisInvoiceId,
       );
 
       // Print QR slip (fire-and-forget)
       final printer = ref.read(printerServiceProvider);
       final storeName = ref.read(sharedPreferencesProvider).getString(Constants.storeNameKey) ?? '';
       printer.printQrCode(
-        qrData: qrisData.qrCode,
+        qrData: qrisData.qrisContent,
         totalAmount: totalAmount,
         storeName: storeName,
-        merchantName: midtrans.merchantName,
+        merchantName: interactiveQris.merchantName,
       );
 
       state = state.copyWith(
         transaction: transaction.copyWith(
           id: transactionId,
           paymentStatus: 'pending',
-          paymentQR: qrisData.qrCode,
-          paymentExternalId: qrisData.transactionId,
+          paymentQR: qrisData.qrisContent,
+          paymentExternalId: qrisData.qrisInvoiceId,
         ),
-        qrCode: qrisData.qrCode,
+        qrCode: qrisData.qrisContent,
         paymentStatus: 'pending',
         isPolling: false,
         elapsedSeconds: 0,
+        qrisInvoiceId: qrisData.qrisInvoiceId,
+        qrisNmid: qrisData.qrisNmid,
       );
 
-      _startPolling(orderId, transactionId);
+      _startPolling(transactionId);
 
       return Result.success(data: transactionId);
     } catch (e) {
@@ -97,44 +101,76 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
     }
   }
 
-  void _startPolling(String orderId, int transactionId) {
+  void _startPolling(int transactionId) {
     _pollTimer?.cancel();
     _elapsedTimer?.cancel();
 
     _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (state.elapsedSeconds >= 300) {
+      if (state.elapsedSeconds >= 1800) {
         _onPaymentFailed('Waktu pembayaran habis');
         return;
       }
       state = state.copyWith(elapsedSeconds: state.elapsedSeconds + 1);
     });
 
-    _pollStatus(orderId, transactionId);
+    _autoPollStatus(transactionId);
   }
 
-  void _pollStatus(String orderId, int transactionId) async {
-    final midtrans = ref.read(midtransPaymentServiceProvider);
+  Future<void> _autoPollStatus(int transactionId) async {
+    final interactiveQris = ref.read(interactiveQrisPaymentServiceProvider);
+    int attempts = 0;
 
-    while (state.paymentStatus == 'pending') {
-      await Future.delayed(const Duration(seconds: 5));
+    while (state.paymentStatus == 'pending' && attempts < 3) {
+      await Future.delayed(const Duration(seconds: 15));
+      attempts++;
 
-      final result = await midtrans.checkTransactionStatus(orderId);
+      final now = DateTime.now();
+      final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      final result = await interactiveQris.checkInvoiceStatus(
+        invoiceId: state.qrisInvoiceId,
+        amount: _totalAmount,
+        date: dateStr,
+      );
 
       if (result.isFailure) continue;
 
       final status = result.data!;
 
       if (status == 'paid') {
-        _onPaymentSuccess(transactionId, orderId);
-        return;
-      } else if (status == 'failed') {
-        _onPaymentFailed('Pembayaran gagal');
+        _onPaymentSuccess(transactionId);
         return;
       }
     }
+
+    if (state.paymentStatus == 'pending') {
+      state = state.copyWith(autoCheckDone: true);
+    }
   }
 
-  Future<void> _onPaymentSuccess(int transactionId, String orderId) async {
+  Future<void> checkPaymentManually() async {
+    if (state.transaction == null) return;
+
+    state = state.copyWith(isManualChecking: true);
+
+    final interactiveQris = ref.read(interactiveQrisPaymentServiceProvider);
+    final now = DateTime.now();
+    final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    final result = await interactiveQris.checkInvoiceStatus(
+      invoiceId: state.qrisInvoiceId,
+      amount: _totalAmount,
+      date: dateStr,
+    );
+
+    if (result.isSuccess && result.data == 'paid') {
+      _onPaymentSuccess(state.transaction!.id!);
+    } else {
+      state = state.copyWith(isManualChecking: false);
+    }
+  }
+
+  Future<void> _onPaymentSuccess(int transactionId) async {
     _pollTimer?.cancel();
     _elapsedTimer?.cancel();
 

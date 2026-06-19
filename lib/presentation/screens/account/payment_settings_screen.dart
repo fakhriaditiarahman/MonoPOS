@@ -16,7 +16,7 @@ class PaymentSettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Payment Gateway (Midtrans)'),
+        title: const Text('Pengaturan QRIS'),
         titleSpacing: 0,
       ),
       body: !state.isLoaded
@@ -26,16 +26,16 @@ class PaymentSettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SectionTitle(text: 'Koneksi Midtrans'),
+                  _SectionTitle(text: 'Koneksi InterActive QRIS'),
                   const SizedBox(height: AppSizes.padding / 2),
-                  _ServerKeyField(
-                    initialValue: state.serverKey,
-                    onChanged: notifier.onChangedServerKey,
+                  _ApiKeyField(
+                    initialValue: state.apiKey,
+                    onChanged: notifier.onChangedApiKey,
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _ClientKeyField(
-                    initialValue: state.clientKey,
-                    onChanged: notifier.onChangedClientKey,
+                  _MidField(
+                    initialValue: state.mid,
+                    onChanged: notifier.onChangedMid,
                   ),
                   const SizedBox(height: AppSizes.padding),
                   _MerchantNameField(
@@ -43,13 +43,8 @@ class PaymentSettingsScreen extends ConsumerWidget {
                     onChanged: notifier.onChangedMerchantName,
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _EnvironmentToggle(
-                    isProduction: state.isProduction,
-                    onChanged: notifier.onChangedIsProduction,
-                  ),
-                  const SizedBox(height: AppSizes.padding),
                   _InfoBox(
-                    isConfigured: state.serverKey.isNotEmpty,
+                    isConfigured: state.apiKey.isNotEmpty && state.mid.isNotEmpty,
                   ),
                 ],
               ),
@@ -73,11 +68,11 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _ServerKeyField extends ConsumerWidget {
+class _ApiKeyField extends ConsumerWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
 
-  const _ServerKeyField({required this.initialValue, required this.onChanged});
+  const _ApiKeyField({required this.initialValue, required this.onChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,19 +80,19 @@ class _ServerKeyField extends ConsumerWidget {
 
     return AppTextField(
       controller: controller,
-      labelText: 'Server Key',
-      hintText: 'Isi dengan Server Key Midtrans',
+      labelText: 'API Key',
+      hintText: 'Isi dengan API Key dari InterActive QRIS',
       obscureText: true,
       onChanged: onChanged,
     );
   }
 }
 
-class _ClientKeyField extends ConsumerWidget {
+class _MidField extends ConsumerWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
 
-  const _ClientKeyField({required this.initialValue, required this.onChanged});
+  const _MidField({required this.initialValue, required this.onChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,8 +100,8 @@ class _ClientKeyField extends ConsumerWidget {
 
     return AppTextField(
       controller: controller,
-      labelText: 'Client Key',
-      hintText: 'Isi dengan Client Key Midtrans',
+      labelText: 'mID',
+      hintText: 'Isi dengan Merchant ID (mID) dari InterActive QRIS',
       onChanged: onChanged,
     );
   }
@@ -131,50 +126,6 @@ class _MerchantNameField extends ConsumerWidget {
   }
 }
 
-class _EnvironmentToggle extends StatelessWidget {
-  final bool isProduction;
-  final ValueChanged<bool> onChanged;
-
-  const _EnvironmentToggle({required this.isProduction, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.padding),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSizes.radius),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Environment',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                isProduction ? 'Production' : 'Sandbox',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isProduction ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-          Switch(
-            value: isProduction,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _InfoBox extends StatelessWidget {
   final bool isConfigured;
   const _InfoBox({required this.isConfigured});
@@ -195,7 +146,7 @@ class _InfoBox extends StatelessWidget {
             const SizedBox(width: AppSizes.padding / 2),
             const Expanded(
               child: Text(
-                'Midtrans sudah dikonfigurasi. Mode QRIS real akan digunakan.',
+                'QRIS sudah dikonfigurasi. Mode live akan digunakan.',
                 style: TextStyle(fontSize: 12),
               ),
             ),
@@ -218,8 +169,8 @@ class _InfoBox extends StatelessWidget {
           const SizedBox(width: AppSizes.padding / 2),
           const Expanded(
             child: Text(
-              'Mode Mock: QRIS akan menggunakan simulasi tanpa koneksi ke Midtrans. '
-              'Isi Server Key di atas untuk mengaktifkan mode real.',
+              'Mode Mock: QRIS akan menggunakan simulasi tanpa koneksi ke InterActive QRIS. '
+              'Isi API Key dan mID di atas untuk mengaktifkan mode live.',
               style: TextStyle(fontSize: 12),
             ),
           ),

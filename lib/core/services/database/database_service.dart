@@ -152,13 +152,20 @@ class DatabaseService {
       );
     }
 
-    // Seed missing users (INSERT OR IGNORE)
     final seedUsers = [
       {
         'id': 'admin',
         'name': 'Admin',
         'email': 'admin@localhost',
         'authProvider': 'local',
+        'password': 'admin123',
+        'role': 'admin',
+      },
+      {
+        'id': '7778024b-98a5-4df2-b912-a6e541a2ff1b',
+        'name': 'Admin',
+        'email': 'admin@monopos.local',
+        'authProvider': 'supabase',
         'password': 'admin123',
         'role': 'admin',
       },
@@ -193,59 +200,65 @@ class DatabaseService {
     if (!kDebugMode) return;
 
     try {
-      // Check if seed products already exist (by barcode)
       final existing = await database.query(
         DatabaseConfig.productTableName,
-        where: 'barcode = ?',
-        whereArgs: ['8991002100220'],
+        limit: 1,
       );
 
       if (existing.isNotEmpty) return;
 
-      // Insert product
-      final productId = await database.insert(
-        DatabaseConfig.productTableName,
-        {
-          'createdById': 'admin',
-          'name': 'Teh Botol Sosro',
-          'imageUrl': '',
-          'stock': 100,
-          'sold': 0,
-          'price': 5000,
-          'wholesalePrice': 4500,
-          'unit': 'pcs',
-          'barcode': '8991002100220',
-          'description': 'Teh botol sosro 250ml',
-        },
-      );
+      final products = [
+        ('Teh Botol Sosro', 5000, 4500, '8991002100220', 100, 55, 'Teh botol sosro 250ml', 55000, 50000),
+        ('Indomie Goreng', 3500, 3200, '8991002100221', 200, 9, 'Indomie goreng original 85g', 31000, 28000),
+        ('Coca Cola', 7000, 6500, '8991002100222', 80, 3, 'Coca cola 390ml kaleng', 81000, 75000),
+        ('Aqua', 3000, 2500, '8991002100223', 150, 5, 'Air mineral aqua 600ml', 35000, 29000),
+        ('Minyak Goreng Sania', 15000, 14000, '8991002100224', 50, 4, 'Minyak goreng sania 1L', 175000, 160000),
+        ('Beras Ramos', 75000, 72000, '8991002100225', 30, 0, 'Beras ramos 5kg premium', null, null),
+        ('Gula Pasir Gulaku', 14000, 13000, '8991002100226', 60, 2, 'Gula pasir gulaku 1kg', 165000, 150000),
+        ('Telur Ayam', 2500, 2300, '8991002100227', 500, 0, 'Telur ayam negeri per butir', null, null),
+        ('Susu Kental Manis', 12000, 11000, '8991002100228', 90, 1, 'Frisian flag susu kental manis', 140000, 128000),
+        ('Kopi Kapal Api', 17000, 16000, '8991002100229', 70, 6, 'Kopi kapal api 10 sachet', 200000, 185000),
+      ];
 
-      // Insert base unit (pcs)
-      await database.insert(
-        DatabaseConfig.productUnitTableName,
-        {
+      for (final p in products) {
+        final productId = await database.insert(
+          DatabaseConfig.productTableName,
+          {
+            'createdById': '7778024b-98a5-4df2-b912-a6e541a2ff1b',
+            'name': p.$1,
+            'imageUrl': '',
+            'stock': p.$5,
+            'sold': p.$6,
+            'price': p.$2,
+            'wholesalePrice': p.$3,
+            'unit': 'pcs',
+            'barcode': p.$4,
+            'description': p.$7,
+          },
+        );
+
+        await database.insert(DatabaseConfig.productUnitTableName, {
           'productId': productId,
           'unitName': 'pcs',
           'conversionValue': 1,
-          'price': 5000,
-          'wholesalePrice': 4500,
+          'price': p.$2,
+          'wholesalePrice': p.$3,
           'isBase': 1,
-        },
-      );
+        });
 
-      // Insert dus unit (12 pcs per dus)
-      await database.insert(
-        DatabaseConfig.productUnitTableName,
-        {
-          'productId': productId,
-          'unitName': 'dus',
-          'conversionValue': 12,
-          'price': 55000,
-          'wholesalePrice': 50000,
-          'isBase': 0,
-        },
-      );
+        if (p.$8 != null) {
+          await database.insert(DatabaseConfig.productUnitTableName, {
+            'productId': productId,
+            'unitName': 'dus',
+            'conversionValue': 12,
+            'price': p.$8,
+            'wholesalePrice': p.$9,
+            'isBase': 0,
+          });
+        }
+      }
 
-      cw('Seeded sample product: Teh Botol Sosro');
+      cw('Seeded ${products.length} sample products');
     } catch (e) {
       ce('Seed products failed: $e');
     }

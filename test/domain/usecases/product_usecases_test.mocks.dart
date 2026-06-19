@@ -9,6 +9,7 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
 import 'package:mono_pos/core/common/result.dart' as _i4;
 import 'package:mono_pos/domain/entities/product_entity.dart' as _i5;
+import 'package:mono_pos/domain/entities/product_unit_entity.dart' as _i7;
 import 'package:mono_pos/domain/repositories/product_repository.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -41,6 +42,21 @@ class MockProductRepository extends _i1.Mock implements _i2.ProductRepository {
               _i6.dummyValue<_i4.Result<_i5.ProductEntity?>>(
                 this,
                 Invocation.method(#getProduct, [productId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i5.ProductEntity?>>);
+
+  @override
+  _i3.Future<_i4.Result<_i5.ProductEntity?>> getProductByBarcode(
+    String? barcode,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getProductByBarcode, [barcode]),
+            returnValue: _i3.Future<_i4.Result<_i5.ProductEntity?>>.value(
+              _i6.dummyValue<_i4.Result<_i5.ProductEntity?>>(
+                this,
+                Invocation.method(#getProductByBarcode, [barcode]),
               ),
             ),
           )
@@ -86,20 +102,6 @@ class MockProductRepository extends _i1.Mock implements _i2.ProductRepository {
           as _i3.Future<_i4.Result<void>>);
 
   @override
-  @override
-  _i3.Future<_i4.Result<_i5.ProductEntity?>> getProductByBarcode(String? barcode) =>
-      (super.noSuchMethod(
-            Invocation.method(#getProductByBarcode, [barcode]),
-            returnValue: _i3.Future<_i4.Result<_i5.ProductEntity?>>.value(
-              _i6.dummyValue<_i4.Result<_i5.ProductEntity?>>(
-                this,
-                Invocation.method(#getProductByBarcode, [barcode]),
-              ),
-            ),
-          )
-          as _i3.Future<_i4.Result<_i5.ProductEntity?>>);
-
-  @override
   _i3.Future<_i4.Result<List<_i5.ProductEntity>>> getUserProducts(
     String? userId, {
     String? orderBy,
@@ -138,4 +140,36 @@ class MockProductRepository extends _i1.Mock implements _i2.ProductRepository {
             ),
           )
           as _i3.Future<_i4.Result<List<_i5.ProductEntity>>>);
+
+  @override
+  _i3.Future<_i4.Result<List<_i7.ProductUnitEntity>>> getProductUnits(
+    int? productId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getProductUnits, [productId]),
+            returnValue:
+                _i3.Future<_i4.Result<List<_i7.ProductUnitEntity>>>.value(
+                  _i6.dummyValue<_i4.Result<List<_i7.ProductUnitEntity>>>(
+                    this,
+                    Invocation.method(#getProductUnits, [productId]),
+                  ),
+                ),
+          )
+          as _i3.Future<_i4.Result<List<_i7.ProductUnitEntity>>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> saveProductUnits(
+    int? productId,
+    List<_i7.ProductUnitEntity>? units,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveProductUnits, [productId, units]),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(#saveProductUnits, [productId, units]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
 }

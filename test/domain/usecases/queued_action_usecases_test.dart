@@ -9,18 +9,19 @@ import 'package:mockito/mockito.dart';
 
 import 'queued_action_usecases_test.mocks.dart';
 
-// This will generate the mock class
 @GenerateMocks([QueuedActionRepository])
 void main() {
   late MockQueuedActionRepository mockQueuedActionRepository;
 
   setUpAll(() {
-    // Provide dummy values for complex types
     provideDummy<Result<List<QueuedActionEntity>>>(
       Result<List<QueuedActionEntity>>.success(data: []),
     );
-    provideDummy<Result<List<bool>>>(
-      Result<List<bool>>.success(data: []),
+    provideDummy<Result<int>>(
+      Result<int>.success(data: 0),
+    );
+    provideDummy<Result<void>>(
+      Result<void>.success(data: null),
     );
   });
 
@@ -28,120 +29,123 @@ void main() {
     mockQueuedActionRepository = MockQueuedActionRepository();
   });
 
-  group('GetAllQueuedActionUsecase', () {
-    late GetAllQueuedActionUsecase usecase;
+  group('CreateQueuedActionUsecase', () {
+    late CreateQueuedActionUsecase usecase;
 
     setUp(() {
-      usecase = GetAllQueuedActionUsecase(mockQueuedActionRepository);
+      usecase = CreateQueuedActionUsecase(mockQueuedActionRepository);
+    });
+
+    test('should create queued action successfully', () async {
+      final action = QueuedActionEntity(
+        id: null,
+        repository: 'product',
+        method: 'createProduct',
+        param: '{}',
+        isCritical: false,
+      );
+      final result = Result<int>.success(data: 1);
+
+      when(mockQueuedActionRepository.createQueuedAction(action)).thenAnswer((_) async => result);
+
+      final response = await usecase.call(action);
+
+      expect(response, result);
+      expect(response.data, 1);
+      verify(mockQueuedActionRepository.createQueuedAction(action));
+      verifyNoMoreInteractions(mockQueuedActionRepository);
+    });
+
+    test('should return failure when creation fails', () async {
+      final action = QueuedActionEntity(
+        id: null,
+        repository: 'product',
+        method: 'createProduct',
+        param: '{}',
+        isCritical: false,
+      );
+      final result = Result<int>.failure(error: 'Queue full');
+
+      when(mockQueuedActionRepository.createQueuedAction(action)).thenAnswer((_) async => result);
+
+      final response = await usecase.call(action);
+
+      expect(response.isFailure, true);
+      verify(mockQueuedActionRepository.createQueuedAction(action));
+    });
+  });
+
+  group('GetAllQueuedActionsUsecase', () {
+    late GetAllQueuedActionsUsecase usecase;
+
+    setUp(() {
+      usecase = GetAllQueuedActionsUsecase(mockQueuedActionRepository);
     });
 
     test('should return list of queued actions from repository', () async {
-      // arrange
       final queuedActions = [
         QueuedActionEntity(
           id: 1,
-          repository: '',
-          method: '',
-          param: '',
-          isCritical: true,
-        ),
-        QueuedActionEntity(
-          id: 2,
-          repository: '',
-          method: '',
-          param: '',
+          repository: 'product',
+          method: 'createProduct',
+          param: '{}',
           isCritical: true,
         ),
       ];
       final result = Result<List<QueuedActionEntity>>.success(data: queuedActions);
 
-      when(mockQueuedActionRepository.getAllQueuedAction()).thenAnswer((_) async => result);
+      when(mockQueuedActionRepository.getAllQueuedActions()).thenAnswer((_) async => result);
 
-      // act
       final response = await usecase.call(NoParam());
 
-      // assert
       expect(response, result);
-      verify(mockQueuedActionRepository.getAllQueuedAction());
+      verify(mockQueuedActionRepository.getAllQueuedActions());
       verifyNoMoreInteractions(mockQueuedActionRepository);
     });
 
     test('should return failure from repository', () async {
-      // arrange
       final result = Result<List<QueuedActionEntity>>.failure(error: 'Error');
 
-      when(mockQueuedActionRepository.getAllQueuedAction()).thenAnswer((_) async => result);
+      when(mockQueuedActionRepository.getAllQueuedActions()).thenAnswer((_) async => result);
 
-      // act
       final response = await usecase.call(NoParam());
 
-      // assert
       expect(response, result);
-      verify(mockQueuedActionRepository.getAllQueuedAction());
+      verify(mockQueuedActionRepository.getAllQueuedActions());
       verifyNoMoreInteractions(mockQueuedActionRepository);
     });
   });
 
-  group('ExecuteAllQueuedActionUsecase', () {
-    late ExecuteAllQueuedActionUsecase usecase;
+  group('DeleteQueuedActionUsecase', () {
+    late DeleteQueuedActionUsecase usecase;
 
     setUp(() {
-      usecase = ExecuteAllQueuedActionUsecase(mockQueuedActionRepository);
+      usecase = DeleteQueuedActionUsecase(mockQueuedActionRepository);
     });
 
-    test('should execute queued actions and return results from repository', () async {
-      // arrange
-      final queuedActions = [
-        QueuedActionEntity(
-          id: 1,
-          repository: '',
-          method: '',
-          param: '',
-          isCritical: true,
-        ),
-        QueuedActionEntity(
-          id: 2,
-          repository: '',
-          method: '',
-          param: '',
-          isCritical: true,
-        ),
-      ];
-      final result = Result<List<bool>>.success(data: [true, true]);
+    test('should delete queued action successfully', () async {
+      const actionId = 1;
+      final result = Result<void>.success(data: null);
 
-      when(mockQueuedActionRepository.executeAllQueuedActions(queuedActions)).thenAnswer((_) async => result);
+      when(mockQueuedActionRepository.deleteQueuedAction(actionId)).thenAnswer((_) async => result);
 
-      // act
-      final response = await usecase.call(queuedActions);
+      final response = await usecase.call(actionId);
 
-      // assert
-      expect(response, result);
-      verify(mockQueuedActionRepository.executeAllQueuedActions(queuedActions));
+      expect(response.isSuccess, true);
+      verify(mockQueuedActionRepository.deleteQueuedAction(actionId));
       verifyNoMoreInteractions(mockQueuedActionRepository);
     });
 
-    test('should return failure from repository', () async {
-      // arrange
-      final queuedActions = [
-        QueuedActionEntity(
-          id: 1,
-          repository: '',
-          method: '',
-          param: '',
-          isCritical: true,
-        ),
-      ];
-      final result = Result<List<bool>>.failure(error: 'Execution failed');
+    test('should return failure when deletion fails', () async {
+      const actionId = 1;
+      final result = Result<void>.failure(error: 'Delete failed');
 
-      when(mockQueuedActionRepository.executeAllQueuedActions(queuedActions)).thenAnswer((_) async => result);
+      when(mockQueuedActionRepository.deleteQueuedAction(actionId)).thenAnswer((_) async => result);
 
-      // act
-      final response = await usecase.call(queuedActions);
+      final response = await usecase.call(actionId);
 
-      // assert
-      expect(response, result);
-      verify(mockQueuedActionRepository.executeAllQueuedActions(queuedActions));
-      verifyNoMoreInteractions(mockQueuedActionRepository);
+      expect(response.isFailure, true);
+      verify(mockQueuedActionRepository.deleteQueuedAction(actionId));
     });
   });
 }

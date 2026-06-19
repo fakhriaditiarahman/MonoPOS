@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
 import '../../../domain/entities/user_entity.dart' hide AuthProvider;
+import '../../../domain/usecases/storage_usecases.dart';
 import '../../../domain/usecases/user_usecases.dart';
 import '../auth/auth_notifier.dart';
 import 'account_state.dart';
@@ -48,11 +49,20 @@ class AccountNotifier extends AutoDisposeNotifier<AccountFormState> {
     try {
       final userId = _requireUserId();
       final userRepository = ref.read(userRepositoryProvider);
+      final storageRepository = ref.read(storageRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        imageUrl = state.imageFile!.path;
+        var uploadRes = await UploadUserPhotoUsecase(storageRepository).call(
+          state.imageFile!.path,
+        );
+
+        if (uploadRes.isSuccess) {
+          imageUrl = uploadRes.data;
+        } else {
+          return Result.failure(error: uploadRes.error ?? 'Gagal upload gambar');
+        }
       }
 
       var user = UserEntity(

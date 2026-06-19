@@ -7,18 +7,35 @@ import '../../core/services/connectivity/ping_service.dart';
 import '../../core/services/database/database_service.dart';
 import '../../core/services/info/device_info_service.dart';
 import '../../core/services/logger/error_logger_service.dart';
-import '../../core/services/payment/midtrans_payment_service.dart';
+import '../../core/services/payment/interactive_qris_payment_service.dart';
 import '../../core/services/printer/printer_service.dart';
+import '../../core/services/supabase/supabase_service.dart';
+import '../../core/services/sync/sync_service.dart';
+import '../../data/datasources/interfaces/auth_datasource.dart';
+import '../../data/datasources/interfaces/product_datasource.dart';
+import '../../data/datasources/interfaces/storage_datasource.dart';
+import '../../data/datasources/interfaces/transaction_datasource.dart';
+import '../../data/datasources/interfaces/user_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource_impl.dart';
 import '../../data/datasources/local/product_local_datasource_impl.dart';
+import '../../data/datasources/local/queued_action_local_datasource_impl.dart';
 import '../../data/datasources/local/transaction_local_datasource_impl.dart';
 import '../../data/datasources/local/user_local_datasource_impl.dart';
+import '../../data/datasources/remote/auth_remote_datasource_impl.dart';
+import '../../data/datasources/remote/product_remote_datasource_impl.dart';
+import '../../data/datasources/remote/storage_remote_datasource_impl.dart';
+import '../../data/datasources/remote/transaction_remote_datasource_impl.dart';
+import '../../data/datasources/remote/user_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/product_repository_impl.dart';
+import '../../data/repositories/queued_action_repository_impl.dart';
+import '../../data/repositories/storage_repository_impl.dart';
 import '../../data/repositories/transaction_repository_impl.dart';
 import '../../data/repositories/user_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/product_repository.dart';
+import '../../domain/repositories/queued_action_repository.dart';
+import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../presentation/providers/auth/auth_notifier.dart';
@@ -51,9 +68,20 @@ final printerServiceProvider = Provider<PrinterService>(
   (ref) => PrinterService(ref.watch(sharedPreferencesProvider)),
 );
 
-final midtransPaymentServiceProvider = Provider<MidtransPaymentService>(
-  (ref) => MidtransPaymentService(ref.watch(sharedPreferencesProvider)),
+final interactiveQrisPaymentServiceProvider = Provider<InteractiveQrisPaymentService>(
+  (ref) => InteractiveQrisPaymentService(ref.watch(sharedPreferencesProvider)),
 );
+
+// Sync
+final syncServiceProvider = Provider<SyncService>((ref) {
+  final pingService = ref.watch(pingServiceProvider);
+  return SyncService(pingService);
+});
+
+// Supabase
+final supabaseInitializedProvider = FutureProvider<bool>((ref) async {
+  return SupabaseService.initialize();
+});
 
 // Datasources
 // Local Datasources
@@ -69,25 +97,68 @@ final transactionLocalDatasourceProvider = Provider<TransactionLocalDatasourceIm
 final userLocalDatasourceProvider = Provider<UserLocalDatasourceImpl>(
   (ref) => UserLocalDatasourceImpl(ref.watch(databaseServiceProvider)),
 );
+final queuedActionLocalDatasourceProvider = Provider<QueuedActionLocalDatasourceImpl>(
+  (ref) => QueuedActionLocalDatasourceImpl(ref.watch(databaseServiceProvider)),
+);
+
+// Remote Datasources
+final authRemoteDataSourceProvider = Provider<AuthDataSource?>((ref) {
+  return AuthRemoteDataSourceImpl();
+});
+final productRemoteDatasourceProvider = Provider<ProductDatasource?>((ref) {
+  return ProductRemoteDatasourceImpl();
+});
+final transactionRemoteDatasourceProvider = Provider<TransactionDatasource?>((ref) {
+  return TransactionRemoteDatasourceImpl();
+});
+final userRemoteDatasourceProvider = Provider<UserDatasource?>((ref) {
+  return UserRemoteDatasourceImpl();
+});
 
 // Repositories
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepositoryImpl(
     authLocalDataSource: ref.watch(authLocalDataSourceProvider),
+    authRemoteDataSource: ref.watch(authRemoteDataSourceProvider),
   ),
 );
 final productRepositoryProvider = Provider<ProductRepository>(
   (ref) => ProductRepositoryImpl(
     productLocalDatasource: ref.watch(productLocalDatasourceProvider),
+    productRemoteDatasource: ref.watch(productRemoteDatasourceProvider),
+    syncService: ref.watch(syncServiceProvider),
+    queuedActionRepository: ref.watch(queuedActionRepositoryProvider),
   ),
 );
 final transactionRepositoryProvider = Provider<TransactionRepository>(
   (ref) => TransactionRepositoryImpl(
     transactionLocalDatasource: ref.watch(transactionLocalDatasourceProvider),
+    transactionRemoteDatasource: ref.watch(transactionRemoteDatasourceProvider),
+    syncService: ref.watch(syncServiceProvider),
+    queuedActionRepository: ref.watch(queuedActionRepositoryProvider),
   ),
 );
 final userRepositoryProvider = Provider<UserRepository>(
   (ref) => UserRepositoryImpl(
     userLocalDatasource: ref.watch(userLocalDatasourceProvider),
+    userRemoteDatasource: ref.watch(userRemoteDatasourceProvider),
+    syncService: ref.watch(syncServiceProvider),
+    queuedActionRepository: ref.watch(queuedActionRepositoryProvider),
+  ),
+);
+final queuedActionRepositoryProvider = Provider<QueuedActionRepository>(
+  (ref) => QueuedActionRepositoryImpl(
+    localDatasource: ref.watch(queuedActionLocalDatasourceProvider),
+  ),
+);
+
+// Storage
+final storageRemoteDatasourceProvider = Provider<StorageDatasource>(
+  (ref) => StorageRemoteDataSourceImpl(),
+);
+final storageRepositoryProvider = Provider<StorageRepository>(
+  (ref) => StorageRepositoryImpl(
+    pingService: ref.watch(pingServiceProvider),
+    storageRemoteDataSource: ref.watch(storageRemoteDatasourceProvider),
   ),
 );

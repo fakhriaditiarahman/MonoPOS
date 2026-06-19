@@ -13,31 +13,25 @@ class PaymentSettingsNotifier extends AutoDisposeNotifier<PaymentSettingsState> 
   PaymentSettingsState build() {
     final prefs = ref.read(sharedPreferencesProvider);
     return PaymentSettingsState(
-      serverKey: prefs.getString(Constants.midtransServerKey) ?? '',
-      clientKey: prefs.getString(Constants.midtransClientKey) ?? '',
-      isProduction: prefs.getBool(Constants.midtransIsProduction) ?? false,
-      merchantName: prefs.getString(Constants.midtransMerchantName) ?? '',
+      apiKey: prefs.getString(Constants.qrisApiKey) ?? '',
+      mid: prefs.getString(Constants.qrisMid) ?? '',
+      merchantName: prefs.getString(Constants.qrisMerchantName) ?? '',
       isLoaded: true,
     );
   }
 
-  void onChangedServerKey(String value) {
-    state = state.copyWith(serverKey: value);
-    ref.read(sharedPreferencesProvider).setString(Constants.midtransServerKey, value);
+  void onChangedApiKey(String value) {
+    state = state.copyWith(apiKey: value);
+    ref.read(sharedPreferencesProvider).setString(Constants.qrisApiKey, value);
   }
 
-  void onChangedClientKey(String value) {
-    state = state.copyWith(clientKey: value);
-    ref.read(sharedPreferencesProvider).setString(Constants.midtransClientKey, value);
+  void onChangedMid(String value) {
+    state = state.copyWith(mid: value);
+    ref.read(sharedPreferencesProvider).setString(Constants.qrisMid, value);
   }
 
   void onChangedMerchantName(String value) {
     state = state.copyWith(merchantName: value);
-    ref.read(sharedPreferencesProvider).setString(Constants.midtransMerchantName, value);
-  }
-
-  void onChangedIsProduction(bool value) {
-    state = state.copyWith(isProduction: value);
-    ref.read(sharedPreferencesProvider).setBool(Constants.midtransIsProduction, value);
+    ref.read(sharedPreferencesProvider).setString(Constants.qrisMerchantName, value);
   }
 }

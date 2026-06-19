@@ -8,6 +8,7 @@ import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
 import '../../../domain/usecases/product_usecases.dart';
+import '../../../domain/usecases/storage_usecases.dart';
 import '../auth/auth_notifier.dart';
 import 'product_form_state.dart';
 import 'products_notifier.dart';
@@ -69,11 +70,20 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     try {
       final userId = _requireUserId();
       final productRepository = ref.read(productRepositoryProvider);
+      final storageRepository = ref.read(storageRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        imageUrl = state.imageFile!.path;
+        var uploadRes = await UploadProductImageUsecase(storageRepository).call(
+          state.imageFile!.path,
+        );
+
+        if (uploadRes.isSuccess) {
+          imageUrl = uploadRes.data;
+        } else {
+          return Result.failure(error: uploadRes.error ?? 'Gagal upload gambar');
+        }
       }
 
       cl('imageUrl $imageUrl');
@@ -106,11 +116,20 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     try {
       final userId = _requireUserId();
       final productRepository = ref.read(productRepositoryProvider);
+      final storageRepository = ref.read(storageRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        imageUrl = state.imageFile!.path;
+        var uploadRes = await UploadProductImageUsecase(storageRepository).call(
+          state.imageFile!.path,
+        );
+
+        if (uploadRes.isSuccess) {
+          imageUrl = uploadRes.data;
+        } else {
+          return Result.failure(error: uploadRes.error ?? 'Gagal upload gambar');
+        }
       }
 
       cl('imageUrl $imageUrl');

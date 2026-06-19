@@ -84,4 +84,17 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
             ),
           )
           as _i3.Future<_i4.Result<void>>);
+
+  @override
+  _i3.Future<_i4.Result<_i5.UserEntity?>> getUserByUsername(String? username) =>
+      (super.noSuchMethod(
+            Invocation.method(#getUserByUsername, [username]),
+            returnValue: _i3.Future<_i4.Result<_i5.UserEntity?>>.value(
+              _i6.dummyValue<_i4.Result<_i5.UserEntity?>>(
+                this,
+                Invocation.method(#getUserByUsername, [username]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i5.UserEntity?>>);
 }

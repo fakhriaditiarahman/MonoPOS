@@ -1,3 +1,4 @@
+import '../../../core/services/sync/sync_service.dart';
 import '../../../domain/entities/user_entity.dart';
 
 class MainState {
@@ -5,6 +6,7 @@ class MainState {
   final bool isHasInternet;
   final bool isHasQueuedActions;
   final bool isSyncronizing;
+  final SyncMode syncMode;
   final UserEntity? user;
 
   const MainState({
@@ -12,6 +14,7 @@ class MainState {
     this.isHasInternet = true,
     this.isHasQueuedActions = false,
     this.isSyncronizing = false,
+    this.syncMode = SyncMode.auto,
     this.user,
   });
 
@@ -20,6 +23,7 @@ class MainState {
     bool? isHasInternet,
     bool? isHasQueuedActions,
     bool? isSyncronizing,
+    SyncMode? syncMode,
     UserEntity? user,
   }) {
     return MainState(
@@ -27,6 +31,7 @@ class MainState {
       isHasInternet: isHasInternet ?? this.isHasInternet,
       isHasQueuedActions: isHasQueuedActions ?? this.isHasQueuedActions,
       isSyncronizing: isSyncronizing ?? this.isSyncronizing,
+      syncMode: syncMode ?? this.syncMode,
       user: user ?? this.user,
     );
   }

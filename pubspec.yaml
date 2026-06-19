@@ -61,6 +61,9 @@ dependencies:
   permission_handler: ^12.0.1
   unified_esc_pos_printer: ^3.0.0
   mobile_scanner: ^6.0.2
+  supabase_flutter: ^2.8.4
+  aws_signature_v4: ^0.6.10
+  aws_common: ^0.7.12
 
 dev_dependencies:
   flutter_test:
