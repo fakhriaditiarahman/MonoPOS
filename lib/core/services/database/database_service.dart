@@ -153,44 +153,28 @@ class DatabaseService {
 
   Future<void> _applyMigrations(Database db) async {
     // Migration: add wholesalePrice column
-    try {
-      await db.execute('ALTER TABLE Product ADD COLUMN wholesalePrice INTEGER');
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'Product', 'wholesalePrice', 'INTEGER');
 
     // Migration: add priceType column
-    try {
-      await db.execute("ALTER TABLE OrderedProduct ADD COLUMN priceType TEXT DEFAULT 'retail'");
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'OrderedProduct', 'priceType', "TEXT DEFAULT 'retail'");
 
     // Migration: add unit column to Product
-    try {
-      await db.execute("ALTER TABLE Product ADD COLUMN unit TEXT DEFAULT 'pcs'");
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'Product', 'unit', "TEXT DEFAULT 'pcs'");
 
     // Migration: add barcode column
-    try {
-      await db.execute('ALTER TABLE Product ADD COLUMN barcode TEXT');
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'Product', 'barcode', 'TEXT');
 
     // Migration: add unit column to OrderedProduct
-    try {
-      await db.execute("ALTER TABLE OrderedProduct ADD COLUMN unit TEXT DEFAULT 'pcs'");
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'OrderedProduct', 'unit', "TEXT DEFAULT 'pcs'");
 
     // Migration: add conversionValue column to OrderedProduct
-    try {
-      await db.execute('ALTER TABLE OrderedProduct ADD COLUMN conversionValue INTEGER NOT NULL DEFAULT 1');
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'OrderedProduct', 'conversionValue', 'INTEGER NOT NULL DEFAULT 1');
 
     // Migration: add password column to User
-    try {
-      await db.execute("ALTER TABLE User ADD COLUMN password TEXT");
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'User', 'password', 'TEXT');
 
     // Migration: add role column to User
-    try {
-      await db.execute("ALTER TABLE User ADD COLUMN role TEXT DEFAULT 'kasir'");
-    } catch (_) {}
+    await _addColumnIfNotExists(db, 'User', 'role', "TEXT DEFAULT 'kasir'");
 
     // Migration: add columns to Transaction (check existence first)
     await _addColumnIfNotExists(db, 'Transaction', 'paymentStatus', "TEXT DEFAULT 'paid'");
@@ -225,68 +209,88 @@ class DatabaseService {
   Future<void> _seedProducts() async {
     if (!kDebugMode) return;
 
-    try {
-      final existing = await database.query(
-        DatabaseConfig.productTableName,
-        limit: 1,
-      );
+    final seedUserIds = ['admin', '7778024b-98a5-4df2-b912-a6e541a2ff1b', 'kasir1', 'kasir2'];
 
-      if (existing.isNotEmpty) return;
+    final products = <(String, int, int, String, int, int, String, int?, int?)>[
+      ('Teh Botol Sosro', 5000, 4500, '8991002100220', 100, 55, 'Teh botol sosro 250ml', 55000, 50000),
+      ('Indomie Goreng', 3500, 3200, '8991002100221', 200, 9, 'Indomie goreng original 85g', 31000, 28000),
+      ('Coca Cola', 7000, 6500, '8991002100222', 80, 3, 'Coca cola 390ml kaleng', 81000, 75000),
+      ('Aqua', 3000, 2500, '8991002100223', 150, 5, 'Air mineral aqua 600ml', 35000, 29000),
+      ('Minyak Goreng Sania', 15000, 14000, '8991002100224', 50, 4, 'Minyak goreng sania 1L', 175000, 160000),
+      ('Beras Ramos', 75000, 72000, '8991002100225', 30, 0, 'Beras ramos 5kg premium', null, null),
+      ('Gula Pasir Gulaku', 14000, 13000, '8991002100226', 60, 2, 'Gula pasir gulaku 1kg', 165000, 150000),
+      ('Telur Ayam', 2500, 2300, '8991002100227', 500, 0, 'Telur ayam negeri per butir', null, null),
+      ('Susu Kental Manis', 12000, 11000, '8991002100228', 90, 1, 'Frisian flag susu kental manis', 140000, 128000),
+      ('Kopi Kapal Api', 17000, 16000, '8991002100229', 70, 6, 'Kopi kapal api 10 sachet', 200000, 185000),
+      ('Sabun Mandi Lifebuoy', 4500, 4000, '8991002100230', 120, 8, 'Sabun mandi lifebuoy 90g', 52000, 47000),
+      ('Shampoo Pantene', 2000, 1700, '8991002100231', 200, 12, 'Shampoo pantene sachet 3ml', null, null),
+      ('Kecap Manis ABC', 8000, 7200, '8991002100232', 90, 3, 'Kecap manis abc 135ml', 95000, 86000),
+      ('Saos Sambal ABC', 8500, 7800, '8991002100233', 85, 5, 'Saos sambal abc 140ml', 100000, 92000),
+      (
+        'Tepung Terigu Segitiga Biru',
+        13000,
+        12000,
+        '8991002100234',
+        45,
+        2,
+        'Tepung terigu segitiga biru 1kg',
+        null,
+        null,
+      ),
+    ];
 
-      final products = [
-        ('Teh Botol Sosro', 5000, 4500, '8991002100220', 100, 55, 'Teh botol sosro 250ml', 55000, 50000),
-        ('Indomie Goreng', 3500, 3200, '8991002100221', 200, 9, 'Indomie goreng original 85g', 31000, 28000),
-        ('Coca Cola', 7000, 6500, '8991002100222', 80, 3, 'Coca cola 390ml kaleng', 81000, 75000),
-        ('Aqua', 3000, 2500, '8991002100223', 150, 5, 'Air mineral aqua 600ml', 35000, 29000),
-        ('Minyak Goreng Sania', 15000, 14000, '8991002100224', 50, 4, 'Minyak goreng sania 1L', 175000, 160000),
-        ('Beras Ramos', 75000, 72000, '8991002100225', 30, 0, 'Beras ramos 5kg premium', null, null),
-        ('Gula Pasir Gulaku', 14000, 13000, '8991002100226', 60, 2, 'Gula pasir gulaku 1kg', 165000, 150000),
-        ('Telur Ayam', 2500, 2300, '8991002100227', 500, 0, 'Telur ayam negeri per butir', null, null),
-        ('Susu Kental Manis', 12000, 11000, '8991002100228', 90, 1, 'Frisian flag susu kental manis', 140000, 128000),
-        ('Kopi Kapal Api', 17000, 16000, '8991002100229', 70, 6, 'Kopi kapal api 10 sachet', 200000, 185000),
-      ];
-
-      for (final p in products) {
-        final productId = await database.insert(
+    for (final userId in seedUserIds) {
+      try {
+        final existing = await database.query(
           DatabaseConfig.productTableName,
-          {
-            'createdById': '7778024b-98a5-4df2-b912-a6e541a2ff1b',
-            'name': p.$1,
-            'imageUrl': '',
-            'stock': p.$5,
-            'sold': p.$6,
-            'price': p.$2,
-            'wholesalePrice': p.$3,
-            'unit': 'pcs',
-            'barcode': p.$4,
-            'description': p.$7,
-          },
+          where: 'createdById = ?',
+          whereArgs: [userId],
+          limit: 1,
         );
+        if (existing.isNotEmpty) continue;
 
-        await database.insert(DatabaseConfig.productUnitTableName, {
-          'productId': productId,
-          'unitName': 'pcs',
-          'conversionValue': 1,
-          'price': p.$2,
-          'wholesalePrice': p.$3,
-          'isBase': 1,
-        });
+        for (final p in products) {
+          final productId = await database.insert(
+            DatabaseConfig.productTableName,
+            {
+              'createdById': userId,
+              'name': p.$1,
+              'imageUrl': '',
+              'stock': p.$5,
+              'sold': p.$6,
+              'price': p.$2,
+              'wholesalePrice': p.$3,
+              'unit': 'pcs',
+              'barcode': p.$4,
+              'description': p.$7,
+            },
+          );
 
-        if (p.$8 != null) {
           await database.insert(DatabaseConfig.productUnitTableName, {
             'productId': productId,
-            'unitName': 'dus',
-            'conversionValue': 12,
-            'price': p.$8,
-            'wholesalePrice': p.$9,
-            'isBase': 0,
+            'unitName': 'pcs',
+            'conversionValue': 1,
+            'price': p.$2,
+            'wholesalePrice': p.$3,
+            'isBase': 1,
           });
-        }
-      }
 
-      cw('Seeded ${products.length} sample products');
-    } catch (e) {
-      ce('Seed products failed: $e');
+          if (p.$8 != null) {
+            await database.insert(DatabaseConfig.productUnitTableName, {
+              'productId': productId,
+              'unitName': 'dus',
+              'conversionValue': 12,
+              'price': p.$8,
+              'wholesalePrice': p.$9,
+              'isBase': 0,
+            });
+          }
+        }
+
+        cw('Seeded ${products.length} products for user: $userId');
+      } catch (e) {
+        ce('Seed products for $userId failed: $e');
+      }
     }
   }
 
