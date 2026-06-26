@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
 import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../domain/entities/product_tier_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
+import '../../../domain/repositories/product_repository.dart';
 import '../../../domain/usecases/product_usecases.dart';
-import '../../../domain/usecases/storage_usecases.dart';
 import '../auth/auth_notifier.dart';
 import 'product_form_state.dart';
 import 'products_notifier.dart';
@@ -34,7 +37,6 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   Future<void> initProductForm(int? productId) async {
     if (productId == null) {
       state = state.copyWith(isLoaded: true);
-      // Ensure default unit 'pcs' exists in new product
       _ensureDefaultUnitInList('pcs');
       return;
     }
@@ -59,10 +61,43 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         isLoaded: true,
       );
 
-      // Ensure default unit is in the units list
       _ensureDefaultUnitInList(defaultUnit);
+
+      // Load existing tiered prices for each unit
+      final units = state.units;
+      final tierMap = <int, List<ProductTierEntity>>{};
+      for (int i = 0; i < units.length; i++) {
+        final unit = units[i];
+        if (unit.id != null && unit.id! > 0) {
+          final tierRes = await GetProductTiersUsecase(productRepository).call(unit.id!);
+          if (tierRes.isSuccess && tierRes.data!.isNotEmpty) {
+            tierMap[i] = tierRes.data!;
+          }
+        }
+      }
+      if (tierMap.isNotEmpty) {
+        state = state.copyWith(tieredPrices: tierMap);
+      }
     } else {
       throw res.error ?? 'Failed to load data';
+    }
+  }
+
+  Future<String?> _saveImageLocally(File source, String subDir, String fileName) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final targetDir = Directory('${appDir.path}/$subDir');
+      if (!targetDir.existsSync()) {
+        targetDir.createSync(recursive: true);
+      }
+
+      final ext = p.extension(source.path);
+      final targetPath = '${targetDir.path}/$fileName$ext';
+      await source.copy(targetPath);
+      return targetPath;
+    } catch (e) {
+      cl('Gagal simpan gambar lokal: $e');
+      return null;
     }
   }
 
@@ -70,23 +105,17 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     try {
       final userId = _requireUserId();
       final productRepository = ref.read(productRepositoryProvider);
-      final storageRepository = ref.read(storageRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        var uploadRes = await UploadProductImageUsecase(storageRepository).call(
-          state.imageFile!.path,
+        final savedPath = await _saveImageLocally(
+          state.imageFile!,
+          'products',
+          '${DateTime.now().millisecondsSinceEpoch}',
         );
-
-        if (uploadRes.isSuccess) {
-          imageUrl = uploadRes.data;
-        } else {
-          return Result.failure(error: uploadRes.error ?? 'Gagal upload gambar');
-        }
+        if (savedPath != null) imageUrl = savedPath;
       }
-
-      cl('imageUrl $imageUrl');
 
       var product = ProductEntity(
         createdById: userId,
@@ -103,7 +132,11 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
       var res = await CreateProductUsecase(productRepository).call(product);
 
-      // Refresh products
+      // Save tiered prices for each unit
+      if (res.isSuccess) {
+        await _saveAllTieredPrices(productRepository);
+      }
+
       ref.read(productsNotifierProvider.notifier).getAllProducts();
 
       return res;
@@ -116,23 +149,17 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     try {
       final userId = _requireUserId();
       final productRepository = ref.read(productRepositoryProvider);
-      final storageRepository = ref.read(storageRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        var uploadRes = await UploadProductImageUsecase(storageRepository).call(
-          state.imageFile!.path,
+        final savedPath = await _saveImageLocally(
+          state.imageFile!,
+          'products',
+          'product_$id',
         );
-
-        if (uploadRes.isSuccess) {
-          imageUrl = uploadRes.data;
-        } else {
-          return Result.failure(error: uploadRes.error ?? 'Gagal upload gambar');
-        }
+        if (savedPath != null) imageUrl = savedPath;
       }
-
-      cl('imageUrl $imageUrl');
 
       var product = ProductEntity(
         id: id,
@@ -150,12 +177,32 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
       var res = await UpdateProductUsecase(productRepository).call(product);
 
-      // Refresh products
+      // Save tiered prices for each unit
+      if (res.isSuccess) {
+        await _saveAllTieredPrices(productRepository);
+      }
+
       ref.read(productsNotifierProvider.notifier).getAllProducts();
 
       return res;
     } catch (e) {
       return Result.failure(error: e);
+    }
+  }
+
+  Future<void> _saveAllTieredPrices(ProductRepository productRepository) async {
+    for (final entry in state.tieredPrices.entries) {
+      final unitIndex = entry.key;
+      final tiers = entry.value;
+      if (tiers.isEmpty) continue;
+
+      final unit = state.units[unitIndex];
+      if (unit.id == null || unit.id! <= 0) continue;
+
+      await SaveProductTiersUsecase(productRepository).call((
+        productUnitId: unit.id!,
+        tiers: tiers,
+      ));
     }
   }
 
@@ -242,6 +289,40 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   void removeUnit(int index) {
     final units = [...state.units];
     units.removeAt(index);
-    state = state.copyWith(units: units);
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    tieredPrices.remove(index);
+    state = state.copyWith(units: units, tieredPrices: tieredPrices);
+  }
+
+  void addTier(int unitIndex, ProductTierEntity tier) {
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    final tiers = <ProductTierEntity>[...(tieredPrices[unitIndex] ?? [])];
+    tiers.add(tier);
+    tieredPrices[unitIndex] = tiers;
+    state = state.copyWith(tieredPrices: tieredPrices);
+  }
+
+  void updateTier(int unitIndex, int tierIndex, ProductTierEntity tier) {
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    final tiers = <ProductTierEntity>[...(tieredPrices[unitIndex] ?? [])];
+    if (tierIndex < tiers.length) {
+      tiers[tierIndex] = tier;
+      tieredPrices[unitIndex] = tiers;
+      state = state.copyWith(tieredPrices: tieredPrices);
+    }
+  }
+
+  void removeTier(int unitIndex, int tierIndex) {
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    final tiers = <ProductTierEntity>[...(tieredPrices[unitIndex] ?? [])];
+    if (tierIndex < tiers.length) {
+      tiers.removeAt(tierIndex);
+      tieredPrices[unitIndex] = tiers;
+      state = state.copyWith(tieredPrices: tieredPrices);
+    }
+  }
+
+  List<ProductTierEntity> getTiersForUnit(int unitIndex) {
+    return state.tieredPrices[unitIndex] ?? [];
   }
 }

@@ -69,7 +69,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           child: CustomScrollView(
             controller: scrollController,
             // Disable scroll when data is null or empty
-            physics: (allTransactions?.isEmpty ?? true) ? const NeverScrollableScrollPhysics() : null,
+            physics: (allTransactions?.isEmpty ?? true)
+                ? const NeverScrollableScrollPhysics()
+                : const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar(
                 floating: true,

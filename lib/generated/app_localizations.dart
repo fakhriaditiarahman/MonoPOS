@@ -338,6 +338,30 @@ abstract class AppLocalizations {
   /// **'Are you sure want to remove this product?'**
   String get cart_removeProductConfirm;
 
+  /// No description provided for @cart_paymentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Type'**
+  String get cart_paymentType;
+
+  /// No description provided for @cart_credit.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit'**
+  String get cart_credit;
+
+  /// No description provided for @cart_dueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Date'**
+  String get cart_dueDate;
+
+  /// No description provided for @cart_dueDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select due date...'**
+  String get cart_dueDateHint;
+
   /// No description provided for @product_stockSold.
   ///
   /// In en, this message translates to:
@@ -1051,6 +1075,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong.\nPlease try again later.'**
   String get shared_somethingWrongRetry;
+
+  /// No description provided for @lowStock_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Stock Alert'**
+  String get lowStock_title;
+
+  /// No description provided for @lowStock_message.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} products are running low on stock'**
+  String lowStock_message(Object count);
+
+  /// No description provided for @lowStock_item.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — {stock} left'**
+  String lowStock_item(Object name, Object stock);
+
+  /// No description provided for @lowStock_ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get lowStock_ok;
+
+  /// No description provided for @receipt_date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get receipt_date;
+
+  /// No description provided for @receipt_trxId.
+  ///
+  /// In en, this message translates to:
+  /// **'Trx. ID'**
+  String get receipt_trxId;
+
+  /// No description provided for @receipt_customer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get receipt_customer;
+
+  /// No description provided for @receipt_cashier.
+  ///
+  /// In en, this message translates to:
+  /// **'Cashier'**
+  String get receipt_cashier;
+
+  /// No description provided for @receipt_item.
+  ///
+  /// In en, this message translates to:
+  /// **'Item'**
+  String get receipt_item;
+
+  /// No description provided for @receipt_qty.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty'**
+  String get receipt_qty;
+
+  /// No description provided for @receipt_price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get receipt_price;
+
+  /// No description provided for @receipt_subtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get receipt_subtotal;
+
+  /// No description provided for @receipt_total.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get receipt_total;
+
+  /// No description provided for @receipt_pay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get receipt_pay;
+
+  /// No description provided for @receipt_change.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get receipt_change;
+
+  /// No description provided for @receipt_paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get receipt_paymentMethod;
+
+  /// No description provided for @receipt_grosir.
+  ///
+  /// In en, this message translates to:
+  /// **'Grosir'**
+  String get receipt_grosir;
+
+  /// No description provided for @receipt_retail.
+  ///
+  /// In en, this message translates to:
+  /// **'Retail'**
+  String get receipt_retail;
+
+  /// No description provided for @receipt_testTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'MONO POS TEST PRINT OK'**
+  String get receipt_testTitle;
+
+  /// No description provided for @receipt_testTopLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'top left'**
+  String get receipt_testTopLeft;
+
+  /// No description provided for @receipt_testTopRight.
+  ///
+  /// In en, this message translates to:
+  /// **'top right'**
+  String get receipt_testTopRight;
+
+  /// No description provided for @receipt_testBottomLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'bottom left'**
+  String get receipt_testBottomLeft;
+
+  /// No description provided for @receipt_testBottomRight.
+  ///
+  /// In en, this message translates to:
+  /// **'bottom right'**
+  String get receipt_testBottomRight;
+
+  /// No description provided for @receipt_testThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank You'**
+  String get receipt_testThanks;
+
+  /// No description provided for @receipt_storeName.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR STORE'**
+  String get receipt_storeName;
+
+  /// No description provided for @receipt_merchant.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant'**
+  String get receipt_merchant;
+
+  /// No description provided for @receipt_qrisTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Payment'**
+  String get receipt_qrisTotal;
+
+  /// No description provided for @receipt_qrisScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QRIS to pay'**
+  String get receipt_qrisScan;
+
+  /// No description provided for @receipt_qrisNote.
+  ///
+  /// In en, this message translates to:
+  /// **'* Payment will be detected automatically *'**
+  String get receipt_qrisNote;
 }
 
 class _AppLocalizationsDelegate

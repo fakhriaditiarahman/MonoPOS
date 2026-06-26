@@ -8,9 +8,12 @@ class DatabaseConfig {
   static const String userTableName = 'User';
   static const String productTableName = 'Product';
   static const String productUnitTableName = 'ProductUnit';
+  static const String productTieredPriceTableName = 'ProductTieredPrice';
+  static const String customerTableName = 'Customer';
   static const String transactionTableName = 'Transaction';
   static const String orderedProductTableName = 'OrderedProduct';
   static const String queuedActionTableName = 'QueuedAction';
+  static const String receivablePaymentTableName = 'ReceivablePayment';
 
   static const String createUserTable =
       '''
@@ -69,6 +72,21 @@ CREATE TABLE IF NOT EXISTS '$productUnitTableName' (
 );
 ''';
 
+  static const String createProductTieredPriceTable =
+      '''
+CREATE TABLE IF NOT EXISTS '$productTieredPriceTableName' (
+    'id' INTEGER NOT NULL,
+    'productUnitId' INTEGER NOT NULL,
+    'minQty' INTEGER NOT NULL DEFAULT 1,
+    'maxQty' INTEGER,
+    'price' INTEGER NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ('id'),
+    FOREIGN KEY ('productUnitId') REFERENCES 'ProductUnit' ('id')
+);
+''';
+
   static const String createTransactionTable =
       '''
 CREATE TABLE IF NOT EXISTS '$transactionTableName' (
@@ -110,6 +128,36 @@ CREATE TABLE IF NOT EXISTS '$orderedProductTableName' (
     PRIMARY KEY ('id'),
     FOREIGN KEY ('transactionId') REFERENCES 'Transaction' ('id'),
     FOREIGN KEY ('productId') REFERENCES 'Product' ('id')
+);
+''';
+
+  static const String createCustomerTable =
+      '''
+CREATE TABLE IF NOT EXISTS '$customerTableName' (
+    'id' TEXT NOT NULL,
+    'name' TEXT NOT NULL,
+    'phone' TEXT,
+    'type' TEXT DEFAULT 'retail',
+    'creditLimit' INTEGER DEFAULT 0,
+    'outstandingBalance' INTEGER DEFAULT 0,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ('id')
+);
+''';
+
+  static const String createReceivablePaymentTable =
+      '''
+CREATE TABLE IF NOT EXISTS '$receivablePaymentTableName' (
+    'id' INTEGER NOT NULL,
+    'transactionId' INTEGER NOT NULL,
+    'customerId' TEXT,
+    'amount' INTEGER NOT NULL,
+    'paymentMethod' TEXT DEFAULT 'cash',
+    'notes' TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ('id'),
+    FOREIGN KEY ('transactionId') REFERENCES 'Transaction' ('id')
 );
 ''';
 

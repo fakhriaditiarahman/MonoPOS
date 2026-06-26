@@ -31,6 +31,8 @@ class AccountScreen extends StatelessWidget {
                 _ProfileButton(),
                 _StoreSettingsButton(),
                 _RevenueButton(),
+                _CustomerButton(),
+                _PiutangButton(),
                 _ThemeButton(),
                 _LanguageButton(),
                 _PrinterSettingsButton(),
@@ -201,6 +203,90 @@ class _RevenueButton extends StatelessWidget {
         ),
         onTap: () {
           context.go('/account/revenue');
+        },
+      ),
+    );
+  }
+}
+
+class _CustomerButton extends StatelessWidget {
+  const _CustomerButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.people_outline,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  'Pelanggan',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+            ),
+          ],
+        ),
+        onTap: () {
+          context.go('/account/customers');
+        },
+      ),
+    );
+  }
+}
+
+class _PiutangButton extends StatelessWidget {
+  const _PiutangButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.receipt_long_outlined,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  'Piutang',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+            ),
+          ],
+        ),
+        onTap: () {
+          context.go('/account/piutang');
         },
       ),
     );

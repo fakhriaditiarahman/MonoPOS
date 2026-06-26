@@ -39,7 +39,9 @@ class _RevenueScreenState extends ConsumerState<RevenueScreen> {
         onRefresh: () => ref.read(revenueNotifierProvider.notifier).loadRevenue(),
         displacement: 60,
         child: CustomScrollView(
-          physics: (revenues?.isEmpty ?? true) ? const NeverScrollableScrollPhysics() : null,
+          physics: (revenues?.isEmpty ?? true)
+              ? const NeverScrollableScrollPhysics()
+              : const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(

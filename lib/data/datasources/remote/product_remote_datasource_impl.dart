@@ -4,13 +4,16 @@ import '../../../core/common/result.dart';
 import '../../../core/services/supabase/supabase_config.dart';
 import '../../../core/services/supabase/supabase_service.dart';
 import '../../models/product_model.dart';
+import '../../models/product_tier_model.dart';
 import '../../models/product_unit_model.dart';
 import '../interfaces/product_datasource.dart';
 
 class ProductRemoteDatasourceImpl extends ProductDatasource {
-  ProductRemoteDatasourceImpl();
+  ProductRemoteDatasourceImpl({SupabaseClient? clientOverride}) : _clientOverride = clientOverride;
 
-  SupabaseClient? get _client => SupabaseService.client;
+  final SupabaseClient? _clientOverride;
+
+  SupabaseClient? get _client => _clientOverride ?? SupabaseService.client;
 
   @override
   Future<Result<int>> createProduct(ProductModel product) async {
@@ -221,6 +224,90 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
       await client.from(SupabaseConfig.productUnitsTable).delete().eq('productId', productId);
 
       return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<ProductTierModel>>> getProductTiers(int productUnitId) async {
+    try {
+      final client = _client;
+      if (client == null) return Result.success(data: []);
+
+      final res = await client
+          .from(SupabaseConfig.productTieredPricesTable)
+          .select()
+          .eq('productUnitId', productUnitId)
+          .order('minQty', ascending: true);
+
+      return Result.success(
+        data: res.map((e) => ProductTierModel.fromJson(Map<String, dynamic>.from(e))).toList(),
+      );
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<void>> saveProductTiers(int productUnitId, List<ProductTierModel> tiers) async {
+    try {
+      final client = _client;
+      if (client == null) return Result.failure(error: 'Supabase not configured');
+
+      await client.from(SupabaseConfig.productTieredPricesTable).delete().eq('productUnitId', productUnitId);
+
+      for (final tier in tiers) {
+        tier.productUnitId = productUnitId;
+      }
+      await client
+          .from(SupabaseConfig.productTieredPricesTable)
+          .insert(
+            tiers.map((e) => e.toJson()).toList(),
+          );
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteProductTiers(int productUnitId) async {
+    try {
+      final client = _client;
+      if (client == null) return Result.success(data: null);
+
+      await client.from(SupabaseConfig.productTieredPricesTable).delete().eq('productUnitId', productUnitId);
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<ProductModel>>> getLowStockProducts(String userId, int threshold) async {
+    try {
+      final client = _client;
+      if (client == null) return Result.success(data: []);
+
+      final res = await client
+          .from(SupabaseConfig.productsTable)
+          .select()
+          .eq('createdById', userId)
+          .gt('stock', 0)
+          .lte('stock', threshold)
+          .order('stock', ascending: true);
+
+      final products = <ProductModel>[];
+      for (final row in res) {
+        final product = ProductModel.fromJson(Map<String, dynamic>.from(row));
+        await _loadUnits(client, product);
+        products.add(product);
+      }
+
+      return Result.success(data: products);
     } catch (e) {
       return Result.failure(error: e);
     }

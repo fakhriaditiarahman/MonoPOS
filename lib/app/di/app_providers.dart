@@ -9,36 +9,46 @@ import '../../core/services/info/device_info_service.dart';
 import '../../core/services/logger/error_logger_service.dart';
 import '../../core/services/payment/interactive_qris_payment_service.dart';
 import '../../core/services/printer/printer_service.dart';
+import '../../core/services/supabase/supabase_config.dart';
 import '../../core/services/supabase/supabase_service.dart';
 import '../../core/services/sync/sync_service.dart';
 import '../../data/datasources/interfaces/auth_datasource.dart';
+import '../../data/datasources/interfaces/customer_datasource.dart';
 import '../../data/datasources/interfaces/product_datasource.dart';
-import '../../data/datasources/interfaces/storage_datasource.dart';
+import '../../data/datasources/interfaces/receivable_payment_datasource.dart';
 import '../../data/datasources/interfaces/transaction_datasource.dart';
 import '../../data/datasources/interfaces/user_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource_impl.dart';
+import '../../data/datasources/local/customer_local_datasource_impl.dart';
 import '../../data/datasources/local/product_local_datasource_impl.dart';
 import '../../data/datasources/local/queued_action_local_datasource_impl.dart';
+import '../../data/datasources/local/receivable_payment_local_datasource_impl.dart';
 import '../../data/datasources/local/transaction_local_datasource_impl.dart';
 import '../../data/datasources/local/user_local_datasource_impl.dart';
 import '../../data/datasources/remote/auth_remote_datasource_impl.dart';
+import '../../data/datasources/remote/customer_remote_datasource_impl.dart';
 import '../../data/datasources/remote/product_remote_datasource_impl.dart';
-import '../../data/datasources/remote/storage_remote_datasource_impl.dart';
+import '../../data/datasources/remote/receivable_payment_remote_datasource_impl.dart';
 import '../../data/datasources/remote/transaction_remote_datasource_impl.dart';
 import '../../data/datasources/remote/user_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/repositories/customer_repository_impl.dart';
 import '../../data/repositories/product_repository_impl.dart';
 import '../../data/repositories/queued_action_repository_impl.dart';
+import '../../data/repositories/receivable_payment_repository_impl.dart';
 import '../../data/repositories/storage_repository_impl.dart';
 import '../../data/repositories/transaction_repository_impl.dart';
 import '../../data/repositories/user_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/customer_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/queued_action_repository.dart';
+import '../../domain/repositories/receivable_payment_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../presentation/providers/auth/auth_notifier.dart';
+import '../../presentation/providers/language/language_notifier.dart';
 import '../routes/app_routes.dart';
 
 // Startup overrides
@@ -64,9 +74,12 @@ final deviceInfoServiceProvider = Provider<DeviceInfoService>(
 final errorLoggerServiceProvider = Provider<ErrorLoggerService>(
   (ref) => ErrorLoggerService(),
 );
-final printerServiceProvider = Provider<PrinterService>(
-  (ref) => PrinterService(ref.watch(sharedPreferencesProvider)),
-);
+final printerServiceProvider = Provider<PrinterService>((ref) {
+  final service = PrinterService(ref.watch(sharedPreferencesProvider));
+  final locale = ref.watch(languageNotifierProvider.select((s) => s.locale));
+  service.setLocale(locale.languageCode);
+  return service;
+});
 
 final interactiveQrisPaymentServiceProvider = Provider<InteractiveQrisPaymentService>(
   (ref) => InteractiveQrisPaymentService(ref.watch(sharedPreferencesProvider)),
@@ -103,15 +116,19 @@ final queuedActionLocalDatasourceProvider = Provider<QueuedActionLocalDatasource
 
 // Remote Datasources
 final authRemoteDataSourceProvider = Provider<AuthDataSource?>((ref) {
+  if (!SupabaseConfig.isConfigured) return null;
   return AuthRemoteDataSourceImpl();
 });
 final productRemoteDatasourceProvider = Provider<ProductDatasource?>((ref) {
+  if (!SupabaseConfig.isConfigured) return null;
   return ProductRemoteDatasourceImpl();
 });
 final transactionRemoteDatasourceProvider = Provider<TransactionDatasource?>((ref) {
+  if (!SupabaseConfig.isConfigured) return null;
   return TransactionRemoteDatasourceImpl();
 });
 final userRemoteDatasourceProvider = Provider<UserDatasource?>((ref) {
+  if (!SupabaseConfig.isConfigured) return null;
   return UserRemoteDatasourceImpl();
 });
 
@@ -152,13 +169,45 @@ final queuedActionRepositoryProvider = Provider<QueuedActionRepository>(
   ),
 );
 
-// Storage
-final storageRemoteDatasourceProvider = Provider<StorageDatasource>(
-  (ref) => StorageRemoteDataSourceImpl(),
+// Customer Datasources
+final customerLocalDatasourceProvider = Provider<CustomerLocalDatasourceImpl>(
+  (ref) => CustomerLocalDatasourceImpl(ref.watch(databaseServiceProvider)),
 );
-final storageRepositoryProvider = Provider<StorageRepository>(
-  (ref) => StorageRepositoryImpl(
-    pingService: ref.watch(pingServiceProvider),
-    storageRemoteDataSource: ref.watch(storageRemoteDatasourceProvider),
+final customerRemoteDatasourceProvider = Provider<CustomerDatasource?>((ref) {
+  if (!SupabaseConfig.isConfigured) return null;
+  return CustomerRemoteDatasourceImpl();
+});
+
+// Customer Repository
+final customerRepositoryProvider = Provider<CustomerRepository>(
+  (ref) => CustomerRepositoryImpl(
+    customerLocalDatasource: ref.watch(customerLocalDatasourceProvider),
+    customerRemoteDatasource: ref.watch(customerRemoteDatasourceProvider),
+    syncService: ref.watch(syncServiceProvider),
+    queuedActionRepository: ref.watch(queuedActionRepositoryProvider),
   ),
+);
+
+// Receivable Payment Datasources
+final receivablePaymentLocalDatasourceProvider = Provider<ReceivablePaymentLocalDatasourceImpl>(
+  (ref) => ReceivablePaymentLocalDatasourceImpl(ref.watch(databaseServiceProvider)),
+);
+final receivablePaymentRemoteDatasourceProvider = Provider<ReceivablePaymentDatasource?>((ref) {
+  if (!SupabaseConfig.isConfigured) return null;
+  return ReceivablePaymentRemoteDatasourceImpl();
+});
+
+// Receivable Payment Repository
+final receivablePaymentRepositoryProvider = Provider<ReceivablePaymentRepository>(
+  (ref) => ReceivablePaymentRepositoryImpl(
+    localDatasource: ref.watch(receivablePaymentLocalDatasourceProvider),
+    remoteDatasource: ref.watch(receivablePaymentRemoteDatasourceProvider),
+    syncService: ref.watch(syncServiceProvider),
+    queuedActionRepository: ref.watch(queuedActionRepositoryProvider),
+  ),
+);
+
+// Storage
+final storageRepositoryProvider = Provider<StorageRepository>(
+  (ref) => StorageRepositoryImpl(),
 );

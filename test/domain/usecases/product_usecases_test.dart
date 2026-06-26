@@ -369,4 +369,85 @@ void main() {
       verify(mockProductRepository.deleteProduct(productId));
     });
   });
+
+  group('GetLowStockProductsUsecase', () {
+    late GetLowStockProductsUsecase usecase;
+
+    setUp(() {
+      usecase = GetLowStockProductsUsecase(mockProductRepository);
+    });
+
+    test('should return low stock products successfully', () async {
+      // arrange
+      const userId = 'user123';
+      const threshold = 5;
+      final products = [
+        ProductEntity(id: 1, name: 'Low Stock 1', createdById: userId, imageUrl: '', stock: 2, price: 1000),
+        ProductEntity(id: 2, name: 'Low Stock 2', createdById: userId, imageUrl: '', stock: 4, price: 2000),
+      ];
+      final result = Result<List<ProductEntity>>.success(data: products);
+
+      when(mockProductRepository.getLowStockProducts(userId, threshold)).thenAnswer((_) async => result);
+
+      // act
+      final response = await usecase.call((userId: userId, threshold: threshold));
+
+      // assert
+      expect(response, result);
+      expect(response.data!.length, 2);
+      verify(mockProductRepository.getLowStockProducts(userId, threshold));
+      verifyNoMoreInteractions(mockProductRepository);
+    });
+
+    test('should return empty list when no low stock products', () async {
+      // arrange
+      const userId = 'user123';
+      const threshold = 5;
+      final result = Result<List<ProductEntity>>.success(data: []);
+
+      when(mockProductRepository.getLowStockProducts(userId, threshold)).thenAnswer((_) async => result);
+
+      // act
+      final response = await usecase.call((userId: userId, threshold: threshold));
+
+      // assert
+      expect(response.data, isEmpty);
+      verify(mockProductRepository.getLowStockProducts(userId, threshold));
+      verifyNoMoreInteractions(mockProductRepository);
+    });
+
+    test('should return failure when repository fails', () async {
+      // arrange
+      const userId = 'user123';
+      const threshold = 5;
+      final result = Result<List<ProductEntity>>.failure(error: 'Database error');
+
+      when(mockProductRepository.getLowStockProducts(userId, threshold)).thenAnswer((_) async => result);
+
+      // act
+      final response = await usecase.call((userId: userId, threshold: threshold));
+
+      // assert
+      expect(response.isFailure, true);
+      expect(response.error, 'Database error');
+      verify(mockProductRepository.getLowStockProducts(userId, threshold));
+      verifyNoMoreInteractions(mockProductRepository);
+    });
+
+    test('should pass correct parameters to repository', () async {
+      // arrange
+      const userId = 'specific_user';
+      const threshold = 10;
+      final result = Result<List<ProductEntity>>.success(data: []);
+
+      when(mockProductRepository.getLowStockProducts(userId, threshold)).thenAnswer((_) async => result);
+
+      // act
+      await usecase.call((userId: userId, threshold: threshold));
+
+      // assert
+      verify(mockProductRepository.getLowStockProducts(userId, threshold)).called(1);
+      verifyNoMoreInteractions(mockProductRepository);
+    });
+  });
 }

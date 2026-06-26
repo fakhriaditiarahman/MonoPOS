@@ -194,5 +194,114 @@ void main() {
         );
       });
     });
+
+    group('getLowStockProducts', () {
+      setUpAll(() async {
+        await testDatabase.delete('products');
+
+        await datasource.createProduct(
+          ProductModel(
+            id: 100,
+            name: 'No Stock',
+            createdById: userId,
+            imageUrl: '',
+            price: 1000,
+            sold: 0,
+            stock: 0,
+          ),
+        );
+        await datasource.createProduct(
+          ProductModel(
+            id: 101,
+            name: 'Low Stock 1',
+            createdById: userId,
+            imageUrl: '',
+            price: 2000,
+            sold: 0,
+            stock: 2,
+          ),
+        );
+        await datasource.createProduct(
+          ProductModel(
+            id: 102,
+            name: 'Low Stock 5',
+            createdById: userId,
+            imageUrl: '',
+            price: 3000,
+            sold: 0,
+            stock: 5,
+          ),
+        );
+        await datasource.createProduct(
+          ProductModel(
+            id: 103,
+            name: 'Normal Stock',
+            createdById: userId,
+            imageUrl: '',
+            price: 4000,
+            sold: 0,
+            stock: 20,
+          ),
+        );
+        await datasource.createProduct(
+          ProductModel(
+            id: 104,
+            name: 'Low Stock 3',
+            createdById: 'other_user',
+            imageUrl: '',
+            price: 5000,
+            sold: 0,
+            stock: 3,
+          ),
+        );
+      });
+
+      test('should return products with stock > 0 and stock <= threshold', () async {
+        final result = await datasource.getLowStockProducts(userId, 5);
+
+        expect(result.isSuccess, true);
+        expect(result.data!.length, equals(2));
+        expect(result.data!.any((p) => p.name == 'Low Stock 1'), isTrue);
+        expect(result.data!.any((p) => p.name == 'Low Stock 5'), isTrue);
+      });
+
+      test('should not include out-of-stock products (stock = 0)', () async {
+        final result = await datasource.getLowStockProducts(userId, 5);
+
+        expect(result.data!.any((p) => p.name == 'No Stock'), isFalse);
+      });
+
+      test('should not include products above threshold', () async {
+        final result = await datasource.getLowStockProducts(userId, 5);
+
+        expect(result.data!.any((p) => p.name == 'Normal Stock'), isFalse);
+      });
+
+      test('should not include products from other users', () async {
+        final result = await datasource.getLowStockProducts(userId, 5);
+
+        expect(result.data!.any((p) => p.name == 'Low Stock 3'), isFalse);
+      });
+
+      test('should return results sorted by stock ascending', () async {
+        final result = await datasource.getLowStockProducts(userId, 5);
+
+        expect(result.data!.first.stock, lessThanOrEqualTo(result.data!.last.stock));
+      });
+
+      test('should return empty list when no low stock products exist', () async {
+        final result = await datasource.getLowStockProducts(userId, 0);
+
+        expect(result.isSuccess, true);
+        expect(result.data, isEmpty);
+      });
+
+      test('should respect different threshold values', () async {
+        final result = await datasource.getLowStockProducts(userId, 2);
+
+        expect(result.data!.length, equals(1));
+        expect(result.data!.first.name, equals('Low Stock 1'));
+      });
+    });
   });
 }

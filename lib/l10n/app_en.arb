@@ -59,6 +59,10 @@
     }
   },
   "cart_removeProductConfirm": "Are you sure want to remove this product?",
+  "cart_paymentType": "Payment Type",
+  "cart_credit": "Credit",
+  "cart_dueDate": "Due Date",
+  "cart_dueDateHint": "Select due date...",
 
   "product_stockSold": "Stock {stock} | Sold {sold}",
   "@product_stockSold": {
@@ -233,5 +237,47 @@
   "shared_somethingWrong": "Something went wrong, please contact developer.",
   "shared_close": "Close",
   "shared_nothingToShow": "Nothing to show",
-  "shared_somethingWrongRetry": "Something went wrong.\nPlease try again later."
+  "shared_somethingWrongRetry": "Something went wrong.\nPlease try again later.",
+
+  "lowStock_title": "Low Stock Alert",
+  "lowStock_message": "{count} products are running low on stock",
+  "@lowStock_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lowStock_item": "{name} — {stock} left",
+  "@lowStock_item": {
+    "placeholders": {
+      "name": {},
+      "stock": {}
+    }
+  },
+  "lowStock_ok": "OK",
+
+  "receipt_date": "Date",
+  "receipt_trxId": "Trx. ID",
+  "receipt_customer": "Customer",
+  "receipt_cashier": "Cashier",
+  "receipt_item": "Item",
+  "receipt_qty": "Qty",
+  "receipt_price": "Price",
+  "receipt_subtotal": "Subtotal",
+  "receipt_total": "Total",
+  "receipt_pay": "Pay",
+  "receipt_change": "Change",
+  "receipt_paymentMethod": "Payment",
+  "receipt_grosir": "Grosir",
+  "receipt_retail": "Retail",
+  "receipt_testTitle": "MONO POS TEST PRINT OK",
+  "receipt_testTopLeft": "top left",
+  "receipt_testTopRight": "top right",
+  "receipt_testBottomLeft": "bottom left",
+  "receipt_testBottomRight": "bottom right",
+  "receipt_testThanks": "Thank You",
+  "receipt_storeName": "YOUR STORE",
+  "receipt_merchant": "Merchant",
+  "receipt_qrisTotal": "Total Payment",
+  "receipt_qrisScan": "Scan QRIS to pay",
+  "receipt_qrisNote": "* Payment will be detected automatically *"
 }

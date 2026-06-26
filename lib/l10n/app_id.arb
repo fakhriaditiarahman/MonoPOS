@@ -59,6 +59,10 @@
     }
   },
   "cart_removeProductConfirm": "Yakin ingin menghapus produk ini?",
+  "cart_paymentType": "Tipe Pembayaran",
+  "cart_credit": "Kredit",
+  "cart_dueDate": "Jatuh Tempo",
+  "cart_dueDateHint": "Pilih tanggal jatuh tempo...",
 
   "product_stockSold": "Stok {stock} | Terjual {sold}",
   "@product_stockSold": {
@@ -233,5 +237,47 @@
   "shared_somethingWrong": "Terjadi kesalahan, silakan hubungi pengembang.",
   "shared_close": "Tutup",
   "shared_nothingToShow": "Tidak ada yang ditampilkan",
-  "shared_somethingWrongRetry": "Terjadi kesalahan.\nSilakan coba lagi nanti."
+  "shared_somethingWrongRetry": "Terjadi kesalahan.\nSilakan coba lagi nanti.",
+
+  "lowStock_title": "Peringatan Stok Menipis",
+  "lowStock_message": "{count} produk stok menipis",
+  "@lowStock_message": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "lowStock_item": "{name} — sisa {stock}",
+  "@lowStock_item": {
+    "placeholders": {
+      "name": {},
+      "stock": {}
+    }
+  },
+  "lowStock_ok": "OK",
+
+  "receipt_date": "Tanggal",
+  "receipt_trxId": "ID Transaksi",
+  "receipt_customer": "Pelanggan",
+  "receipt_cashier": "Kasir",
+  "receipt_item": "Barang",
+  "receipt_qty": "Jml",
+  "receipt_price": "Harga",
+  "receipt_subtotal": "Subtotal",
+  "receipt_total": "Total",
+  "receipt_pay": "Bayar",
+  "receipt_change": "Kembali",
+  "receipt_paymentMethod": "Pembayaran",
+  "receipt_grosir": "Grosir",
+  "receipt_retail": "Eceran",
+  "receipt_testTitle": "MONO POS TEST PRINT OK",
+  "receipt_testTopLeft": "kiri atas",
+  "receipt_testTopRight": "kanan atas",
+  "receipt_testBottomLeft": "kiri bawah",
+  "receipt_testBottomRight": "kanan bawah",
+  "receipt_testThanks": "Terima Kasih",
+  "receipt_storeName": "TOKO ANDA",
+  "receipt_merchant": "Merchant",
+  "receipt_qrisTotal": "Total Pembayaran",
+  "receipt_qrisScan": "Scan QRIS untuk membayar",
+  "receipt_qrisNote": "* Pembayaran akan terdeteksi otomatis *"
 }

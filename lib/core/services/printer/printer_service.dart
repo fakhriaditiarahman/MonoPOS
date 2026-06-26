@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 import '../../../domain/entities/transaction_entity.dart';
+import '../../../generated/app_localizations.dart';
+import '../../../generated/app_localizations_id.dart';
+import '../../../generated/app_localizations_en.dart';
 import '../../common/result.dart';
 import '../../constants/constants.dart';
 import '../../utilities/console_logger.dart';
@@ -14,8 +17,18 @@ import '../../utilities/date_time_formatter.dart';
 class PrinterService {
   final PrinterManager _manager = PrinterManager();
   final SharedPreferences _sharedPreferences;
+  String _languageCode = 'id';
 
   PrinterService(this._sharedPreferences);
+
+  AppLocalizations get _l10n {
+    if (_languageCode == 'id') return AppLocalizationsId();
+    return AppLocalizationsEn();
+  }
+
+  void setLocale(String languageCode) {
+    _languageCode = languageCode;
+  }
 
   List<PrinterDevice> printers = [];
   PrinterDevice? selectedPrinter;
@@ -186,7 +199,7 @@ class PrinterService {
     try {
       final ticket = await Ticket.create(paperSize);
 
-      final storeName = _sharedPreferences.getString(Constants.storeNameKey) ?? 'FLUTTER POS';
+      final storeName = _sharedPreferences.getString(Constants.storeNameKey) ?? _l10n.receipt_storeName;
       final storeAddress = _sharedPreferences.getString(Constants.storeAddressKey) ?? '';
       final receiptFooter = _sharedPreferences.getString(Constants.receiptFooterKey) ?? '';
 
@@ -196,7 +209,6 @@ class PrinterService {
         style: const PrintTextStyle(
           bold: true,
           height: TextSize.size2,
-          width: TextSize.size2,
         ),
       );
       if (storeAddress.isNotEmpty) {
@@ -215,33 +227,29 @@ class PrinterService {
         transaction.createdAt ?? DateTime.now().toIso8601String(),
       );
 
-      ticket.text('Date: $date');
-      ticket.text('Trx. ID: #${transaction.id}');
-      ticket.text('Customer: ${transaction.customerName ?? '-'}');
-      ticket.text('Created by: ${transaction.createdBy?.name ?? '-'}');
+      ticket.text('${_l10n.receipt_date} : $date');
+      ticket.text('${_l10n.receipt_trxId} : #${transaction.id}');
+      if (transaction.customerName != null && transaction.customerName!.isNotEmpty) {
+        ticket.text('${_l10n.receipt_customer} : ${transaction.customerName}');
+      }
+      ticket.text('${_l10n.receipt_cashier} : ${transaction.createdBy?.name ?? '-'}');
 
       ticket.separator();
 
       ticket.row([
         PrintColumn(
-          text: 'Item',
-          flex: 2,
+          text: _l10n.receipt_item,
+          flex: 3,
           style: const PrintTextStyle(bold: true),
         ),
         PrintColumn(
-          text: 'Qty',
+          text: _l10n.receipt_qty,
           flex: 1,
           align: PrintAlign.center,
           style: const PrintTextStyle(bold: true),
         ),
         PrintColumn(
-          text: 'Price',
-          flex: 2,
-          align: PrintAlign.right,
-          style: const PrintTextStyle(bold: true),
-        ),
-        PrintColumn(
-          text: 'Subtotal',
+          text: _l10n.receipt_subtotal,
           flex: 2,
           align: PrintAlign.right,
           style: const PrintTextStyle(bold: true),
@@ -251,22 +259,20 @@ class PrinterService {
 
       if (transaction.orderedProducts != null) {
         for (final product in transaction.orderedProducts!) {
+          final priceType = product.priceType == 'grosir' ? _l10n.receipt_grosir : _l10n.receipt_retail;
+          final qtyStr = product.quantity == product.quantity.roundToDouble()
+              ? product.quantity.toInt().toString()
+              : product.quantity.toStringAsFixed(1);
+
           ticket.row([
             PrintColumn(
-              text: '${product.name} (${product.priceType == 'grosir' ? 'Grosir' : 'Retail'})',
-              flex: 2,
+              text: '${product.name} ($priceType)',
+              flex: 3,
             ),
             PrintColumn(
-              text:
-                  '${product.quantity == product.quantity.roundToDouble() ? product.quantity.toInt().toString() : product.quantity.toStringAsFixed(1)} ${product.unit}',
+              text: '$qtyStr ${product.unit}',
               flex: 1,
               align: PrintAlign.center,
-              style: const PrintTextStyle(),
-            ),
-            PrintColumn(
-              text: CurrencyFormatter.format(product.price),
-              flex: 2,
-              align: PrintAlign.right,
             ),
             PrintColumn(
               text: CurrencyFormatter.format((product.price * product.quantity).round()),
@@ -281,46 +287,50 @@ class PrinterService {
 
       ticket.row([
         PrintColumn(
-          text: 'Total',
-          flex: 2,
+          text: _l10n.receipt_total,
+          flex: 3,
           style: const PrintTextStyle(bold: true),
         ),
         PrintColumn(
           text: CurrencyFormatter.format(transaction.totalAmount),
-          flex: 1,
+          flex: 3,
           align: PrintAlign.right,
           style: const PrintTextStyle(bold: true),
         ),
       ]);
+
+      ticket.emptyLines();
+
       ticket.row([
         PrintColumn(
-          text: 'Pay (${transaction.paymentMethod})',
-          flex: 2,
+          text: '${_l10n.receipt_pay} (${transaction.paymentMethod})',
+          flex: 3,
         ),
         PrintColumn(
           text: CurrencyFormatter.format(transaction.receivedAmount),
-          flex: 1,
+          flex: 3,
           align: PrintAlign.right,
         ),
       ]);
       ticket.row([
         PrintColumn(
-          text: 'Change',
-          flex: 2,
+          text: _l10n.receipt_change,
+          flex: 3,
         ),
         PrintColumn(
           text: CurrencyFormatter.format(transaction.returnAmount),
-          flex: 1,
+          flex: 3,
           align: PrintAlign.right,
         ),
       ]);
 
       ticket.emptyLines();
-      ticket.qrcode('${transaction.id}', size: QRSize.size3);
-      ticket.emptyLines();
+
       if (receiptFooter.isNotEmpty) {
         ticket.text(receiptFooter, align: PrintAlign.center);
+        ticket.emptyLines();
       }
+
       ticket.cut(linesBefore: 2);
 
       return await printTicket(ticket);
@@ -338,7 +348,7 @@ class PrinterService {
     try {
       final ticket = await Ticket.create(paperSize);
 
-      final name = storeName ?? _sharedPreferences.getString(Constants.storeNameKey) ?? 'FLUTTER POS';
+      final name = storeName ?? _sharedPreferences.getString(Constants.storeNameKey) ?? _l10n.receipt_storeName;
       final merchant = merchantName ?? '';
 
       ticket.text(
@@ -347,18 +357,17 @@ class PrinterService {
         style: const PrintTextStyle(
           bold: true,
           height: TextSize.size2,
-          width: TextSize.size2,
         ),
       );
 
       if (merchant.isNotEmpty) {
         ticket.emptyLines();
-        ticket.text('Merchant: $merchant', align: PrintAlign.center);
+        ticket.text('${_l10n.receipt_merchant}: $merchant', align: PrintAlign.center);
       }
 
       ticket.emptyLines();
       ticket.text(
-        'Total Pembayaran',
+        _l10n.receipt_qrisTotal,
         align: PrintAlign.center,
         style: const PrintTextStyle(fontType: FontType.fontB),
       );
@@ -368,16 +377,15 @@ class PrinterService {
         style: const PrintTextStyle(
           bold: true,
           height: TextSize.size2,
-          width: TextSize.size2,
         ),
       );
 
       ticket.emptyLines(2);
-      ticket.text('Scan QRIS untuk membayar', align: PrintAlign.center);
+      ticket.text(_l10n.receipt_qrisScan, align: PrintAlign.center);
       ticket.emptyLines();
       ticket.qrcode(qrData, size: QRSize.size4);
       ticket.emptyLines();
-      ticket.text('* Pembayaran akan terdeteksi otomatis *', align: PrintAlign.center);
+      ticket.text(_l10n.receipt_qrisNote, align: PrintAlign.center);
 
       ticket.cut(linesBefore: 2);
 
@@ -393,11 +401,11 @@ class PrinterService {
 
       ticket.row([
         PrintColumn(
-          text: 'top left',
+          text: _l10n.receipt_testTopLeft,
           flex: 1,
         ),
         PrintColumn(
-          text: 'top right',
+          text: _l10n.receipt_testTopRight,
           flex: 1,
           align: PrintAlign.right,
         ),
@@ -406,24 +414,29 @@ class PrinterService {
       ticket.emptyLines(3);
 
       ticket.text(
-        'FLUTTER POS PRINT TEST OK',
+        _l10n.receipt_testTitle,
         align: PrintAlign.center,
-        style: const PrintTextStyle(bold: true),
+        style: const PrintTextStyle(
+          bold: true,
+          height: TextSize.size2,
+        ),
       );
-      await ticket.textRaster(
-        'ありがとうございます',
+      ticket.emptyLines();
+      ticket.text(
+        _l10n.receipt_testThanks,
         align: PrintAlign.center,
+        style: const PrintTextStyle(fontType: FontType.fontB),
       );
 
       ticket.emptyLines(3);
 
       ticket.row([
         PrintColumn(
-          text: 'bottom left',
+          text: _l10n.receipt_testBottomLeft,
           flex: 1,
         ),
         PrintColumn(
-          text: 'bottom right',
+          text: _l10n.receipt_testBottomRight,
           flex: 1,
           align: PrintAlign.right,
         ),

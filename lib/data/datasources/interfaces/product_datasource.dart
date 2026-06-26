@@ -1,5 +1,6 @@
 import '../../../core/common/result.dart';
 import '../../models/product_model.dart';
+import '../../models/product_tier_model.dart';
 import '../../models/product_unit_model.dart';
 
 abstract class ProductDatasource {
@@ -29,4 +30,12 @@ abstract class ProductDatasource {
   Future<Result<List<ProductUnitModel>>> getProductUnits(int productId);
 
   Future<Result<void>> deleteProductUnits(int productId);
+
+  Future<Result<List<ProductModel>>> getLowStockProducts(String userId, int threshold);
+
+  Future<Result<List<ProductTierModel>>> getProductTiers(int productUnitId);
+
+  Future<Result<void>> saveProductTiers(int productUnitId, List<ProductTierModel> tiers);
+
+  Future<Result<void>> deleteProductTiers(int productUnitId);
 }

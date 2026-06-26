@@ -2,20 +2,16 @@ import '../../core/common/result.dart';
 import '../../core/usecase/usecase.dart';
 import '../repositories/storage_repository.dart';
 
-class UploadUserPhotoUsecase extends Usecase<Result<String>, String> {
-  UploadUserPhotoUsecase(this._storageRepository);
+class SaveImageLocalUsecase extends Usecase<Result<String>, ({String sourcePath, String subDir, String fileName})> {
+  SaveImageLocalUsecase(this._storageRepository);
 
   final StorageRepository _storageRepository;
 
   @override
-  Future<Result<String>> call(String params) async => _storageRepository.uploadUserPhoto(params);
-}
-
-class UploadProductImageUsecase extends Usecase<Result<String?>, String> {
-  UploadProductImageUsecase(this._storageRepository);
-
-  final StorageRepository _storageRepository;
-
-  @override
-  Future<Result<String?>> call(String params) async => _storageRepository.uploadProductImage(params);
+  Future<Result<String>> call(({String sourcePath, String subDir, String fileName}) params) async =>
+      _storageRepository.saveImageLocal(
+        sourcePath: params.sourcePath,
+        subDir: params.subDir,
+        fileName: params.fileName,
+      );
 }

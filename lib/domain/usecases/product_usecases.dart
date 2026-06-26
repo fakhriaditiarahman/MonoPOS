@@ -1,6 +1,7 @@
 import '../../core/common/result.dart';
 import '../../core/usecase/usecase.dart';
 import '../entities/product_entity.dart';
+import '../entities/product_tier_entity.dart';
 import '../repositories/product_repository.dart';
 import 'params/base_params.dart';
 
@@ -63,4 +64,33 @@ class GetProductByBarcodeUsecase extends Usecase<Result, String> {
 
   @override
   Future<Result<ProductEntity?>> call(String params) async => _productRepository.getProductByBarcode(params);
+}
+
+class GetLowStockProductsUsecase extends Usecase<Result, ({String userId, int threshold})> {
+  GetLowStockProductsUsecase(this._productRepository);
+
+  final ProductRepository _productRepository;
+
+  @override
+  Future<Result<List<ProductEntity>>> call(({String userId, int threshold}) params) async =>
+      _productRepository.getLowStockProducts(params.userId, params.threshold);
+}
+
+class GetProductTiersUsecase extends Usecase<Result, int> {
+  GetProductTiersUsecase(this._productRepository);
+
+  final ProductRepository _productRepository;
+
+  @override
+  Future<Result<List<ProductTierEntity>>> call(int params) async => _productRepository.getProductTiers(params);
+}
+
+class SaveProductTiersUsecase extends Usecase<Result, ({int productUnitId, List<ProductTierEntity> tiers})> {
+  SaveProductTiersUsecase(this._productRepository);
+
+  final ProductRepository _productRepository;
+
+  @override
+  Future<Result<void>> call(({int productUnitId, List<ProductTierEntity> tiers}) params) async =>
+      _productRepository.saveProductTiers(params.productUnitId, params.tiers);
 }
