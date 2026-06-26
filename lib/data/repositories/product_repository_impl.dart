@@ -4,12 +4,14 @@ import '../../../core/common/result.dart';
 import '../../../core/services/sync/sync_service.dart';
 import '../../../domain/entities/queued_action_entity.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../domain/entities/product_tier_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
 import '../../../domain/repositories/product_repository.dart';
 import '../../../domain/repositories/queued_action_repository.dart';
 import '../datasources/interfaces/product_datasource.dart';
 import '../datasources/local/product_local_datasource_impl.dart';
 import '../models/product_model.dart';
+import '../models/product_tier_model.dart';
 import '../models/product_unit_model.dart';
 
 class ProductRepositoryImpl extends ProductRepository {
@@ -155,6 +157,49 @@ class ProductRepositoryImpl extends ProductRepository {
         remoteCall: () => productRemoteDatasource?.saveProductUnits(productId, models),
         method: 'saveProductUnits',
         param: {'productId': productId, 'units': models.map((e) => e.toJson()).toList()},
+      );
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<ProductEntity>>> getLowStockProducts(String userId, int threshold) async {
+    try {
+      final local = await productLocalDatasource.getLowStockProducts(userId, threshold);
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: local.data!.map((e) => e.toEntity()).toList());
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<ProductTierEntity>>> getProductTiers(int productUnitId) async {
+    try {
+      final local = await productLocalDatasource.getProductTiers(productUnitId);
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: local.data!.map((e) => e.toEntity()).toList());
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<void>> saveProductTiers(int productUnitId, List<ProductTierEntity> tiers) async {
+    try {
+      final models = tiers.map((e) => ProductTierModel.fromEntity(e)).toList();
+      final local = await productLocalDatasource.saveProductTiers(productUnitId, models);
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      await _syncRemote(
+        remoteCall: () => productRemoteDatasource?.saveProductTiers(productUnitId, models),
+        method: 'saveProductTiers',
+        param: {'productUnitId': productUnitId, 'tiers': models.map((e) => e.toJson()).toList()},
       );
 
       return Result.success(data: null);

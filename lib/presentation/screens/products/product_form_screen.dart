@@ -10,6 +10,8 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/themes/app_sizes.dart';
+import '../../../core/utilities/currency_formatter.dart';
+import '../../../domain/entities/product_tier_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
 import '../../providers/products/product_form_notifier.dart';
 import '../../widgets/app_button.dart';
@@ -523,69 +525,75 @@ class _UnitManagementSection extends ConsumerWidget {
                         : Theme.of(context).colorScheme.surfaceContainerHighest,
                   ),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                unit.unitName,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              if (unit.isBase) ...[
-                                const SizedBox(width: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                  child: Text(
-                                    'base',
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      fontSize: 8,
+                              Row(
+                                children: [
+                                  Text(
+                                    unit.unitName,
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.primary,
                                     ),
                                   ),
+                                  if (unit.isBase) ...[
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primaryContainer,
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: Text(
+                                        'base',
+                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '1 ${unit.unitName} = ${unit.conversionValue} ${_findBaseUnitName(units)}',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontSize: 10,
+                                  color: Theme.of(context).colorScheme.outline,
                                 ),
-                              ],
+                              ),
+                              Text(
+                                'Retail: ${unit.price} ${unit.wholesalePrice != null ? "| Grosir: ${unit.wholesalePrice}" : ""}',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontSize: 10,
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '1 ${unit.unitName} = ${unit.conversionValue} ${_findBaseUnitName(units)}',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontSize: 10,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
-                          Text(
-                            'Retail: ${unit.price} ${unit.wholesalePrice != null ? "| Grosir: ${unit.wholesalePrice}" : ""}',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontSize: 10,
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        AppIconButton(
+                          icon: Icons.edit,
+                          iconSize: 14,
+                          onTap: () => _showUnitDialog(context, ref, unit, i),
+                        ),
+                        const SizedBox(width: 4),
+                        AppIconButton(
+                          icon: Icons.delete_outline,
+                          iconSize: 14,
+                          onTap: () => notifier.removeUnit(i),
+                        ),
+                      ],
                     ),
-                    AppIconButton(
-                      icon: Icons.edit,
-                      iconSize: 14,
-                      onTap: () => _showUnitDialog(context, ref, unit, i),
-                    ),
-                    const SizedBox(width: 4),
-                    AppIconButton(
-                      icon: Icons.delete_outline,
-                      iconSize: 14,
-                      onTap: () => notifier.removeUnit(i),
-                    ),
+                    _TieredPriceSection(unitIndex: i),
                   ],
                 ),
               ),
@@ -681,6 +689,185 @@ class _UnitManagementSection extends ConsumerWidget {
           notifier.updateUnit(index, unit);
         } else {
           notifier.addUnit(unit);
+        }
+
+        ctx.pop();
+      },
+    );
+  }
+}
+
+class _TieredPriceSection extends ConsumerWidget {
+  final int unitIndex;
+
+  const _TieredPriceSection({required this.unitIndex});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tiers = ref.watch(
+      productFormNotifierProvider.select(
+        (s) => s.tieredPrices[unitIndex] ?? <ProductTierEntity>[],
+      ),
+    );
+    final notifier = ref.read(productFormNotifierProvider.notifier);
+
+    if (tiers.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Row(
+          children: [
+            Text(
+              'Harga bertingkat: belum ada',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              height: 22,
+              child: AppButton(
+                text: '+ Tambah',
+                height: 22,
+                fontSize: 9,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                borderRadius: BorderRadius.circular(3),
+                onTap: () => _showTierDialog(context, ref, unitIndex, null, -1),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Harga Bertingkat:',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.outline,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 22,
+                child: AppButton(
+                  text: '+ Tambah',
+                  height: 22,
+                  fontSize: 9,
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  borderRadius: BorderRadius.circular(3),
+                  onTap: () => _showTierDialog(context, ref, unitIndex, null, -1),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          ...List.generate(tiers.length, (ti) {
+            final tier = tiers[ti];
+            final rangeText = tier.maxQty != null ? '${tier.minQty} - ${tier.maxQty}' : '>= ${tier.minQty}';
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$rangeText: ${CurrencyFormatter.format(tier.price)}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontSize: 9,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _showTierDialog(context, ref, unitIndex, tier, ti),
+                      child: Icon(Icons.edit, size: 12, color: Theme.of(context).colorScheme.outline),
+                    ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () => notifier.removeTier(unitIndex, ti),
+                      child: Icon(Icons.delete_outline, size: 12, color: Theme.of(context).colorScheme.error),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  void _showTierDialog(
+    BuildContext context,
+    WidgetRef ref,
+    int unitIndex,
+    ProductTierEntity? existing,
+    int tierIndex,
+  ) {
+    final minQtyController = TextEditingController(text: existing?.minQty.toString() ?? '');
+    final maxQtyController = TextEditingController(text: existing?.maxQty?.toString() ?? '');
+    final priceController = TextEditingController(text: existing?.price.toString() ?? '');
+
+    AppDialog.show(
+      title: existing == null ? 'Tambah Harga Bertingkat' : 'Edit Harga Bertingkat',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppTextField(
+            controller: minQtyController,
+            labelText: 'Min. Qty',
+            hintText: 'contoh: 5',
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+          const SizedBox(height: AppSizes.padding),
+          AppTextField(
+            controller: maxQtyController,
+            labelText: 'Max. Qty (biarkan kosong jika tak terbatas)',
+            hintText: 'contoh: 10',
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+          const SizedBox(height: AppSizes.padding),
+          AppTextField(
+            controller: priceController,
+            labelText: 'Harga',
+            type: AppTextFieldType.currency,
+          ),
+        ],
+      ),
+      rightButtonText: 'Simpan',
+      leftButtonText: 'Batal',
+      onTapLeftButton: (ctx) => ctx.pop(),
+      onTapRightButton: (ctx) {
+        final notifier = ref.read(productFormNotifierProvider.notifier);
+        final tier = ProductTierEntity(
+          productUnitId: 0,
+          minQty: int.tryParse(minQtyController.text) ?? 1,
+          maxQty: int.tryParse(maxQtyController.text),
+          price: int.tryParse(priceController.text) ?? 0,
+        );
+
+        if (existing != null) {
+          notifier.updateTier(unitIndex, tierIndex, tier);
+        } else {
+          notifier.addTier(unitIndex, tier);
         }
 
         ctx.pop();

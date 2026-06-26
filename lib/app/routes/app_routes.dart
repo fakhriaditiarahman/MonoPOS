@@ -4,9 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/screens/account/about_screen.dart';
 import '../../presentation/screens/account/account_screen.dart';
 import '../../presentation/screens/account/payment_settings_screen.dart';
+import '../../presentation/screens/account/piutang/piutang_detail_screen.dart';
+import '../../presentation/screens/account/piutang/piutang_screen.dart';
 import '../../presentation/screens/account/printer_settings_screen.dart';
 import '../../presentation/screens/account/profile_form_screen.dart';
 import '../../presentation/screens/account/store_settings_screen.dart';
+import '../../presentation/screens/customer/customer_form_screen.dart';
+import '../../presentation/screens/customer/customer_screen.dart';
 import '../../presentation/screens/revenue/revenue_screen.dart';
 import '../../presentation/screens/error/error_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
@@ -160,6 +164,8 @@ class AppRoutes {
         _storeSettings(),
         _paymentSettings(),
         _revenue(),
+        _customers(),
+        _piutang(),
       ],
     );
   }
@@ -269,6 +275,68 @@ class AppRoutes {
       path: 'revenue',
       builder: (context, state) {
         return const RevenueScreen();
+      },
+    );
+  }
+
+  GoRoute _customers() {
+    return GoRoute(
+      path: 'customers',
+      builder: (context, state) {
+        return const CustomerScreen();
+      },
+      routes: [
+        _customerCreate(),
+        _customerEdit(),
+      ],
+    );
+  }
+
+  GoRoute _piutang() {
+    return GoRoute(
+      path: 'piutang',
+      builder: (context, state) {
+        return const PiutangScreen();
+      },
+      routes: [
+        _piutangDetail(),
+      ],
+    );
+  }
+
+  GoRoute _piutangDetail() {
+    return GoRoute(
+      path: 'piutang-detail/:id',
+      builder: (context, state) {
+        int? id = int.tryParse(state.pathParameters["id"] ?? '');
+
+        if (id == null) {
+          throw 'Required piutangId is not provided!';
+        }
+
+        return PiutangDetailScreen(id: id);
+      },
+    );
+  }
+
+  GoRoute _customerCreate() {
+    return GoRoute(
+      path: 'customer-create',
+      parentNavigatorKey: navNavigatorKey,
+      builder: (context, state) {
+        return const CustomerFormScreen();
+      },
+    );
+  }
+
+  GoRoute _customerEdit() {
+    return GoRoute(
+      path: 'customer-edit/:id',
+      builder: (context, state) {
+        final id = state.pathParameters["id"];
+        if (id == null) throw 'Required customerId is not provided!';
+
+        return CustomerFormScreen(id: id);
       },
     );
   }

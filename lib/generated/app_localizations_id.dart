@@ -137,6 +137,18 @@ class AppLocalizationsId extends AppLocalizations {
   String get cart_removeProductConfirm => 'Yakin ingin menghapus produk ini?';
 
   @override
+  String get cart_paymentType => 'Tipe Pembayaran';
+
+  @override
+  String get cart_credit => 'Kredit';
+
+  @override
+  String get cart_dueDate => 'Jatuh Tempo';
+
+  @override
+  String get cart_dueDateHint => 'Pilih tanggal jatuh tempo...';
+
+  @override
   String product_stockSold(Object stock, Object sold) {
     return 'Stok $stock | Terjual $sold';
   }
@@ -516,4 +528,95 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get shared_somethingWrongRetry =>
       'Terjadi kesalahan.\nSilakan coba lagi nanti.';
+
+  @override
+  String get lowStock_title => 'Peringatan Stok Menipis';
+
+  @override
+  String lowStock_message(Object count) {
+    return '$count produk stok menipis';
+  }
+
+  @override
+  String lowStock_item(Object name, Object stock) {
+    return '$name — sisa $stock';
+  }
+
+  @override
+  String get lowStock_ok => 'OK';
+
+  @override
+  String get receipt_date => 'Tanggal';
+
+  @override
+  String get receipt_trxId => 'ID Transaksi';
+
+  @override
+  String get receipt_customer => 'Pelanggan';
+
+  @override
+  String get receipt_cashier => 'Kasir';
+
+  @override
+  String get receipt_item => 'Barang';
+
+  @override
+  String get receipt_qty => 'Jml';
+
+  @override
+  String get receipt_price => 'Harga';
+
+  @override
+  String get receipt_subtotal => 'Subtotal';
+
+  @override
+  String get receipt_total => 'Total';
+
+  @override
+  String get receipt_pay => 'Bayar';
+
+  @override
+  String get receipt_change => 'Kembali';
+
+  @override
+  String get receipt_paymentMethod => 'Pembayaran';
+
+  @override
+  String get receipt_grosir => 'Grosir';
+
+  @override
+  String get receipt_retail => 'Eceran';
+
+  @override
+  String get receipt_testTitle => 'MONO POS TEST PRINT OK';
+
+  @override
+  String get receipt_testTopLeft => 'kiri atas';
+
+  @override
+  String get receipt_testTopRight => 'kanan atas';
+
+  @override
+  String get receipt_testBottomLeft => 'kiri bawah';
+
+  @override
+  String get receipt_testBottomRight => 'kanan bawah';
+
+  @override
+  String get receipt_testThanks => 'Terima Kasih';
+
+  @override
+  String get receipt_storeName => 'TOKO ANDA';
+
+  @override
+  String get receipt_merchant => 'Merchant';
+
+  @override
+  String get receipt_qrisTotal => 'Total Pembayaran';
+
+  @override
+  String get receipt_qrisScan => 'Scan QRIS untuk membayar';
+
+  @override
+  String get receipt_qrisNote => '* Pembayaran akan terdeteksi otomatis *';
 }

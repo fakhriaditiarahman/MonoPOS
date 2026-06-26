@@ -139,6 +139,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure want to remove this product?';
 
   @override
+  String get cart_paymentType => 'Payment Type';
+
+  @override
+  String get cart_credit => 'Credit';
+
+  @override
+  String get cart_dueDate => 'Due Date';
+
+  @override
+  String get cart_dueDateHint => 'Select due date...';
+
+  @override
   String product_stockSold(Object stock, Object sold) {
     return 'Stock $stock | Sold $sold';
   }
@@ -519,4 +531,95 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shared_somethingWrongRetry =>
       'Something went wrong.\nPlease try again later.';
+
+  @override
+  String get lowStock_title => 'Low Stock Alert';
+
+  @override
+  String lowStock_message(Object count) {
+    return '$count products are running low on stock';
+  }
+
+  @override
+  String lowStock_item(Object name, Object stock) {
+    return '$name — $stock left';
+  }
+
+  @override
+  String get lowStock_ok => 'OK';
+
+  @override
+  String get receipt_date => 'Date';
+
+  @override
+  String get receipt_trxId => 'Trx. ID';
+
+  @override
+  String get receipt_customer => 'Customer';
+
+  @override
+  String get receipt_cashier => 'Cashier';
+
+  @override
+  String get receipt_item => 'Item';
+
+  @override
+  String get receipt_qty => 'Qty';
+
+  @override
+  String get receipt_price => 'Price';
+
+  @override
+  String get receipt_subtotal => 'Subtotal';
+
+  @override
+  String get receipt_total => 'Total';
+
+  @override
+  String get receipt_pay => 'Pay';
+
+  @override
+  String get receipt_change => 'Change';
+
+  @override
+  String get receipt_paymentMethod => 'Payment';
+
+  @override
+  String get receipt_grosir => 'Grosir';
+
+  @override
+  String get receipt_retail => 'Retail';
+
+  @override
+  String get receipt_testTitle => 'MONO POS TEST PRINT OK';
+
+  @override
+  String get receipt_testTopLeft => 'top left';
+
+  @override
+  String get receipt_testTopRight => 'top right';
+
+  @override
+  String get receipt_testBottomLeft => 'bottom left';
+
+  @override
+  String get receipt_testBottomRight => 'bottom right';
+
+  @override
+  String get receipt_testThanks => 'Thank You';
+
+  @override
+  String get receipt_storeName => 'YOUR STORE';
+
+  @override
+  String get receipt_merchant => 'Merchant';
+
+  @override
+  String get receipt_qrisTotal => 'Total Payment';
+
+  @override
+  String get receipt_qrisScan => 'Scan QRIS to pay';
+
+  @override
+  String get receipt_qrisNote => '* Payment will be detected automatically *';
 }

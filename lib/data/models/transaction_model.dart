@@ -5,7 +5,10 @@ import 'user_model.dart';
 class TransactionModel {
   int id;
   String paymentMethod;
+  String paymentType;
+  String? customerId;
   String? customerName;
+  String? dueDate;
   String? description;
   String createdById;
   UserModel? createdBy;
@@ -23,7 +26,10 @@ class TransactionModel {
   TransactionModel({
     required this.id,
     required this.paymentMethod,
+    this.paymentType = 'cash',
+    this.customerId,
     this.customerName,
+    this.dueDate,
     this.description,
     required this.createdById,
     this.createdBy,
@@ -43,7 +49,10 @@ class TransactionModel {
     return TransactionModel(
       id: json['id'],
       paymentMethod: json['paymentMethod'],
+      paymentType: json['paymentType'] ?? 'cash',
+      customerId: json['customerId'],
       customerName: json['customerName'],
+      dueDate: json['dueDate'],
       description: json['description'],
       createdById: json['createdById'],
       createdBy: json['createdBy'],
@@ -66,7 +75,10 @@ class TransactionModel {
     return {
       'id': id,
       'paymentMethod': paymentMethod,
+      'paymentType': paymentType,
+      'customerId': customerId,
       'customerName': customerName,
+      'dueDate': dueDate,
       'description': description,
       'createdById': createdById,
       'createdBy': createdBy,
@@ -87,7 +99,10 @@ class TransactionModel {
     return TransactionModel(
       id: entity.id ?? DateTime.now().millisecondsSinceEpoch,
       paymentMethod: entity.paymentMethod,
+      paymentType: entity.paymentType,
+      customerId: entity.customerId,
       customerName: entity.customerName,
+      dueDate: entity.dueDate,
       description: entity.description,
       createdById: entity.createdById,
       createdBy: entity.createdBy != null ? UserModel.fromEntity(entity.createdBy!) : null,
@@ -108,7 +123,10 @@ class TransactionModel {
     return TransactionEntity(
       id: id,
       paymentMethod: paymentMethod,
+      paymentType: paymentType,
+      customerId: customerId,
       customerName: customerName,
+      dueDate: dueDate,
       description: description,
       createdBy: createdBy?.toEntity(),
       createdById: createdById,

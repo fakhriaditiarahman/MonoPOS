@@ -6,7 +6,9 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../../../app/di/app_providers.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utilities/currency_formatter.dart';
+import '../../../../domain/entities/customer_entity.dart';
 import '../../../../generated/app_localizations.dart';
+import '../../../providers/customer/customer_notifier.dart';
 import '../../../providers/home/home_notifier.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_dialog.dart';
@@ -114,19 +116,94 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
   final _amountController = TextEditingController();
   final _customerController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _dueDateController = TextEditingController();
+  List<CustomerEntity> _customerSuggestions = [];
+  bool _showCustomerDropdown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final homeState = ref.read(homeNotifierProvider);
+    if (homeState.dueDate != null) {
+      _dueDateController.text = homeState.dueDate!;
+    }
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
     _customerController.dispose();
     _descriptionController.dispose();
+    _dueDateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDueDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 7)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+      helpText: AppLocalizations.of(context)!.cart_dueDate,
+      cancelText: AppLocalizations.of(context)!.home_cancel,
+      confirmText: AppLocalizations.of(context)!.cart_confirm,
+    );
+    if (picked != null) {
+      final formatted =
+          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      _dueDateController.text = formatted;
+      ref.read(homeNotifierProvider.notifier).onChangedDueDate(formatted);
+    }
+  }
+
+  void _onCustomerSearchChanged(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _customerSuggestions = [];
+        _showCustomerDropdown = false;
+      });
+      return;
+    }
+
+    final notifier = ref.read(customerNotifierProvider.notifier);
+    final results = await notifier.searchCustomers(query);
+    if (!mounted) return;
+    setState(() {
+      _customerSuggestions = results;
+      _showCustomerDropdown = results.isNotEmpty;
+    });
+  }
+
+  void _onCustomerSelected(CustomerEntity customer) {
+    final notifier = ref.read(homeNotifierProvider.notifier);
+    _customerController.text = customer.name;
+    notifier.onChangedCustomerName(customer.name);
+    notifier.onChangedCustomerId(customer.id);
+    notifier.onChangedPriceType(customer.type);
+    setState(() {
+      _showCustomerDropdown = false;
+      _customerSuggestions = [];
+    });
   }
 
   Future<void> onPay({
     required GoRouter router,
     required HomeNotifier homeNotifier,
   }) async {
+    final homeState = ref.read(homeNotifierProvider);
+
+    if (homeState.selectedPaymentType == 'credit') {
+      if (homeState.customerId == null) {
+        AppDialog.showError(error: 'Pilih pelanggan terlebih dahulu untuk transaksi kredit');
+        return;
+      }
+      if (homeState.dueDate == null || homeState.dueDate!.isEmpty) {
+        AppDialog.showError(error: 'Isi tanggal jatuh tempo untuk transaksi kredit');
+        return;
+      }
+    }
+
     var res = await AppDialog.showProgress(() {
       return homeNotifier.createTransaction();
     });
@@ -159,7 +236,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (homeState.selectedPaymentMethod != 'qris') ...[
+        if (homeState.selectedPaymentMethod != 'qris' && homeState.selectedPaymentType != 'credit') ...[
           AppTextField(
             autofocus: true,
             keyboardType: TextInputType.number,
@@ -213,14 +290,99 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
               child: Text('QRIS'),
             ),
           ],
-          onChanged: (v) => homeNotifier.onChangedPaymentMethod(v),
+          onChanged: (v) {
+            homeNotifier.onChangedPaymentMethod(v);
+            if (v == 'qris') {
+              homeNotifier.onChangedPaymentType('cash');
+            }
+          },
         ),
         const SizedBox(height: AppSizes.padding),
-        AppTextField(
-          controller: _customerController,
-          labelText: AppLocalizations.of(context)!.cart_customerName,
-          hintText: AppLocalizations.of(context)!.cart_customerNameHint,
-          onChanged: (v) => homeNotifier.onChangedCustomerName(v),
+        if (homeState.selectedPaymentMethod != 'qris') ...[
+          AppDropDown(
+            labelText: AppLocalizations.of(context)!.cart_paymentType,
+            selectedValue: homeState.selectedPaymentType,
+            dropdownItems: [
+              DropdownMenuItem(
+                value: 'cash',
+                child: Text(AppLocalizations.of(context)!.cart_cash),
+              ),
+              DropdownMenuItem(
+                value: 'credit',
+                child: Text(AppLocalizations.of(context)!.cart_credit),
+              ),
+            ],
+            onChanged: (v) => homeNotifier.onChangedPaymentType(v ?? 'cash'),
+          ),
+          const SizedBox(height: AppSizes.padding),
+        ],
+        if (homeState.selectedPaymentType == 'credit') ...[
+          AppTextField(
+            controller: _dueDateController,
+            labelText: AppLocalizations.of(context)!.cart_dueDate,
+            hintText: AppLocalizations.of(context)!.cart_dueDateHint,
+            onChanged: (v) => homeNotifier.onChangedDueDate(v),
+            suffixWidget: GestureDetector(
+              onTap: _pickDueDate,
+              child: const Icon(Icons.calendar_today, size: 16),
+            ),
+          ),
+          const SizedBox(height: AppSizes.padding),
+        ],
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AppTextField(
+              controller: _customerController,
+              labelText: AppLocalizations.of(context)!.cart_customerName,
+              hintText: 'Cari pelanggan...',
+              onChanged: (v) {
+                homeNotifier.onChangedCustomerName(v);
+                _onCustomerSearchChanged(v);
+              },
+              suffixWidget: _customerController.text.isNotEmpty
+                  ? GestureDetector(
+                      onTap: () {
+                        _customerController.clear();
+                        homeNotifier.onChangedCustomerName('');
+                        homeNotifier.onChangedCustomerId(null);
+                        homeNotifier.onChangedPriceType('retail');
+                        setState(() {
+                          _customerSuggestions = [];
+                          _showCustomerDropdown = false;
+                        });
+                      },
+                      child: const Icon(Icons.clear, size: 16),
+                    )
+                  : null,
+            ),
+            if (_showCustomerDropdown && _customerSuggestions.isNotEmpty)
+              Container(
+                constraints: const BoxConstraints(maxHeight: 160),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(AppSizes.radius),
+                  border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _customerSuggestions.length,
+                  itemBuilder: (ctx, i) {
+                    final c = _customerSuggestions[i];
+                    return ListTile(
+                      dense: true,
+                      title: Text(c.name, style: const TextStyle(fontSize: 13)),
+                      subtitle: Text(
+                        '${c.phone ?? "-"} | ${c.type == 'grosir' ? 'Grosir' : 'Retail'}',
+                        style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline),
+                      ),
+                      onTap: () => _onCustomerSelected(c),
+                    );
+                  },
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: AppSizes.padding),
         AppTextField(
@@ -247,8 +409,10 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
             Expanded(
               flex: 2,
               child: AppButton(
-                text: AppLocalizations.of(context)!.home_pay,
-                enabled: homeState.selectedPaymentMethod == 'qris'
+                text: homeState.selectedPaymentType == 'credit'
+                    ? AppLocalizations.of(context)!.cart_credit
+                    : AppLocalizations.of(context)!.home_pay,
+                enabled: homeState.selectedPaymentMethod == 'qris' || homeState.selectedPaymentType == 'credit'
                     ? true
                     : (int.tryParse(_amountController.text) ?? 0) >= homeNotifier.getTotalAmount(),
                 onTap: () {

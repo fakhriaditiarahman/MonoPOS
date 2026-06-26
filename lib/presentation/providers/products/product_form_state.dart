@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../../domain/entities/product_tier_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
 
 class ProductFormState {
@@ -13,6 +14,7 @@ class ProductFormState {
   final String? barcode;
   final String? description;
   final List<ProductUnitEntity> units;
+  final Map<int, List<ProductTierEntity>> tieredPrices;
   final bool isLoaded;
 
   const ProductFormState({
@@ -26,6 +28,7 @@ class ProductFormState {
     this.barcode,
     this.description,
     this.units = const [],
+    this.tieredPrices = const {},
     this.isLoaded = false,
   });
 
@@ -40,6 +43,7 @@ class ProductFormState {
     String? barcode,
     String? description,
     List<ProductUnitEntity>? units,
+    Map<int, List<ProductTierEntity>>? tieredPrices,
     bool? isLoaded,
   }) {
     return ProductFormState(
@@ -53,6 +57,7 @@ class ProductFormState {
       barcode: barcode ?? this.barcode,
       description: description ?? this.description,
       units: units ?? this.units,
+      tieredPrices: tieredPrices ?? this.tieredPrices,
       isLoaded: isLoaded ?? this.isLoaded,
     );
   }

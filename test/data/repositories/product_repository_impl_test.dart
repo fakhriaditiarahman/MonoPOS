@@ -202,7 +202,9 @@ void main() {
     );
 
     test('returns product by barcode on success', () async {
-      when(mockLocalDatasource.getProductByBarcode(barcode)).thenAnswer((_) async => Result.success(data: localProduct));
+      when(
+        mockLocalDatasource.getProductByBarcode(barcode),
+      ).thenAnswer((_) async => Result.success(data: localProduct));
 
       final result = await repository.getProductByBarcode(barcode);
 
@@ -363,7 +365,9 @@ void main() {
 
     test('returns failure when local deletion fails', () async {
       when(mockSyncService.isOnline).thenReturn(true);
-      when(mockLocalDatasource.deleteProduct(productId)).thenAnswer((_) async => Result.failure(error: 'Delete failed'));
+      when(
+        mockLocalDatasource.deleteProduct(productId),
+      ).thenAnswer((_) async => Result.failure(error: 'Delete failed'));
 
       final result = await repository.deleteProduct(productId);
 
@@ -422,6 +426,80 @@ void main() {
       expect(result.isSuccess, true);
       verify(mockRemoteDatasource.createProduct(any)).called(1);
       verify(mockQueuedActionRepository.createQueuedAction(any)).called(1);
+    });
+  });
+
+  group('getLowStockProducts', () {
+    const userId = 'user123';
+    const threshold = 5;
+
+    final lowStockProducts = [
+      ProductModel(
+        id: 1,
+        createdById: userId,
+        name: 'Low Stock Product 1',
+        imageUrl: '',
+        stock: 2,
+        sold: 10,
+        price: 5000,
+      ),
+      ProductModel(
+        id: 2,
+        createdById: userId,
+        name: 'Low Stock Product 2',
+        imageUrl: '',
+        stock: 4,
+        sold: 5,
+        price: 8000,
+      ),
+    ];
+
+    test('returns low stock products on success', () async {
+      when(
+        mockLocalDatasource.getLowStockProducts(userId, threshold),
+      ).thenAnswer((_) async => Result.success(data: lowStockProducts));
+
+      final result = await repository.getLowStockProducts(userId, threshold);
+
+      expect(result.isSuccess, true);
+      expect(result.data!.length, 2);
+      expect(result.data!.first.name, 'Low Stock Product 1');
+      expect(result.data!.first.stock, 2);
+      verify(mockLocalDatasource.getLowStockProducts(userId, threshold)).called(1);
+    });
+
+    test('returns empty list when no low stock products', () async {
+      when(
+        mockLocalDatasource.getLowStockProducts(userId, threshold),
+      ).thenAnswer((_) async => Result.success(data: []));
+
+      final result = await repository.getLowStockProducts(userId, threshold);
+
+      expect(result.isSuccess, true);
+      expect(result.data, isEmpty);
+    });
+
+    test('returns failure when local datasource fails', () async {
+      when(
+        mockLocalDatasource.getLowStockProducts(userId, threshold),
+      ).thenAnswer((_) async => Result.failure(error: 'Database error'));
+
+      final result = await repository.getLowStockProducts(userId, threshold);
+
+      expect(result.isFailure, true);
+      expect(result.error, 'Database error');
+    });
+
+    test('converts models to entities correctly', () async {
+      when(
+        mockLocalDatasource.getLowStockProducts(userId, threshold),
+      ).thenAnswer((_) async => Result.success(data: lowStockProducts));
+
+      final result = await repository.getLowStockProducts(userId, threshold);
+
+      expect(result.data!.first, isA<ProductEntity>());
+      expect(result.data!.first.id, 1);
+      expect(result.data!.last.id, 2);
     });
   });
 }

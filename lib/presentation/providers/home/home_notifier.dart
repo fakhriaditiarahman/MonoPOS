@@ -6,7 +6,11 @@ import '../../../core/common/result.dart';
 import '../../../domain/entities/ordered_product_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/entities/transaction_entity.dart';
+import '../../../domain/usecases/customer_usecases.dart';
+import '../../../domain/usecases/product_usecases.dart';
 import '../../../domain/usecases/transaction_usecases.dart';
+import '../../widgets/app_low_stock_dialog.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../auth/auth_notifier.dart';
 import '../payment/payment_notifier.dart';
 import '../products/products_notifier.dart';
@@ -28,32 +32,72 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       if (!authState.isAuthenticated) throw 'Unauthenticated!';
       final user = authState.user!;
 
+      bool isCredit = state.selectedPaymentType == 'credit';
+
+      if (isCredit && state.customerId != null) {
+        final customerRepository = ref.read(customerRepositoryProvider);
+        final customerRes = await GetCustomerUsecase(customerRepository).call(state.customerId!);
+        if (customerRes.isSuccess && customerRes.data != null) {
+          final customer = customerRes.data!;
+          final newBalance = customer.outstandingBalance + getTotalAmount();
+          if (customer.creditLimit > 0 && newBalance > customer.creditLimit) {
+            return Result.failure(error: 'Melebihi limit kredit (Rp ${customer.creditLimit})');
+          }
+        }
+      }
+
       var transaction = TransactionEntity(
         id: DateTime.now().millisecondsSinceEpoch,
         paymentMethod: state.selectedPaymentMethod,
+        paymentType: state.selectedPaymentType,
+        customerId: state.customerId,
         customerName: state.customerName,
+        dueDate: isCredit ? state.dueDate : null,
         description: state.description,
         orderedProducts: state.orderedProducts,
         createdById: user.id,
         createdBy: user,
-        receivedAmount: state.receivedAmount,
-        returnAmount: state.receivedAmount - getTotalAmount(),
+        receivedAmount: isCredit ? 0 : state.receivedAmount,
+        returnAmount: isCredit ? 0 : state.receivedAmount - getTotalAmount(),
         totalOrderedProduct: state.orderedProducts.length,
         totalAmount: getTotalAmount(),
+        paymentStatus: isCredit ? 'pending' : 'paid',
       );
 
       final transactionRepository = ref.read(transactionRepositoryProvider);
       var res = await CreateTransactionUsecase(transactionRepository).call(transaction);
 
       if (res.isSuccess) {
-        ref.read(printerServiceProvider).printTransaction(transaction);
+        if (isCredit && state.customerId != null) {
+          await _updateCustomerOutstanding(state.customerId!, getTotalAmount());
+        }
+
+        final printResult = await ref.read(printerServiceProvider).printTransaction(transaction);
+        if (printResult.isFailure) {
+          AppSnackBar.showError('Cetak struk gagal: ${printResult.error}');
+        }
       }
 
       ref.read(productsNotifierProvider.notifier).getAllProducts();
 
+      if (res.isSuccess) {
+        _checkLowStock(user.id);
+      }
+
       return res;
     } catch (e) {
       return Result.failure(error: e);
+    }
+  }
+
+  Future<void> _updateCustomerOutstanding(String customerId, int amount) async {
+    final customerRepository = ref.read(customerRepositoryProvider);
+    final customerRes = await GetCustomerUsecase(customerRepository).call(customerId);
+    if (customerRes.isSuccess && customerRes.data != null) {
+      final customer = customerRes.data!;
+      await UpdateCustomerUsecase(customerRepository).call(
+        customer.copyWith(outstandingBalance: customer.outstandingBalance + amount),
+      );
     }
   }
 
@@ -87,6 +131,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       if (res.isSuccess) {
         ref.read(productsNotifierProvider.notifier).getAllProducts();
         router.go('/payment/qris');
+        _checkLowStock(user.id);
       }
 
       return res;
@@ -99,13 +144,13 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     state = state.copyWith(isPanelExpanded: val);
   }
 
-  void onAddOrderedProduct(
+  Future<void> onAddOrderedProduct(
     ProductEntity product,
     double qty, {
     String? unitName,
     int? conversionValue,
     int? overridePrice,
-  }) {
+  }) async {
     final orderedProducts = [...state.orderedProducts];
     var currentIndex = orderedProducts.indexWhere((e) => e.productId == product.id);
     bool isGrosir = state.selectedPriceType == 'grosir';
@@ -114,6 +159,10 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     int conversion = conversionValue ?? 1;
 
     int price = overridePrice ?? (isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price);
+
+    if (overridePrice == null) {
+      price = await _resolveTieredPrice(product, selectedUnit, qty, price);
+    }
 
     if (currentIndex != -1) {
       orderedProducts[currentIndex] = orderedProducts[currentIndex].copyWith(
@@ -182,10 +231,50 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     state = const HomeState();
   }
 
-  void onChangedOrderedProductQuantity(int index, double value) {
+  Future<void> onChangedOrderedProductQuantity(int index, double value) async {
     final orderedProducts = [...state.orderedProducts];
-    orderedProducts[index] = orderedProducts[index].copyWith(quantity: value);
+    final item = orderedProducts[index];
+    final products = ref.read(productsNotifierProvider).allProducts;
+    final product = products?.where((p) => p.id == item.productId).firstOrNull;
+
+    int price = item.price;
+    if (product != null) {
+      price = await _resolveTieredPrice(product, item.unit, value, item.price);
+    }
+
+    orderedProducts[index] = item.copyWith(quantity: value, price: price);
     state = state.copyWith(orderedProducts: orderedProducts);
+  }
+
+  Future<int> _resolveTieredPrice(ProductEntity product, String unitName, double qty, int fallbackPrice) async {
+    try {
+      if (product.units.isEmpty) return fallbackPrice;
+
+      var unit = product.units.firstWhere(
+        (u) => u.unitName == unitName,
+        orElse: () => product.units.first,
+      );
+
+      if (unit.id == null || unit.id! <= 0) return fallbackPrice;
+
+      final productRepository = ref.read(productRepositoryProvider);
+      final tierRes = await GetProductTiersUsecase(productRepository).call(unit.id!);
+      if (!tierRes.isSuccess || tierRes.data == null || tierRes.data!.isEmpty) return fallbackPrice;
+
+      final qtyInt = qty.toInt();
+      for (final tier in tierRes.data!) {
+        final maxQty = tier.maxQty;
+        if (maxQty != null) {
+          if (qtyInt >= tier.minQty && qtyInt <= maxQty) return tier.price;
+        } else {
+          if (qtyInt >= tier.minQty) return tier.price;
+        }
+      }
+
+      return fallbackPrice;
+    } catch (_) {
+      return fallbackPrice;
+    }
   }
 
   void onChangedReceivedAmount(int value) {
@@ -200,6 +289,18 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     state = state.copyWith(customerName: value);
   }
 
+  void onChangedCustomerId(String? value) {
+    state = state.copyWith(customerId: value);
+  }
+
+  void onChangedPaymentType(String value) {
+    state = state.copyWith(selectedPaymentType: value);
+  }
+
+  void onChangedDueDate(String value) {
+    state = state.copyWith(dueDate: value);
+  }
+
   void onChangedDescription(String value) {
     state = state.copyWith(description: value);
   }
@@ -207,5 +308,19 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
   int getTotalAmount() {
     if (state.orderedProducts.isEmpty) return 0;
     return state.orderedProducts.map((e) => (e.price * e.quantity).round()).reduce((a, b) => a + b);
+  }
+
+  static const int _lowStockThreshold = 5;
+
+  Future<void> _checkLowStock(String userId) async {
+    final productRepository = ref.read(productRepositoryProvider);
+    final res = await GetLowStockProductsUsecase(productRepository).call((
+      userId: userId,
+      threshold: _lowStockThreshold,
+    ));
+
+    if (res.isSuccess && res.data!.isNotEmpty) {
+      AppLowStockDialog.show(res.data!);
+    }
   }
 }

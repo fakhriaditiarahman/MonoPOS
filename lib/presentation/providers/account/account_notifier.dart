@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
+import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/user_entity.dart' hide AuthProvider;
-import '../../../domain/usecases/storage_usecases.dart';
 import '../../../domain/usecases/user_usecases.dart';
 import '../auth/auth_notifier.dart';
 import 'account_state.dart';
@@ -49,19 +50,20 @@ class AccountNotifier extends AutoDisposeNotifier<AccountFormState> {
     try {
       final userId = _requireUserId();
       final userRepository = ref.read(userRepositoryProvider);
-      final storageRepository = ref.read(storageRepositoryProvider);
 
       var imageUrl = state.imageUrl;
 
       if (state.imageFile != null) {
-        var uploadRes = await UploadUserPhotoUsecase(storageRepository).call(
-          state.imageFile!.path,
-        );
+        try {
+          final appDir = await getApplicationDocumentsDirectory();
+          final avatarsDir = Directory('${appDir.path}/avatars');
+          if (!avatarsDir.existsSync()) avatarsDir.createSync(recursive: true);
 
-        if (uploadRes.isSuccess) {
-          imageUrl = uploadRes.data;
-        } else {
-          return Result.failure(error: uploadRes.error ?? 'Gagal upload gambar');
+          final targetPath = '${avatarsDir.path}/$userId.jpg';
+          await state.imageFile!.copy(targetPath);
+          imageUrl = targetPath;
+        } catch (e) {
+          cl('Gagal simpan avatar lokal: $e');
         }
       }
 

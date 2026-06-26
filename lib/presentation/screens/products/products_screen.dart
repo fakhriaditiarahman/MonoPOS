@@ -74,7 +74,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           child: CustomScrollView(
             controller: scrollController,
             // Disable scroll when data is null or empty
-            physics: (allProducts?.isEmpty ?? true) ? const NeverScrollableScrollPhysics() : null,
+            physics: (allProducts?.isEmpty ?? true)
+                ? const NeverScrollableScrollPhysics()
+                : const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverAppBar(
                 floating: true,

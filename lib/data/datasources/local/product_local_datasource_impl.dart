@@ -4,6 +4,7 @@ import '../../../core/common/result.dart';
 import '../../../core/services/database/database_config.dart';
 import '../../../core/services/database/database_service.dart';
 import '../../models/product_model.dart';
+import '../../models/product_tier_model.dart';
 import '../../models/product_unit_model.dart';
 import '../interfaces/product_datasource.dart';
 
@@ -254,6 +255,86 @@ class ProductLocalDatasourceImpl extends ProductDatasource {
       );
 
       return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<ProductTierModel>>> getProductTiers(int productUnitId) async {
+    try {
+      var res = await _databaseService.database.query(
+        DatabaseConfig.productTieredPriceTableName,
+        where: 'productUnitId = ?',
+        whereArgs: [productUnitId],
+        orderBy: 'minQty ASC',
+      );
+
+      return Result.success(
+        data: res.map((e) => ProductTierModel.fromJson(e)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<void>> saveProductTiers(int productUnitId, List<ProductTierModel> tiers) async {
+    try {
+      await _databaseService.database.transaction((trx) async {
+        await trx.delete(
+          DatabaseConfig.productTieredPriceTableName,
+          where: 'productUnitId = ?',
+          whereArgs: [productUnitId],
+        );
+
+        for (var tier in tiers) {
+          tier.productUnitId = productUnitId;
+          await trx.insert(
+            DatabaseConfig.productTieredPriceTableName,
+            tier.toJson(),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+      });
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteProductTiers(int productUnitId) async {
+    try {
+      await _databaseService.database.delete(
+        DatabaseConfig.productTieredPriceTableName,
+        where: 'productUnitId = ?',
+        whereArgs: [productUnitId],
+      );
+
+      return Result.success(data: null);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
+  Future<Result<List<ProductModel>>> getLowStockProducts(String userId, int threshold) async {
+    try {
+      var res = await _databaseService.database.query(
+        DatabaseConfig.productTableName,
+        where: 'createdById = ? AND stock > 0 AND stock <= ?',
+        whereArgs: [userId, threshold],
+        orderBy: 'stock ASC',
+      );
+
+      var products = <ProductModel>[];
+      for (var row in res) {
+        products.add(await _loadProductWithUnits(row));
+      }
+
+      return Result.success(data: products);
     } catch (e) {
       return Result.failure(error: e);
     }

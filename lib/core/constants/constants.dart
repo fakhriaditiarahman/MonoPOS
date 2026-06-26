@@ -29,5 +29,8 @@ class Constants {
   // Non-critical error libraries that should be logged but not navigate to error screen
   static const nonCriticalErrorLibraries = {
     'image resource service',
+    'gestures library',
+    'scheduler library',
+    'rendering library',
   };
 }

@@ -213,7 +213,9 @@ class _ProductGrid extends ConsumerWidget {
       child: Scrollbar(
         child: CustomScrollView(
           controller: scrollController,
-          physics: (allProducts?.isEmpty ?? true) ? const NeverScrollableScrollPhysics() : null,
+          physics: (allProducts?.isEmpty ?? true)
+              ? const NeverScrollableScrollPhysics()
+              : const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverAppBar(
               floating: true,

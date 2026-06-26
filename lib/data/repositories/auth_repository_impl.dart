@@ -1,4 +1,5 @@
 import '../../../core/common/result.dart';
+import '../../../core/utilities/console_logger.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/interfaces/auth_datasource.dart';
@@ -37,24 +38,53 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      final remote = authRemoteDataSource;
-      if (remote != null) {
-        final res = await remote.signInWithEmailPassword(
+      UserEntity? localUser;
+
+      if (authRemoteDataSource != null) {
+        final remoteRes = await authRemoteDataSource!.signInWithEmailPassword(
           username: username,
           password: password,
         );
-        if (res.isSuccess) return Result.success(data: res.data!.toEntity());
+        if (remoteRes.isSuccess) return Result.success(data: remoteRes.data!.toEntity());
+
+        // Remote auth failed — try local
+        final localRes = await authLocalDataSource.signInWithEmailPassword(
+          username: username,
+          password: password,
+        );
+        if (localRes.isSuccess) localUser = localRes.data!.toEntity();
+      } else {
+        final localRes = await authLocalDataSource.signInWithEmailPassword(
+          username: username,
+          password: password,
+        );
+        if (localRes.isSuccess) localUser = localRes.data!.toEntity();
       }
 
-      final res = await authLocalDataSource.signInWithEmailPassword(
+      if (localUser == null) {
+        return Result.failure(error: 'Login gagal');
+      }
+
+      // Best-effort: ensure Supabase Auth session for future sync
+      _ensureSupabaseAuth(username, password);
+
+      return Result.success(data: localUser);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  Future<void> _ensureSupabaseAuth(String username, String password) async {
+    try {
+      final remote = authRemoteDataSource;
+      if (remote == null) return;
+
+      await remote.signInWithEmailPassword(
         username: username,
         password: password,
       );
-      if (res.isFailure) return Result.failure(error: res.error!);
-
-      return Result.success(data: res.data!.toEntity());
     } catch (e) {
-      return Result.failure(error: e);
+      cl('Supabase auth best-effort failed: $e');
     }
   }
 

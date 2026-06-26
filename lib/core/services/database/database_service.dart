@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../utilities/console_logger.dart';
@@ -20,81 +21,35 @@ class DatabaseService {
   Future<void> init() async {
     if (Platform.isWindows || Platform.isLinux) {
       sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
     }
 
     String path = join(await getDatabasesPath(), DatabaseConfig.dbPath);
 
-    if (kDebugMode) {
-      // await dropDatabase(path);
-    }
+    database = await openDatabase(
+      path,
+      version: DatabaseConfig.version,
+      onCreate: (db, version) async {
+        await Future.wait([
+          db.execute(DatabaseConfig.createUserTable),
+          db.execute(DatabaseConfig.createProductTable),
+          db.execute(DatabaseConfig.createProductUnitTable),
+          db.execute(DatabaseConfig.createProductTieredPriceTable),
+          db.execute(DatabaseConfig.createCustomerTable),
+          db.execute(DatabaseConfig.createTransactionTable),
+          db.execute(DatabaseConfig.createOrderedProductTable),
+          db.execute(DatabaseConfig.createReceivablePaymentTable),
+          db.execute(DatabaseConfig.createQueuedActionTable),
+        ]);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) await _applyMigrations(db);
+      },
+    );
 
-    File databaseFile = File(path);
-
-    if (!await databaseFile.exists()) await databaseFile.create();
-
-    database = await openDatabase(path);
-
-    await Future.wait([
-      database.execute(DatabaseConfig.createUserTable),
-      database.execute(DatabaseConfig.createProductTable),
-      database.execute(DatabaseConfig.createProductUnitTable),
-      database.execute(DatabaseConfig.createTransactionTable),
-      database.execute(DatabaseConfig.createOrderedProductTable),
-      database.execute(DatabaseConfig.createQueuedActionTable),
-    ]);
-
-    // Migration: add wholesalePrice column
-    try {
-      await database.execute('ALTER TABLE Product ADD COLUMN wholesalePrice INTEGER');
-    } catch (_) {}
-
-    // Migration: add priceType column
-    try {
-      await database.execute("ALTER TABLE OrderedProduct ADD COLUMN priceType TEXT DEFAULT 'retail'");
-    } catch (_) {}
-
-    // Migration: add unit column to Product
-    try {
-      await database.execute("ALTER TABLE Product ADD COLUMN unit TEXT DEFAULT 'pcs'");
-    } catch (_) {}
-
-    // Migration: add barcode column
-    try {
-      await database.execute('ALTER TABLE Product ADD COLUMN barcode TEXT');
-    } catch (_) {}
-
-    // Migration: add unit column to OrderedProduct
-    try {
-      await database.execute("ALTER TABLE OrderedProduct ADD COLUMN unit TEXT DEFAULT 'pcs'");
-    } catch (_) {}
-
-    // Migration: add conversionValue column to OrderedProduct
-    try {
-      await database.execute('ALTER TABLE OrderedProduct ADD COLUMN conversionValue INTEGER NOT NULL DEFAULT 1');
-    } catch (_) {}
-
-    // Migration: add password column to User
-    try {
-      await database.execute("ALTER TABLE User ADD COLUMN password TEXT");
-    } catch (_) {}
-
-    // Migration: add role column to User
-    try {
-      await database.execute("ALTER TABLE User ADD COLUMN role TEXT DEFAULT 'kasir'");
-    } catch (_) {}
-
-    // Migration: add columns to Transaction (check existence first)
-    await _addColumnIfNotExists('Transaction', 'paymentStatus', "TEXT DEFAULT 'paid'");
-    await _addColumnIfNotExists('Transaction', 'paymentQR', 'TEXT');
-    await _addColumnIfNotExists('Transaction', 'paymentExternalId', 'TEXT');
-
-    // Seed initial users
-    await _seedUsers();
-
-    // Migrate legacy products (create ProductUnit rows for products without units)
+    await _applyMigrations(database);
+    await _seedUsers(database);
     await _migrateLegacyProductUnits();
-
-    // Seed sample products for development
     await _seedProducts();
   }
 
@@ -130,15 +85,15 @@ class DatabaseService {
     }
   }
 
-  Future<void> _seedUsers() async {
+  Future<void> _seedUsers(Database db) async {
     // Migrate old 'local-user-id' to 'admin' if it exists
-    final oldUser = await database.query(
+    final oldUser = await db.query(
       DatabaseConfig.userTableName,
       where: 'id = ?',
       whereArgs: ['local-user-id'],
     );
     if (oldUser.isNotEmpty) {
-      await database.update(
+      await db.update(
         DatabaseConfig.userTableName,
         {
           'id': 'admin',
@@ -188,12 +143,83 @@ class DatabaseService {
     ];
 
     for (final user in seedUsers) {
-      await database.insert(
+      await db.insert(
         DatabaseConfig.userTableName,
         user,
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }
+  }
+
+  Future<void> _applyMigrations(Database db) async {
+    // Migration: add wholesalePrice column
+    try {
+      await db.execute('ALTER TABLE Product ADD COLUMN wholesalePrice INTEGER');
+    } catch (_) {}
+
+    // Migration: add priceType column
+    try {
+      await db.execute("ALTER TABLE OrderedProduct ADD COLUMN priceType TEXT DEFAULT 'retail'");
+    } catch (_) {}
+
+    // Migration: add unit column to Product
+    try {
+      await db.execute("ALTER TABLE Product ADD COLUMN unit TEXT DEFAULT 'pcs'");
+    } catch (_) {}
+
+    // Migration: add barcode column
+    try {
+      await db.execute('ALTER TABLE Product ADD COLUMN barcode TEXT');
+    } catch (_) {}
+
+    // Migration: add unit column to OrderedProduct
+    try {
+      await db.execute("ALTER TABLE OrderedProduct ADD COLUMN unit TEXT DEFAULT 'pcs'");
+    } catch (_) {}
+
+    // Migration: add conversionValue column to OrderedProduct
+    try {
+      await db.execute('ALTER TABLE OrderedProduct ADD COLUMN conversionValue INTEGER NOT NULL DEFAULT 1');
+    } catch (_) {}
+
+    // Migration: add password column to User
+    try {
+      await db.execute("ALTER TABLE User ADD COLUMN password TEXT");
+    } catch (_) {}
+
+    // Migration: add role column to User
+    try {
+      await db.execute("ALTER TABLE User ADD COLUMN role TEXT DEFAULT 'kasir'");
+    } catch (_) {}
+
+    // Migration: add columns to Transaction (check existence first)
+    await _addColumnIfNotExists(db, 'Transaction', 'paymentStatus', "TEXT DEFAULT 'paid'");
+    await _addColumnIfNotExists(db, 'Transaction', 'paymentQR', 'TEXT');
+    await _addColumnIfNotExists(db, 'Transaction', 'paymentExternalId', 'TEXT');
+
+    // Migration: create tiered price table
+    try {
+      await db.execute(DatabaseConfig.createProductTieredPriceTable);
+    } catch (_) {}
+
+    // Migration: create customer table
+    try {
+      await db.execute(DatabaseConfig.createCustomerTable);
+    } catch (_) {}
+
+    // Migration: add paymentType column to Transaction
+    await _addColumnIfNotExists(db, 'Transaction', 'paymentType', "TEXT DEFAULT 'cash'");
+
+    // Migration: add customerId column to Transaction
+    await _addColumnIfNotExists(db, 'Transaction', 'customerId', 'TEXT');
+
+    // Migration: add dueDate column to Transaction
+    await _addColumnIfNotExists(db, 'Transaction', 'dueDate', 'TEXT');
+
+    // Migration: create receivable payment table
+    try {
+      await db.execute(DatabaseConfig.createReceivablePaymentTable);
+    } catch (_) {}
   }
 
   Future<void> _seedProducts() async {
@@ -265,12 +291,12 @@ class DatabaseService {
   }
 
   @visibleForTesting
-  Future<void> _addColumnIfNotExists(String table, String column, String type) async {
+  Future<void> _addColumnIfNotExists(Database db, String table, String column, String type) async {
     try {
-      final result = await database.rawQuery("PRAGMA table_info('$table')");
+      final result = await db.rawQuery("PRAGMA table_info('$table')");
       final exists = result.any((row) => row['name'] == column);
       if (!exists) {
-        await database.execute("ALTER TABLE '$table' ADD COLUMN '$column' $type");
+        await db.execute("ALTER TABLE '$table' ADD COLUMN '$column' $type");
         cw('Added column $column to $table');
       }
     } catch (e) {
@@ -285,12 +311,15 @@ class DatabaseService {
       database.execute(DatabaseConfig.createUserTable),
       database.execute(DatabaseConfig.createProductTable),
       database.execute(DatabaseConfig.createProductUnitTable),
+      database.execute(DatabaseConfig.createProductTieredPriceTable),
+      database.execute(DatabaseConfig.createCustomerTable),
       database.execute(DatabaseConfig.createTransactionTable),
       database.execute(DatabaseConfig.createOrderedProductTable),
+      database.execute(DatabaseConfig.createReceivablePaymentTable),
       database.execute(DatabaseConfig.createQueuedActionTable),
     ]);
 
-    await _seedUsers();
+    await _seedUsers(database);
   }
 
   Future<void> dropDatabase(String path) async {

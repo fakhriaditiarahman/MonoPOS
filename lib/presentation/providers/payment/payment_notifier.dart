@@ -7,6 +7,7 @@ import '../../../core/common/result.dart';
 import '../../../core/constants/constants.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/usecases/transaction_usecases.dart';
+import '../../widgets/app_snack_bar.dart';
 import 'payment_state.dart';
 
 final qrisPaymentNotifierProvider = NotifierProvider.autoDispose<QrisPaymentNotifier, QrisPaymentState>(
@@ -67,10 +68,10 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
         paymentExternalId: qrisData.qrisInvoiceId,
       );
 
-      // Print QR slip (fire-and-forget)
+      // Print QR slip
       final printer = ref.read(printerServiceProvider);
       final storeName = ref.read(sharedPreferencesProvider).getString(Constants.storeNameKey) ?? '';
-      printer.printQrCode(
+      await printer.printQrCode(
         qrData: qrisData.qrisContent,
         totalAmount: totalAmount,
         storeName: storeName,
@@ -182,7 +183,10 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
     final transactionResult = await GetTransactionUsecase(transactionRepo).call(transactionId);
     if (transactionResult.isSuccess && transactionResult.data != null) {
       final printer = ref.read(printerServiceProvider);
-      printer.printTransaction(transactionResult.data!);
+      final printResult = await printer.printTransaction(transactionResult.data!);
+      if (printResult.isFailure) {
+        AppSnackBar.showError('Cetak struk gagal: ${printResult.error}');
+      }
     }
   }
 
