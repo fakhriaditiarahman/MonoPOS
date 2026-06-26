@@ -474,7 +474,9 @@ void main() {
 
     test('returns failure when local deletion fails', () async {
       when(mockSyncService.isOnline).thenReturn(true);
-      when(mockLocalDatasource.deleteTransaction(transactionId)).thenAnswer((_) async => Result.failure(error: 'Not found'));
+      when(
+        mockLocalDatasource.deleteTransaction(transactionId),
+      ).thenAnswer((_) async => Result.failure(error: 'Not found'));
 
       final result = await repository.deleteTransaction(transactionId);
 

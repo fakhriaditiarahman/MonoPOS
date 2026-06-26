@@ -259,14 +259,13 @@ class PrinterService {
 
       if (transaction.orderedProducts != null) {
         for (final product in transaction.orderedProducts!) {
-          final priceType = product.priceType == 'grosir' ? _l10n.receipt_grosir : _l10n.receipt_retail;
           final qtyStr = product.quantity == product.quantity.roundToDouble()
               ? product.quantity.toInt().toString()
               : product.quantity.toStringAsFixed(1);
 
           ticket.row([
             PrintColumn(
-              text: '${product.name} ($priceType)',
+              text: product.name,
               flex: 3,
             ),
             PrintColumn(

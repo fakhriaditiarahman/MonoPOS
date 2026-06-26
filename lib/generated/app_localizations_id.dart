@@ -39,7 +39,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get home_onlineMode => 'Mode daring';
 
   @override
-  String get home_noInternet => 'Tidak ada koneksi internet, berjalan dalam mode luring';
+  String get home_noInternet =>
+      'Tidak ada koneksi internet, berjalan dalam mode luring';
 
   @override
   String get home_enterAmount => 'Masukkan Jumlah';
@@ -51,7 +52,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get home_cancel => 'Batal';
 
   @override
-  String get home_noProducts => 'Tidak ada produk, tambah produk untuk melanjutkan';
+  String get home_noProducts =>
+      'Tidak ada produk, tambah produk untuk melanjutkan';
 
   @override
   String get home_addProduct => 'Tambah Produk';
@@ -168,7 +170,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get product_searchHint => 'Cari Produk...';
 
   @override
-  String get product_noProducts => 'Tidak ada produk, tambah produk untuk melanjutkan';
+  String get product_noProducts =>
+      'Tidak ada produk, tambah produk untuk melanjutkan';
 
   @override
   String get product_createTitle => 'Buat Produk';
@@ -370,7 +373,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get storeSettings_receiptFooterLabel => 'Pesan Struk';
 
   @override
-  String get storeSettings_receiptFooterHint => 'Pesan di bagian bawah struk, misal: Terima kasih telah berbelanja';
+  String get storeSettings_receiptFooterHint =>
+      'Pesan di bagian bawah struk, misal: Terima kasih telah berbelanja';
 
   @override
   String get settings_title => 'Pengaturan';
@@ -512,7 +516,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get shared_oops => 'Oops!';
 
   @override
-  String get shared_somethingWrong => 'Terjadi kesalahan, silakan hubungi pengembang.';
+  String get shared_somethingWrong =>
+      'Terjadi kesalahan, silakan hubungi pengembang.';
 
   @override
   String get shared_close => 'Tutup';
@@ -521,7 +526,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get shared_nothingToShow => 'Tidak ada yang ditampilkan';
 
   @override
-  String get shared_somethingWrongRetry => 'Terjadi kesalahan.\nSilakan coba lagi nanti.';
+  String get shared_somethingWrongRetry =>
+      'Terjadi kesalahan.\nSilakan coba lagi nanti.';
 
   @override
   String get lowStock_title => 'Peringatan Stok Menipis';

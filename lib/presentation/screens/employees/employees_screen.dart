@@ -84,7 +84,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
                   ),
                 ],
               ),
-              onTap: () => context.push('/employees/add'),
+              onTap: () => context.push('/account/employees/add'),
             ),
           ),
         ],
@@ -97,7 +97,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
             ? AppEmptyState(
                 subtitle: 'Belum ada karyawan.',
                 buttonText: 'Tambah Karyawan',
-                onTapButton: () => context.push('/employees/add'),
+                onTapButton: () => context.push('/account/employees/add'),
               )
             : ListView.separated(
                 padding: const EdgeInsets.all(AppSizes.padding),
@@ -177,7 +177,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
                             size: 18,
                             color: Theme.of(context).colorScheme.outline,
                           ),
-                          onPressed: () => context.push('/employees/edit/${user.id}'),
+                          onPressed: () => context.push('/account/employees/edit/${user.id}'),
                         ),
                         IconButton(
                           icon: Icon(

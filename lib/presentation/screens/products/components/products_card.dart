@@ -79,18 +79,24 @@ class ProductsCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.outline,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    '${AppLocalizations.of(context)!.product_stockSold(product.stock, product.sold ?? 0)} ${product.unit}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 8),
+                  Flexible(
+                    child: Text(
+                      '${AppLocalizations.of(context)!.product_stockSold(product.stock, product.sold ?? 0)} ${product.unit}',
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 8),
+                    ),
                   ),
                   if (product.units.length > 1)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 1),
-                      child: Text(
-                        product.units.map((u) => u.unitName).join(', '),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontSize: 7,
-                          color: Theme.of(context).colorScheme.outline,
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 1),
+                        child: Text(
+                          product.units.map((u) => u.unitName).join(', '),
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontSize: 7,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
                         ),
                       ),
                     ),
