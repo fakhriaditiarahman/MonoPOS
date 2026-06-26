@@ -62,7 +62,8 @@ final deviceInfoPluginProvider = Provider<DeviceInfoPlugin>((ref) => DeviceInfoP
 // Routes
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
-  return AppRoutes().build(isAuthenticated: authState.isAuthenticated);
+  final isAdmin = authState.user?.role?.value == 'admin';
+  return AppRoutes().build(isAuthenticated: authState.isAuthenticated, isAdmin: isAdmin);
 });
 
 // Services

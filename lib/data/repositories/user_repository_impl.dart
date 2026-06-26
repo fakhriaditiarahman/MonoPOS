@@ -101,6 +101,18 @@ class UserRepositoryImpl extends UserRepository {
     }
   }
 
+  @override
+  Future<Result<List<UserEntity>>> getAllUsers() async {
+    try {
+      var local = await userLocalDatasource.getAllUsers();
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: local.data!.map((e) => e.toEntity()).toList());
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
   Future<void> _syncRemote({
     required Future<Result<dynamic>>? Function() remoteCall,
     required String method,

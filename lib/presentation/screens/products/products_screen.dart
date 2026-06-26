@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/themes/app_sizes.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../providers/auth/auth_notifier.dart';
 import '../../providers/products/products_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_empty_state.dart';
@@ -105,8 +106,6 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       fillOverscroll: true,
                       child: AppEmptyState(
                         subtitle: AppLocalizations.of(context)!.product_noProducts,
-                        buttonText: AppLocalizations.of(context)!.product_addButton,
-                        onTapButton: () => context.push('/products/product-create'),
                       ),
                     );
                   }
@@ -139,11 +138,15 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   }
 }
 
-class _AddButton extends StatelessWidget {
+class _AddButton extends ConsumerWidget {
   const _AddButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(right: AppSizes.padding),
       child: AppButton(

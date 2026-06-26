@@ -76,6 +76,22 @@ class UserLocalDatasourceImpl extends UserDatasource {
   }
 
   @override
+  Future<Result<List<UserModel>>> getAllUsers() async {
+    try {
+      var res = await _databaseService.database.query(
+        DatabaseConfig.userTableName,
+        orderBy: 'name ASC',
+      );
+
+      return Result.success(
+        data: res.map((e) => UserModel.fromJson(e)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
   Future<Result<UserModel?>> getUserByUsername(String username) async {
     try {
       var res = await _databaseService.database.query(

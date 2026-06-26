@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/themes/app_sizes.dart';
 import '../../../generated/app_localizations.dart';
+import '../../providers/auth/auth_notifier.dart';
 import '../../providers/language/language_notifier.dart';
 import '../../providers/main/main_notifier.dart';
 import '../../providers/theme/theme_notifier.dart';
@@ -29,6 +30,7 @@ class AccountScreen extends StatelessWidget {
               children: [
                 _UserInfo(),
                 _ProfileButton(),
+                _EmployeeManagementButton(),
                 _StoreSettingsButton(),
                 _RevenueButton(),
                 _CustomerButton(),
@@ -38,6 +40,7 @@ class AccountScreen extends StatelessWidget {
                 _PrinterSettingsButton(),
                 _PaymentSettingsButton(),
                 _AboutButton(),
+                _LogoutButton(),
               ],
             ),
           ),
@@ -125,11 +128,15 @@ class _ProfileButton extends StatelessWidget {
   }
 }
 
-class _StoreSettingsButton extends StatelessWidget {
+class _StoreSettingsButton extends ConsumerWidget {
   const _StoreSettingsButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppButton(
@@ -167,11 +174,15 @@ class _StoreSettingsButton extends StatelessWidget {
   }
 }
 
-class _RevenueButton extends StatelessWidget {
+class _RevenueButton extends ConsumerWidget {
   const _RevenueButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppButton(
@@ -251,11 +262,15 @@ class _CustomerButton extends StatelessWidget {
   }
 }
 
-class _PiutangButton extends StatelessWidget {
+class _PiutangButton extends ConsumerWidget {
   const _PiutangButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppButton(
@@ -472,11 +487,15 @@ class _PrinterSettingsButton extends StatelessWidget {
   }
 }
 
-class _PaymentSettingsButton extends StatelessWidget {
+class _PaymentSettingsButton extends ConsumerWidget {
   const _PaymentSettingsButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppButton(
@@ -550,6 +569,99 @@ class _AboutButton extends StatelessWidget {
         ),
         onTap: () {
           context.go('/account/about');
+        },
+      ),
+    );
+  }
+}
+
+class _EmployeeManagementButton extends ConsumerWidget {
+  const _EmployeeManagementButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.people_alt_outlined,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  'Kelola Karyawan',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+            ),
+          ],
+        ),
+        onTap: () {
+          context.go('/account/employees');
+        },
+      ),
+    );
+  }
+}
+
+class _LogoutButton extends ConsumerWidget {
+  const _LogoutButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding, bottom: AppSizes.padding * 2),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.errorContainer,
+        textColor: Theme.of(context).colorScheme.error,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.logout_rounded,
+              size: 18,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(width: AppSizes.padding / 2),
+            Text(
+              'Logout',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+        ),
+        onTap: () {
+          AppDialog.show(
+            title: 'Logout',
+            text: 'Yakin ingin logout?',
+            leftButtonText: 'Batal',
+            rightButtonText: 'Logout',
+            rightButtonColor: Theme.of(context).colorScheme.errorContainer,
+            rightButtonTextColor: Theme.of(context).colorScheme.error,
+            onTapRightButton: (ctx) {
+              ctx.pop();
+              ref.read(authNotifierProvider.notifier).signOut();
+            },
+          );
         },
       ),
     );
