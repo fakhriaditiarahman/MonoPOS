@@ -11,6 +11,8 @@ import '../../presentation/screens/account/profile_form_screen.dart';
 import '../../presentation/screens/account/store_settings_screen.dart';
 import '../../presentation/screens/customer/customer_form_screen.dart';
 import '../../presentation/screens/customer/customer_screen.dart';
+import '../../presentation/screens/employees/employee_form_screen.dart';
+import '../../presentation/screens/employees/employees_screen.dart';
 import '../../presentation/screens/revenue/revenue_screen.dart';
 import '../../presentation/screens/error/error_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
@@ -29,22 +31,42 @@ import 'params/error_screen_param.dart';
 class AppRoutes {
   AppRoutes();
 
+  static bool _isAdminOnlyPath(String? path) {
+    if (path == null) return false;
+    return _adminOnlyPaths.any((p) => path.startsWith(p));
+  }
+
   static final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
   static final navNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'nav');
 
-  GoRouter build({required bool isAuthenticated}) {
+  static const _adminOnlyPaths = [
+    '/account/employees',
+    '/account/store-settings',
+    '/account/revenue',
+    '/account/piutang',
+    '/account/payment-settings',
+    '/products/product-create',
+    '/products/product-edit',
+  ];
+
+  GoRouter build({required bool isAuthenticated, bool isAdmin = false}) {
     return GoRouter(
       initialLocation: '/',
       navigatorKey: rootNavigatorKey,
       errorBuilder: (context, state) => ErrorScreen(param: ErrorScreenParam(error: state.error)),
       redirect: (context, state) {
         final path = state.fullPath;
-        final isLoginRoute = path == '/login';
 
         if (path == '/') return null;
 
-        if (!isAuthenticated && !isLoginRoute) return '/login';
-        if (isAuthenticated && isLoginRoute) return '/home';
+        if (!isAuthenticated) {
+          final isLoginRoute = path == '/login';
+          return isLoginRoute ? null : '/login';
+        }
+
+        if (path == '/login') return '/home';
+
+        if (!isAdmin && _isAdminOnlyPath(path)) return '/home';
 
         return null;
       },
@@ -166,6 +188,7 @@ class AppRoutes {
         _revenue(),
         _customers(),
         _piutang(),
+        _employees(),
       ],
     );
   }
@@ -315,6 +338,40 @@ class AppRoutes {
         }
 
         return PiutangDetailScreen(id: id);
+      },
+    );
+  }
+
+  GoRoute _employees() {
+    return GoRoute(
+      path: 'employees',
+      builder: (context, state) {
+        return const EmployeesScreen();
+      },
+      routes: [
+        _employeeAdd(),
+        _employeeEdit(),
+      ],
+    );
+  }
+
+  GoRoute _employeeAdd() {
+    return GoRoute(
+      path: 'add',
+      builder: (context, state) {
+        return const EmployeeFormScreen();
+      },
+    );
+  }
+
+  GoRoute _employeeEdit() {
+    return GoRoute(
+      path: 'edit/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id'];
+        if (id == null) throw 'Required employeeId is not provided!';
+
+        return EmployeeFormScreen(id: id);
       },
     );
   }

@@ -11,4 +11,6 @@ abstract class UserDatasource {
   Future<Result<UserModel?>> getUser(String id);
 
   Future<Result<UserModel?>> getUserByUsername(String username);
+
+  Future<Result<List<UserModel>>> getAllUsers();
 }

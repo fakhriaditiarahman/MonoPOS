@@ -39,8 +39,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home_onlineMode => 'Online mode';
 
   @override
-  String get home_noInternet =>
-      'No internet connection, running in offline mode';
+  String get home_noInternet => 'No internet connection, running in offline mode';
 
   @override
   String get home_enterAmount => 'Enter Amount';
@@ -52,8 +51,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home_cancel => 'Cancel';
 
   @override
-  String get home_noProducts =>
-      'No products available, add product to continue';
+  String get home_noProducts => 'No products available, add product to continue';
 
   @override
   String get home_addProduct => 'Add Product';
@@ -79,8 +77,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cart_confirm => 'Confirm';
 
   @override
-  String get cart_removeAllConfirm =>
-      'Are you sure want to remove all product?';
+  String get cart_removeAllConfirm => 'Are you sure want to remove all product?';
 
   @override
   String get cart_remove => 'Remove';
@@ -135,8 +132,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cart_removeProductConfirm =>
-      'Are you sure want to remove this product?';
+  String get cart_removeProductConfirm => 'Are you sure want to remove this product?';
 
   @override
   String get cart_paymentType => 'Payment Type';
@@ -172,8 +168,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get product_searchHint => 'Search Products...';
 
   @override
-  String get product_noProducts =>
-      'No products available, add product to continue';
+  String get product_noProducts => 'No products available, add product to continue';
 
   @override
   String get product_createTitle => 'Create Product';
@@ -236,8 +231,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get product_deleteButton => 'Delete';
 
   @override
-  String get product_deleteConfirm =>
-      'Are you sure want to delete this product?';
+  String get product_deleteConfirm => 'Are you sure want to delete this product?';
 
   @override
   String get product_deleted => 'Product deleted';
@@ -376,8 +370,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeSettings_receiptFooterLabel => 'Receipt Footer';
 
   @override
-  String get storeSettings_receiptFooterHint =>
-      'Message at the bottom of receipt, e.g: Thank you for shopping';
+  String get storeSettings_receiptFooterHint => 'Message at the bottom of receipt, e.g: Thank you for shopping';
 
   @override
   String get settings_title => 'Settings';
@@ -519,8 +512,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shared_oops => 'Oops!';
 
   @override
-  String get shared_somethingWrong =>
-      'Something went wrong, please contact developer.';
+  String get shared_somethingWrong => 'Something went wrong, please contact developer.';
 
   @override
   String get shared_close => 'Close';
@@ -529,8 +521,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shared_nothingToShow => 'Nothing to show';
 
   @override
-  String get shared_somethingWrongRetry =>
-      'Something went wrong.\nPlease try again later.';
+  String get shared_somethingWrongRetry => 'Something went wrong.\nPlease try again later.';
 
   @override
   String get lowStock_title => 'Low Stock Alert';

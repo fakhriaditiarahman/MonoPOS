@@ -76,6 +76,22 @@ class UserRemoteDatasourceImpl extends UserDatasource {
   }
 
   @override
+  Future<Result<List<UserModel>>> getAllUsers() async {
+    try {
+      final client = _client;
+      if (client == null) return Result.success(data: []);
+
+      final res = await client.from(SupabaseConfig.usersTable).select();
+
+      return Result.success(
+        data: (res as List).map((e) => UserModel.fromJson(Map<String, dynamic>.from(e))).toList(),
+      );
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
   Future<Result<UserModel?>> getUserByUsername(String username) async {
     try {
       final client = _client;

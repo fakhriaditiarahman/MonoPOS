@@ -2,6 +2,7 @@ import '../../core/common/result.dart';
 import '../../core/usecase/usecase.dart';
 import '../entities/user_entity.dart';
 import '../repositories/user_repository.dart';
+import 'params/no_param.dart';
 
 class GetUserUsecase extends Usecase<Result, String> {
   GetUserUsecase(this._userRepository);
@@ -45,4 +46,13 @@ class DeleteUserUsecase extends Usecase<Result<void>, String> {
 
   @override
   Future<Result<void>> call(String params) async => _userRepository.deleteUser(params);
+}
+
+class GetAllUsersUsecase extends Usecase<Result<List<UserEntity>>, NoParam> {
+  GetAllUsersUsecase(this._userRepository);
+
+  final UserRepository _userRepository;
+
+  @override
+  Future<Result<List<UserEntity>>> call(NoParam params) async => _userRepository.getAllUsers();
 }

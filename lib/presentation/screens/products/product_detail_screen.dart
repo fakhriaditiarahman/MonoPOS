@@ -8,6 +8,7 @@ import '../../../core/themes/app_sizes.dart';
 import '../../../core/utilities/currency_formatter.dart';
 import '../../../core/utilities/date_time_formatter.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../providers/auth/auth_notifier.dart';
 import '../../providers/products/product_detail_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_empty_state.dart';
@@ -86,13 +87,17 @@ class ProductDetailScreen extends ConsumerWidget {
   }
 }
 
-class _EditButton extends StatelessWidget {
+class _EditButton extends ConsumerWidget {
   final int id;
 
   const _EditButton({required this.id});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.only(right: AppSizes.padding),
       child: AppButton(
