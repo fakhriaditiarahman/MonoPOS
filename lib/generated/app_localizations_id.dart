@@ -9,7 +9,7 @@ class AppLocalizationsId extends AppLocalizations {
   AppLocalizationsId([String locale = 'id']) : super(locale);
 
   @override
-  String get appTitle => 'Flutter POS';
+  String get appTitle => 'Mono POS';
 
   @override
   String get home => 'Beranda';
@@ -482,7 +482,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get about_title => 'Tentang';
 
   @override
-  String get about_appName => 'Flutter POS';
+  String get about_appName => 'Mono POS';
 
   @override
   String about_version(Object version) {

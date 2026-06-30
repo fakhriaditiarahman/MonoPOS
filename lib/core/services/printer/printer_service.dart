@@ -257,22 +257,49 @@ class PrinterService {
       ]);
       ticket.separator();
 
-      if (transaction.orderedProducts != null) {
-        for (final product in transaction.orderedProducts!) {
+      final grosirItems = transaction.orderedProducts?.where((p) => p.priceType == 'grosir').toList() ?? [];
+      final retailItems = transaction.orderedProducts?.where((p) => p.priceType != 'grosir').toList() ?? [];
+
+      if (grosirItems.isNotEmpty) {
+        ticket.text(
+          _l10n.receipt_grosir,
+          align: PrintAlign.center,
+          style: const PrintTextStyle(bold: true),
+        );
+        for (final product in grosirItems) {
           final qtyStr = product.quantity == product.quantity.roundToDouble()
               ? product.quantity.toInt().toString()
               : product.quantity.toStringAsFixed(1);
 
           ticket.row([
+            PrintColumn(text: product.name, flex: 3),
+            PrintColumn(text: '$qtyStr ${product.unit}', flex: 1, align: PrintAlign.center),
             PrintColumn(
-              text: product.name,
-              flex: 3,
+              text: CurrencyFormatter.format((product.price * product.quantity).round()),
+              flex: 2,
+              align: PrintAlign.right,
             ),
-            PrintColumn(
-              text: '$qtyStr ${product.unit}',
-              flex: 1,
-              align: PrintAlign.center,
-            ),
+          ]);
+        }
+      }
+
+      if (retailItems.isNotEmpty) {
+        if (grosirItems.isNotEmpty) {
+          ticket.separator();
+          ticket.text(
+            _l10n.receipt_retail,
+            align: PrintAlign.center,
+            style: const PrintTextStyle(bold: true),
+          );
+        }
+        for (final product in retailItems) {
+          final qtyStr = product.quantity == product.quantity.roundToDouble()
+              ? product.quantity.toInt().toString()
+              : product.quantity.toStringAsFixed(1);
+
+          ticket.row([
+            PrintColumn(text: product.name, flex: 3),
+            PrintColumn(text: '$qtyStr ${product.unit}', flex: 1, align: PrintAlign.center),
             PrintColumn(
               text: CurrencyFormatter.format((product.price * product.quantity).round()),
               flex: 2,

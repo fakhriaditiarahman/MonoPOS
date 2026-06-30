@@ -18,7 +18,7 @@ class App extends ConsumerWidget {
     final router = ref.watch(goRouterProvider);
 
     return MaterialApp.router(
-      title: 'Flutter POS',
+      title: 'Mono POS',
       theme: theme,
       debugShowCheckedModeBanner: kDebugMode,
       routerConfig: router,

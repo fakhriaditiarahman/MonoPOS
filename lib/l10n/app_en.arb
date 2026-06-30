@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
 
-  "appTitle": "Flutter POS",
+  "appTitle": "Mono POS",
 
   "home": "Home",
   "products": "Products",
@@ -217,7 +217,7 @@
   "printer_noDevice": "(No printer detected)",
 
   "about_title": "About",
-  "about_appName": "Flutter POS",
+  "about_appName": "Mono POS",
   "about_version": "version {version}",
   "@about_version": {
     "placeholders": {
