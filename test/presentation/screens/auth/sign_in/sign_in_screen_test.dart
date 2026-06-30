@@ -51,7 +51,7 @@ void main() {
 
       // assert
       expect(find.text('Welcome!'), findsOneWidget);
-      expect(find.text('Welcome to Flutter POS app'), findsOneWidget);
+      expect(find.text('Welcome to Mono POS app'), findsOneWidget);
       expect(find.text('Sign In With Google'), findsOneWidget);
     });
 

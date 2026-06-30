@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Flutter POS'**
+  /// **'Mono POS'**
   String get appTitle;
 
   /// No description provided for @home.
@@ -995,7 +995,7 @@ abstract class AppLocalizations {
   /// No description provided for @about_appName.
   ///
   /// In en, this message translates to:
-  /// **'Flutter POS'**
+  /// **'Mono POS'**
   String get about_appName;
 
   /// No description provided for @about_version.

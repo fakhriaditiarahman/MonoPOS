@@ -1,7 +1,7 @@
 {
   "@@locale": "id",
 
-  "appTitle": "Flutter POS",
+  "appTitle": "Mono POS",
 
   "home": "Beranda",
   "products": "Produk",
@@ -217,7 +217,7 @@
   "printer_noDevice": "(Tidak ada printer terdeteksi)",
 
   "about_title": "Tentang",
-  "about_appName": "Flutter POS",
+  "about_appName": "Mono POS",
   "about_version": "versi {version}",
   "@about_version": {
     "placeholders": {
