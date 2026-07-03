@@ -63,14 +63,14 @@ class ProductsCard extends StatelessWidget {
                   product.stock <= 0 ? const _OutOfStock() : const SizedBox.shrink(),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 product.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Icon(
@@ -102,7 +102,7 @@ class ProductsCard extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               if (displayPrice != null && priceType != null)
                 Text(
                   priceType == 'grosir'

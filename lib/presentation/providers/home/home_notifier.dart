@@ -261,13 +261,12 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       final tierRes = await GetProductTiersUsecase(productRepository).call(unit.id!);
       if (!tierRes.isSuccess || tierRes.data == null || tierRes.data!.isEmpty) return fallbackPrice;
 
-      final qtyInt = qty.toInt();
       for (final tier in tierRes.data!) {
         final maxQty = tier.maxQty;
         if (maxQty != null) {
-          if (qtyInt >= tier.minQty && qtyInt <= maxQty) return tier.price;
+          if (qty >= tier.minQty && qty <= maxQty) return tier.price;
         } else {
-          if (qtyInt >= tier.minQty) return tier.price;
+          if (qty >= tier.minQty) return tier.price;
         }
       }
 
