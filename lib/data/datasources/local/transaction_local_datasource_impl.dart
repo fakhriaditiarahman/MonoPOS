@@ -53,7 +53,7 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
             var product = ProductModel.fromJson(rawProduct.first);
 
             // Update product stock and sold
-            int deduction = (orderedProduct.quantity * orderedProduct.conversionValue).toInt();
+            int deduction = (orderedProduct.quantity * orderedProduct.conversionValue).round();
             int stock = product.stock - deduction;
             int sold = product.sold + deduction;
 
@@ -120,7 +120,7 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
             var product = ProductModel.fromJson(rawProduct.first);
 
             // Update product stock and sold
-            int deduction = (orderedProduct.quantity * orderedProduct.conversionValue).toInt();
+            int deduction = (orderedProduct.quantity * orderedProduct.conversionValue).round();
             int stock = product.stock - deduction;
             int sold = product.sold + deduction;
 
@@ -194,7 +194,7 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
           if (productResults.isNotEmpty) {
             var product = ProductModel.fromJson(productResults.first);
 
-            int revertDeduction = (orderedProduct.quantity * orderedProduct.conversionValue).toInt();
+            int revertDeduction = (orderedProduct.quantity * orderedProduct.conversionValue).round();
             int revertedStock = product.stock + revertDeduction;
             int revertedSold = product.sold - revertDeduction;
 

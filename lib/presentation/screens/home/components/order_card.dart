@@ -76,7 +76,7 @@ class _OrderCardState extends State<OrderCard> {
   }
 
   void _updateQuantity(double val) {
-    if (val < 0) val = 0;
+    if (val < 0.5) val = 0.5;
     quantity = val;
     quantityController.text = _formatQty(val);
     setState(() {});

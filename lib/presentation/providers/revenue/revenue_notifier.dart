@@ -67,7 +67,7 @@ class RevenueNotifier extends Notifier<RevenueState> {
         var orderedProducts = tx.orderedProducts;
         if (orderedProducts != null) {
           for (var op in orderedProducts) {
-            quantitySum = quantitySum + op.quantity.toInt();
+            quantitySum = quantitySum + op.quantity.round();
           }
         }
 
