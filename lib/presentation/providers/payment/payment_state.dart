@@ -1,6 +1,6 @@
 import '../../../domain/entities/transaction_entity.dart';
 
-class QrisPaymentState {
+class DokuPaymentState {
   final TransactionEntity? transaction;
   final String qrCode;
   final String paymentStatus;
@@ -9,10 +9,10 @@ class QrisPaymentState {
   final int elapsedSeconds;
   final bool autoCheckDone;
   final bool isManualChecking;
-  final String qrisInvoiceId;
-  final String qrisNmid;
+  final String partnerReferenceNo;
+  final String referenceNo;
 
-  const QrisPaymentState({
+  const DokuPaymentState({
     this.transaction,
     this.qrCode = '',
     this.paymentStatus = 'pending',
@@ -21,11 +21,11 @@ class QrisPaymentState {
     this.elapsedSeconds = 0,
     this.autoCheckDone = false,
     this.isManualChecking = false,
-    this.qrisInvoiceId = '',
-    this.qrisNmid = '',
+    this.partnerReferenceNo = '',
+    this.referenceNo = '',
   });
 
-  QrisPaymentState copyWith({
+  DokuPaymentState copyWith({
     TransactionEntity? transaction,
     String? qrCode,
     String? paymentStatus,
@@ -34,10 +34,10 @@ class QrisPaymentState {
     int? elapsedSeconds,
     bool? autoCheckDone,
     bool? isManualChecking,
-    String? qrisInvoiceId,
-    String? qrisNmid,
+    String? partnerReferenceNo,
+    String? referenceNo,
   }) {
-    return QrisPaymentState(
+    return DokuPaymentState(
       transaction: transaction ?? this.transaction,
       qrCode: qrCode ?? this.qrCode,
       paymentStatus: paymentStatus ?? this.paymentStatus,
@@ -46,8 +46,8 @@ class QrisPaymentState {
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       autoCheckDone: autoCheckDone ?? this.autoCheckDone,
       isManualChecking: isManualChecking ?? this.isManualChecking,
-      qrisInvoiceId: qrisInvoiceId ?? this.qrisInvoiceId,
-      qrisNmid: qrisNmid ?? this.qrisNmid,
+      partnerReferenceNo: partnerReferenceNo ?? this.partnerReferenceNo,
+      referenceNo: referenceNo ?? this.referenceNo,
     );
   }
 

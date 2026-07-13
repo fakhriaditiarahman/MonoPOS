@@ -10,30 +10,28 @@ import '../../../domain/usecases/transaction_usecases.dart';
 import '../../widgets/app_snack_bar.dart';
 import 'payment_state.dart';
 
-final qrisPaymentNotifierProvider = NotifierProvider.autoDispose<QrisPaymentNotifier, QrisPaymentState>(
-  QrisPaymentNotifier.new,
+final dokuPaymentNotifierProvider = NotifierProvider.autoDispose<DokuPaymentNotifier, DokuPaymentState>(
+  DokuPaymentNotifier.new,
 );
 
-class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
+class DokuPaymentNotifier extends AutoDisposeNotifier<DokuPaymentState> {
   Timer? _pollTimer;
   Timer? _elapsedTimer;
-  int _totalAmount = 0;
 
   @override
-  QrisPaymentState build() {
+  DokuPaymentState build() {
     ref.onDispose(() {
       _pollTimer?.cancel();
       _elapsedTimer?.cancel();
     });
-    return const QrisPaymentState();
+    return const DokuPaymentState();
   }
 
-  Future<Result<int>> startQrisPayment({
+  Future<Result<int>> startDokuPayment({
     required TransactionEntity transaction,
     required int totalAmount,
   }) async {
     state = state.copyWith(isPolling: true);
-    _totalAmount = totalAmount;
 
     try {
       final transactionRepo = ref.read(transactionRepositoryProvider);
@@ -48,49 +46,49 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
       final transactionId = saveResult.data!;
       final orderId = transactionId.toString();
 
-      final interactiveQris = ref.read(interactiveQrisPaymentServiceProvider);
-      final invoiceResult = await interactiveQris.createQrisInvoice(
+      final dokuService = ref.read(dokuPaymentServiceProvider);
+      final qrisResult = await dokuService.generateQris(
         orderId: orderId,
         grossAmount: totalAmount,
       );
 
-      if (invoiceResult.isFailure) {
+      if (qrisResult.isFailure) {
         await DeleteTransactionUsecase(transactionRepo).call(transactionId);
-        return Result.failure(error: invoiceResult.error ?? 'Failed to create QRIS invoice');
+        return Result.failure(error: qrisResult.error ?? 'Failed to create Doku QRIS invoice');
       }
 
-      final qrisData = invoiceResult.data!;
+      final qrisData = qrisResult.data!;
 
       await UpdatePaymentStatusUsecase(transactionRepo).call(
         transactionId,
         'pending',
-        paymentQR: qrisData.qrisContent,
-        paymentExternalId: qrisData.qrisInvoiceId,
+        paymentQR: qrisData.qrContent,
+        paymentExternalId: qrisData.partnerReferenceNo,
       );
 
       // Print QR slip
       final printer = ref.read(printerServiceProvider);
       final storeName = ref.read(sharedPreferencesProvider).getString(Constants.storeNameKey) ?? '';
       await printer.printQrCode(
-        qrData: qrisData.qrisContent,
+        qrData: qrisData.qrContent,
         totalAmount: totalAmount,
         storeName: storeName,
-        merchantName: interactiveQris.merchantName,
+        merchantName: 'Doku QRIS',
       );
 
       state = state.copyWith(
         transaction: transaction.copyWith(
           id: transactionId,
           paymentStatus: 'pending',
-          paymentQR: qrisData.qrisContent,
-          paymentExternalId: qrisData.qrisInvoiceId,
+          paymentQR: qrisData.qrContent,
+          paymentExternalId: qrisData.partnerReferenceNo,
         ),
-        qrCode: qrisData.qrisContent,
+        qrCode: qrisData.qrContent,
         paymentStatus: 'pending',
         isPolling: false,
         elapsedSeconds: 0,
-        qrisInvoiceId: qrisData.qrisInvoiceId,
-        qrisNmid: qrisData.qrisNmid,
+        partnerReferenceNo: qrisData.partnerReferenceNo,
+        referenceNo: qrisData.referenceNo,
       );
 
       _startPolling(transactionId);
@@ -118,20 +116,16 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
   }
 
   Future<void> _autoPollStatus(int transactionId) async {
-    final interactiveQris = ref.read(interactiveQrisPaymentServiceProvider);
+    final dokuService = ref.read(dokuPaymentServiceProvider);
     int attempts = 0;
 
     while (state.paymentStatus == 'pending' && attempts < 3) {
       await Future.delayed(const Duration(seconds: 15));
       attempts++;
 
-      final now = DateTime.now();
-      final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
-      final result = await interactiveQris.checkInvoiceStatus(
-        invoiceId: state.qrisInvoiceId,
-        amount: _totalAmount,
-        date: dateStr,
+      final result = await dokuService.queryQrisStatus(
+        partnerReferenceNo: state.partnerReferenceNo,
+        referenceNo: state.referenceNo,
       );
 
       if (result.isFailure) continue;
@@ -154,14 +148,10 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
 
     state = state.copyWith(isManualChecking: true);
 
-    final interactiveQris = ref.read(interactiveQrisPaymentServiceProvider);
-    final now = DateTime.now();
-    final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
-
-    final result = await interactiveQris.checkInvoiceStatus(
-      invoiceId: state.qrisInvoiceId,
-      amount: _totalAmount,
-      date: dateStr,
+    final dokuService = ref.read(dokuPaymentServiceProvider);
+    final result = await dokuService.queryQrisStatus(
+      partnerReferenceNo: state.partnerReferenceNo,
+      referenceNo: state.referenceNo,
     );
 
     if (result.isSuccess && result.data == 'paid') {
@@ -204,6 +194,6 @@ class QrisPaymentNotifier extends AutoDisposeNotifier<QrisPaymentState> {
   void reset() {
     _pollTimer?.cancel();
     _elapsedTimer?.cancel();
-    state = const QrisPaymentState();
+    state = const DokuPaymentState();
   }
 }

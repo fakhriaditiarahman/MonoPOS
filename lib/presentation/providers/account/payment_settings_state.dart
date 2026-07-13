@@ -1,26 +1,38 @@
 class PaymentSettingsState {
-  final String apiKey;
-  final String mid;
-  final String merchantName;
+  final String clientId;
+  final String clientSecret;
+  final String merchantId;
+  final String terminalId;
+  final String privateKey;
+  final bool isSandbox;
   final bool isLoaded;
 
   const PaymentSettingsState({
-    this.apiKey = '',
-    this.mid = '',
-    this.merchantName = '',
+    this.clientId = '',
+    this.clientSecret = '',
+    this.merchantId = '',
+    this.terminalId = '',
+    this.privateKey = '',
+    this.isSandbox = true,
     this.isLoaded = false,
   });
 
   PaymentSettingsState copyWith({
-    String? apiKey,
-    String? mid,
-    String? merchantName,
+    String? clientId,
+    String? clientSecret,
+    String? merchantId,
+    String? terminalId,
+    String? privateKey,
+    bool? isSandbox,
     bool? isLoaded,
   }) {
     return PaymentSettingsState(
-      apiKey: apiKey ?? this.apiKey,
-      mid: mid ?? this.mid,
-      merchantName: merchantName ?? this.merchantName,
+      clientId: clientId ?? this.clientId,
+      clientSecret: clientSecret ?? this.clientSecret,
+      merchantId: merchantId ?? this.merchantId,
+      terminalId: terminalId ?? this.terminalId,
+      privateKey: privateKey ?? this.privateKey,
+      isSandbox: isSandbox ?? this.isSandbox,
       isLoaded: isLoaded ?? this.isLoaded,
     );
   }

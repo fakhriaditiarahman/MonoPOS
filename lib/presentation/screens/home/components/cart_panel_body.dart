@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../../../core/themes/app_sizes.dart';
-import '../../../../core/utilities/currency_formatter.dart';
 import '../../../../generated/app_localizations.dart';
 import '../../../providers/home/home_notifier.dart';
 import '../../../widgets/app_empty_state.dart';
@@ -20,13 +19,7 @@ class CartPanelBody extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 62),
       physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _OrderList(panelController: panelController, isPanelUsed: isPanelUsed),
-          const _OrderTotal(),
-        ],
-      ),
+      child: _OrderList(panelController: panelController, isPanelUsed: isPanelUsed),
     );
   }
 }
@@ -80,44 +73,6 @@ class _OrderList extends ConsumerWidget {
             );
           },
         ),
-      ),
-    );
-  }
-}
-
-class _OrderTotal extends ConsumerWidget {
-  const _OrderTotal();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final homeState = ref.watch(homeNotifierProvider);
-
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.padding),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            width: 1,
-            color: Theme.of(context).colorScheme.surfaceContainer,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            AppLocalizations.of(context)!.cart_total(homeState.orderedProducts.length),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            CurrencyFormatter.format(ref.read(homeNotifierProvider.notifier).getTotalAmount()),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
       ),
     );
   }

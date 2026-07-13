@@ -1,4 +1,6 @@
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +9,7 @@ import '../../core/services/connectivity/ping_service.dart';
 import '../../core/services/database/database_service.dart';
 import '../../core/services/info/device_info_service.dart';
 import '../../core/services/logger/error_logger_service.dart';
-import '../../core/services/payment/interactive_qris_payment_service.dart';
+import '../../core/services/payment/doku_payment_service.dart';
 import '../../core/services/printer/printer_service.dart';
 import '../../core/services/supabase/supabase_config.dart';
 import '../../core/services/supabase/supabase_service.dart';
@@ -61,9 +63,16 @@ final deviceInfoPluginProvider = Provider<DeviceInfoPlugin>((ref) => DeviceInfoP
 
 // Routes
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authNotifierProvider);
-  final isAdmin = authState.user?.role?.value == 'admin';
-  return AppRoutes().build(isAuthenticated: authState.isAuthenticated, isAdmin: isAdmin);
+  final refreshNotifier = ChangeNotifier();
+  ref.onDispose(refreshNotifier.dispose);
+
+  ref.listen(authNotifierProvider, (_, __) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      refreshNotifier.notifyListeners();
+    });
+  });
+
+  return AppRoutes().build(ref: ref, refreshListenable: refreshNotifier);
 });
 
 // Services
@@ -82,8 +91,8 @@ final printerServiceProvider = Provider<PrinterService>((ref) {
   return service;
 });
 
-final interactiveQrisPaymentServiceProvider = Provider<InteractiveQrisPaymentService>(
-  (ref) => InteractiveQrisPaymentService(ref.watch(sharedPreferencesProvider)),
+final dokuPaymentServiceProvider = Provider<DokuPaymentService>(
+  (ref) => DokuPaymentService(ref.watch(sharedPreferencesProvider)),
 );
 
 // Sync

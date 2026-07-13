@@ -148,6 +148,13 @@ class DatabaseService {
         user,
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
+
+      // Fix: ensure existing rows have correct password (handles pre-migration DBs
+      // where password column was added via ALTER TABLE and is NULL/empty for existing rows)
+      await db.rawUpdate(
+        "UPDATE '${DatabaseConfig.userTableName}' SET password = ? WHERE id = ? AND (password IS NULL OR password = '')",
+        [user['password'], user['id']],
+      );
     }
   }
 

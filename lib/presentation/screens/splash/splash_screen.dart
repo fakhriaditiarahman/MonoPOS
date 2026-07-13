@@ -51,7 +51,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Widget build(BuildContext context) {
     ref.listen<SplashState>(splashNotifierProvider, (_, state) {
       if (state.isInitialized && _timerDone) {
-        _navigate();
+        WidgetsBinding.instance.addPostFrameCallback((_) => _navigate());
       }
     });
 

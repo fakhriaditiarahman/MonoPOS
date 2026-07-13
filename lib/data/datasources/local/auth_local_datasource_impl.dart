@@ -1,4 +1,5 @@
 import '../../../core/common/result.dart';
+import '../../../core/utilities/console_logger.dart';
 import '../../models/user_model.dart';
 import '../interfaces/auth_datasource.dart';
 import 'user_local_datasource_impl.dart';
@@ -34,10 +35,12 @@ class AuthLocalDataSourceImpl implements AuthDataSource {
 
     final user = result.data;
     if (user == null) {
+      cl('[AuthLocal] User not found: "$username"');
       return Result.failure(error: 'Username atau password salah!');
     }
 
     if (user.password != password) {
+      cl('[AuthLocal] Password mismatch: db="${user.password}" vs input="$password"');
       return Result.failure(error: 'Username atau password salah!');
     }
 

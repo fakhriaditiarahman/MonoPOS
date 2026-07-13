@@ -27,25 +27,34 @@ class CartPanelFooter extends ConsumerWidget {
 
     return Container(
       width: AppSizes.screenWidth(context),
-      padding: const EdgeInsets.fromLTRB(AppSizes.padding, 0, AppSizes.padding, AppSizes.padding),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, AppSizes.padding),
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          AnimatedContainer(
-            width: isPanelExpanded ? AppSizes.screenWidth(context) / 3 : 0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: AppSizes.screenWidth(context) / 3 - AppSizes.padding / 2,
-                child: _BackButton(panelController: panelController, isPanelUsed: isPanelUsed),
-              ),
+          const _OrderTotalSummary(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSizes.padding, AppSizes.padding / 2, AppSizes.padding, 0),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  width: isPanelExpanded ? AppSizes.screenWidth(context) / 3 : 0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: AppSizes.screenWidth(context) / 3 - AppSizes.padding / 2,
+                      child: _BackButton(panelController: panelController, isPanelUsed: isPanelUsed),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: _PayButton(panelController: panelController, isPanelUsed: isPanelUsed),
+                ),
+              ],
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: _PayButton(panelController: panelController, isPanelUsed: isPanelUsed),
           ),
         ],
       ),
@@ -220,10 +229,12 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     required HomeNotifier homeNotifier,
   }) async {
     var res = await AppDialog.showProgress(() {
-      return homeNotifier.createQrisTransaction(router);
+      return homeNotifier.createQrisTransaction();
     });
 
-    if (res.isFailure) {
+    if (res.isSuccess) {
+      router.go('/payment/qris');
+    } else {
       AppDialog.showError(error: res.error?.toString());
     }
   }
@@ -370,14 +381,17 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                   itemCount: _customerSuggestions.length,
                   itemBuilder: (ctx, i) {
                     final c = _customerSuggestions[i];
-                    return ListTile(
-                      dense: true,
-                      title: Text(c.name, style: const TextStyle(fontSize: 13)),
-                      subtitle: Text(
-                        '${c.phone ?? "-"} | ${c.type == 'grosir' ? 'Grosir' : 'Retail'}',
-                        style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline),
+                    return Material(
+                      type: MaterialType.transparency,
+                      child: ListTile(
+                        dense: true,
+                        title: Text(c.name, style: const TextStyle(fontSize: 13)),
+                        subtitle: Text(
+                          '${c.phone ?? "-"} | ${c.type == 'grosir' ? 'Grosir' : 'Retail'}',
+                          style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline),
+                        ),
+                        onTap: () => _onCustomerSelected(c),
                       ),
-                      onTap: () => _onCustomerSelected(c),
                     );
                   },
                 ),
@@ -436,6 +450,60 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _OrderTotalSummary extends ConsumerWidget {
+  const _OrderTotalSummary();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final homeState = ref.watch(homeNotifierProvider);
+    final total = ref.read(homeNotifierProvider.notifier).getTotalAmount();
+
+    if (homeState.orderedProducts.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(AppSizes.padding, AppSizes.padding, AppSizes.padding, AppSizes.padding / 2),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Theme.of(context).colorScheme.surfaceContainer),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Total Pembayaran Belanja',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  CurrencyFormatter.format(total),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            AppLocalizations.of(context)!.cart_products(homeState.orderedProducts.length),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

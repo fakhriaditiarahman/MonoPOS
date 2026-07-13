@@ -5,6 +5,8 @@ import '../../domain/repositories/auth_repository.dart';
 import '../datasources/interfaces/auth_datasource.dart';
 import '../datasources/local/auth_local_datasource_impl.dart';
 
+// ignore_for_file: depend_on_referenced_packages
+
 class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSourceImpl authLocalDataSource;
   final AuthDataSource? authRemoteDataSource;
@@ -41,27 +43,43 @@ class AuthRepositoryImpl implements AuthRepository {
       UserEntity? localUser;
 
       if (authRemoteDataSource != null) {
+        cl('[AuthRepo] Remote datasource exists, trying remote first');
         final remoteRes = await authRemoteDataSource!.signInWithEmailPassword(
           username: username,
           password: password,
         );
-        if (remoteRes.isSuccess) return Result.success(data: remoteRes.data!.toEntity());
+        if (remoteRes.isSuccess) {
+          cl('[AuthRepo] Remote auth success');
+          return Result.success(data: remoteRes.data!.toEntity());
+        }
 
-        // Remote auth failed — try local
+        cl('[AuthRepo] Remote auth failed: ${remoteRes.error}, trying local fallback');
         final localRes = await authLocalDataSource.signInWithEmailPassword(
           username: username,
           password: password,
         );
-        if (localRes.isSuccess) localUser = localRes.data!.toEntity();
+        if (localRes.isSuccess) {
+          localUser = localRes.data!.toEntity();
+          cl('[AuthRepo] Local fallback success for: $username');
+        } else {
+          cl('[AuthRepo] Local fallback also failed: ${localRes.error}');
+        }
       } else {
+        cl('[AuthRepo] No remote datasource, using local only');
         final localRes = await authLocalDataSource.signInWithEmailPassword(
           username: username,
           password: password,
         );
-        if (localRes.isSuccess) localUser = localRes.data!.toEntity();
+        if (localRes.isSuccess) {
+          localUser = localRes.data!.toEntity();
+          cl('[AuthRepo] Local auth success for: $username');
+        } else {
+          cl('[AuthRepo] Local auth failed: ${localRes.error}');
+        }
       }
 
       if (localUser == null) {
+        cl('[AuthRepo] Login failed for: $username — no user returned from any datasource');
         return Result.failure(error: 'Login gagal');
       }
 
