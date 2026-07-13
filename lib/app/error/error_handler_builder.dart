@@ -53,11 +53,7 @@ class ErrorHandlerBuilderState extends ConsumerState<ErrorHandlerBuilder> {
       return;
     }
 
-    // Prevent to push to ErrorScreen multiple times
-    final router = ref.read(goRouterProvider);
-    if (router.routeInformationProvider.value.uri.path != '/error') {
-      router.go('/error', extra: ErrorScreenParam(flutterError: flutterError));
-    }
+    _navigateToError(ErrorScreenParam(flutterError: flutterError));
   }
 
   // Platform error handling logic
@@ -68,16 +64,18 @@ class ErrorHandlerBuilderState extends ConsumerState<ErrorHandlerBuilder> {
 
     if (!mounted) return false;
 
-    // Prevent to push to ErrorScreen multiple times
-    final router = ref.read(goRouterProvider);
-    if (router.routeInformationProvider.value.uri.path != '/error') {
-      router.go(
-        '/error',
-        extra: ErrorScreenParam(error: error, stackTrace: stackTrace),
-      );
-    }
+    _navigateToError(ErrorScreenParam(error: error, stackTrace: stackTrace));
 
     return true;
+  }
+
+  void _navigateToError(ErrorScreenParam param) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final router = ref.read(goRouterProvider);
+      if (router.routeInformationProvider.value.uri.path != '/error') {
+        router.go('/error', extra: param);
+      }
+    });
   }
 
   @override

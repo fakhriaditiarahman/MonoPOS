@@ -11,19 +11,19 @@ import '../../providers/payment/payment_state.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_progress_indicator.dart';
 
-class QrisPaymentScreen extends ConsumerStatefulWidget {
-  const QrisPaymentScreen({super.key});
+class DokuPaymentScreen extends ConsumerStatefulWidget {
+  const DokuPaymentScreen({super.key});
 
   @override
-  ConsumerState<QrisPaymentScreen> createState() => _QrisPaymentScreenState();
+  ConsumerState<DokuPaymentScreen> createState() => _DokuPaymentScreenState();
 }
 
-class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
+class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
   bool _navigated = false;
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(qrisPaymentNotifierProvider);
+    final state = ref.watch(dokuPaymentNotifierProvider);
 
     if (state.isPaid && !_navigated) {
       _navigated = true;
@@ -50,7 +50,7 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
     );
   }
 
-  Widget _buildContent(QrisPaymentState state) {
+  Widget _buildContent(DokuPaymentState state) {
     if (state.errorMessage != null && state.qrCode.isEmpty) {
       return Center(
         child: Padding(
@@ -76,7 +76,7 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
               AppButton(
                 text: AppLocalizations.of(context)!.home_cancel,
                 onTap: () {
-                  ref.read(qrisPaymentNotifierProvider.notifier).reset();
+                  ref.read(dokuPaymentNotifierProvider.notifier).reset();
                   context.pop();
                 },
               ),
@@ -148,15 +148,6 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
               child: state.qrCode.isNotEmpty ? _buildQrDisplay(state.qrCode) : const AppProgressIndicator(),
             ),
           ),
-          if (state.qrisNmid.isNotEmpty) ...[
-            const SizedBox(height: AppSizes.padding / 2),
-            Text(
-              'NMID: ${state.qrisNmid}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-          ],
           const SizedBox(height: AppSizes.padding),
           Text(
             'Scan QRIS di atas untuk membayar',
@@ -202,7 +193,7 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
               text: state.isManualChecking ? 'Memeriksa...' : 'Cek Pembayaran',
               enabled: !state.isManualChecking,
               onTap: () {
-                ref.read(qrisPaymentNotifierProvider.notifier).checkPaymentManually();
+                ref.read(dokuPaymentNotifierProvider.notifier).checkPaymentManually();
               },
             ),
           ],
@@ -236,7 +227,7 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Batalkan Pembayaran?'),
-        content: const Text('Pembayaran QRIS akan dibatalkan.'),
+        content: const Text('Pembayaran Doku QRIS akan dibatalkan.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
@@ -245,7 +236,7 @@ class _QrisPaymentScreenState extends ConsumerState<QrisPaymentScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              ref.read(qrisPaymentNotifierProvider.notifier).cancelPolling();
+              ref.read(dokuPaymentNotifierProvider.notifier).cancelPolling();
               context.pop();
             },
             child: const Text('Ya, Batalkan'),

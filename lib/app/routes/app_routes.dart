@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/providers/auth/auth_notifier.dart';
 import '../../presentation/screens/account/about_screen.dart';
 import '../../presentation/screens/account/account_screen.dart';
 import '../../presentation/screens/account/payment_settings_screen.dart';
@@ -17,7 +19,7 @@ import '../../presentation/screens/revenue/revenue_screen.dart';
 import '../../presentation/screens/error/error_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/main/main_screen.dart';
-import '../../presentation/screens/payment/qris_payment_screen.dart';
+import '../../presentation/screens/payment/doku_payment_screen.dart';
 import '../../presentation/screens/products/product_detail_screen.dart';
 import '../../presentation/screens/products/product_form_screen.dart';
 import '../../presentation/screens/products/products_screen.dart';
@@ -49,12 +51,16 @@ class AppRoutes {
     '/products/product-edit',
   ];
 
-  GoRouter build({required bool isAuthenticated, bool isAdmin = false}) {
+  GoRouter build({required Ref ref, required Listenable refreshListenable}) {
     return GoRouter(
       initialLocation: '/',
       navigatorKey: rootNavigatorKey,
+      refreshListenable: refreshListenable,
       errorBuilder: (context, state) => ErrorScreen(param: ErrorScreenParam(error: state.error)),
       redirect: (context, state) {
+        final authState = ref.read(authNotifierProvider);
+        final isAuthenticated = authState.isAuthenticated;
+        final isAdmin = authState.user?.role?.value == 'admin';
         final path = state.fullPath;
 
         if (path == '/') return null;
@@ -74,7 +80,7 @@ class AppRoutes {
         _splash(),
         _login(),
         _main(),
-        _qrisPayment(),
+        _dokuPayment(),
         _error(),
       ],
     );
@@ -94,11 +100,11 @@ class AppRoutes {
     );
   }
 
-  GoRoute _qrisPayment() {
+  GoRoute _dokuPayment() {
     return GoRoute(
       path: '/payment/qris',
       parentNavigatorKey: rootNavigatorKey,
-      builder: (context, state) => const QrisPaymentScreen(),
+      builder: (context, state) => const DokuPaymentScreen(),
     );
   }
 

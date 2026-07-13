@@ -66,20 +66,47 @@ class AppTextField extends StatefulWidget {
 }
 
 class _AppTextFieldState extends State<AppTextField> {
-  TextEditingController textEditingController = TextEditingController();
+  late TextEditingController textEditingController;
+  late ValueNotifier<bool> _hasTextNotifier;
+
+  bool get _isInternallyCreated => widget.controller == null;
 
   @override
   void initState() {
     textEditingController = widget.controller ?? TextEditingController();
+    _hasTextNotifier = ValueNotifier(textEditingController.text.isNotEmpty);
+    textEditingController.addListener(_onTextListener);
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant AppTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      textEditingController.removeListener(_onTextListener);
+      if (_isInternallyCreated) textEditingController.dispose();
+      textEditingController = widget.controller ?? TextEditingController();
+      _hasTextNotifier.value = textEditingController.text.isNotEmpty;
+      textEditingController.addListener(_onTextListener);
+    }
+  }
+
+  @override
+  void dispose() {
+    textEditingController.removeListener(_onTextListener);
+    if (_isInternallyCreated) textEditingController.dispose();
+    _hasTextNotifier.dispose();
+    super.dispose();
+  }
+
+  void _onTextListener() {
+    _hasTextNotifier.value = textEditingController.text.isNotEmpty;
   }
 
   void onChanged(String val) {
     if (widget.onChanged != null) {
       widget.onChanged!(val);
     }
-
-    setState(() {});
   }
 
   TextInputType? textInputType() {
@@ -150,8 +177,8 @@ class _AppTextFieldState extends State<AppTextField> {
             cursorWidth: 1.5,
             autofocus: widget.autofocus,
             obscureText: widget.obscureText,
-            minLines: widget.minLines,
-            maxLines: widget.maxLines,
+            minLines: widget.obscureText ? null : widget.minLines,
+            maxLines: widget.obscureText ? 1 : widget.maxLines,
             maxLength: widget.maxLength,
             maxLengthEnforcement: MaxLengthEnforcement.enforced,
             keyboardType: textInputType(),
@@ -245,24 +272,27 @@ class _AppTextFieldState extends State<AppTextField> {
     }
 
     if (widget.type == AppTextFieldType.search) {
-      return textEditingController.text.isNotEmpty
-          ? Padding(
-              padding: const EdgeInsets.all(AppSizes.padding / 2),
-              child: AppIconButton(
-                icon: Icons.clear_rounded,
-                padding: EdgeInsets.zero,
-                onTap: () {
-                  textEditingController.clear();
+      return ValueListenableBuilder<bool>(
+        valueListenable: _hasTextNotifier,
+        builder: (context, hasText, _) {
+          return hasText
+              ? Padding(
+                  padding: const EdgeInsets.all(AppSizes.padding / 2),
+                  child: AppIconButton(
+                    icon: Icons.clear_rounded,
+                    padding: EdgeInsets.zero,
+                    onTap: () {
+                      textEditingController.clear();
 
-                  if (widget.onTapClearButton != null) {
-                    widget.onTapClearButton!();
-                  }
-
-                  setState(() {});
-                },
-              ),
-            )
-          : null;
+                      if (widget.onTapClearButton != null) {
+                        widget.onTapClearButton!();
+                      }
+                    },
+                  ),
+                )
+              : const SizedBox.shrink();
+        },
+      );
     }
 
     return null;

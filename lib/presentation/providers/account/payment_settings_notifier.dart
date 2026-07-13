@@ -13,25 +13,43 @@ class PaymentSettingsNotifier extends AutoDisposeNotifier<PaymentSettingsState> 
   PaymentSettingsState build() {
     final prefs = ref.read(sharedPreferencesProvider);
     return PaymentSettingsState(
-      apiKey: prefs.getString(Constants.qrisApiKey) ?? '',
-      mid: prefs.getString(Constants.qrisMid) ?? '',
-      merchantName: prefs.getString(Constants.qrisMerchantName) ?? '',
+      clientId: prefs.getString(Constants.dokuClientId) ?? '',
+      clientSecret: prefs.getString(Constants.dokuClientSecret) ?? '',
+      merchantId: prefs.getString(Constants.dokuMerchantId) ?? '',
+      terminalId: prefs.getString(Constants.dokuTerminalId) ?? '',
+      privateKey: prefs.getString(Constants.dokuPrivateKey) ?? '',
+      isSandbox: prefs.getBool(Constants.dokuIsSandbox) ?? true,
       isLoaded: true,
     );
   }
 
-  void onChangedApiKey(String value) {
-    state = state.copyWith(apiKey: value);
-    ref.read(sharedPreferencesProvider).setString(Constants.qrisApiKey, value);
+  void onChangedClientId(String value) {
+    state = state.copyWith(clientId: value);
+    ref.read(sharedPreferencesProvider).setString(Constants.dokuClientId, value);
   }
 
-  void onChangedMid(String value) {
-    state = state.copyWith(mid: value);
-    ref.read(sharedPreferencesProvider).setString(Constants.qrisMid, value);
+  void onChangedClientSecret(String value) {
+    state = state.copyWith(clientSecret: value);
+    ref.read(sharedPreferencesProvider).setString(Constants.dokuClientSecret, value);
   }
 
-  void onChangedMerchantName(String value) {
-    state = state.copyWith(merchantName: value);
-    ref.read(sharedPreferencesProvider).setString(Constants.qrisMerchantName, value);
+  void onChangedMerchantId(String value) {
+    state = state.copyWith(merchantId: value);
+    ref.read(sharedPreferencesProvider).setString(Constants.dokuMerchantId, value);
+  }
+
+  void onChangedTerminalId(String value) {
+    state = state.copyWith(terminalId: value);
+    ref.read(sharedPreferencesProvider).setString(Constants.dokuTerminalId, value);
+  }
+
+  void onChangedPrivateKey(String value) {
+    state = state.copyWith(privateKey: value);
+    ref.read(sharedPreferencesProvider).setString(Constants.dokuPrivateKey, value);
+  }
+
+  void onChangedIsSandbox(bool value) {
+    state = state.copyWith(isSandbox: value);
+    ref.read(sharedPreferencesProvider).setBool(Constants.dokuIsSandbox, value);
   }
 }

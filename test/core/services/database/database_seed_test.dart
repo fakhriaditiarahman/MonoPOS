@@ -32,7 +32,7 @@ void main() {
       expect(result.any((u) => u['id'] == 'kasir2'), isTrue);
     });
 
-    test('admin user should have admin role', () async {
+    test('admin user should have admin role and correct password', () async {
       final result = await testDatabase.query(
         DatabaseConfig.userTableName,
         where: 'id = ?',
@@ -42,6 +42,16 @@ void main() {
       expect(result.length, 1);
       expect(result.first['role'], 'admin');
       expect(result.first['name'], 'Admin');
+      expect(result.first['password'], 'admin123');
+    });
+
+    test('seed users should have non-null passwords', () async {
+      final result = await testDatabase.query(DatabaseConfig.userTableName);
+      for (final user in result) {
+        expect(user['password'], isNotNull, reason: 'User ${user['id']} has null password');
+        expect((user['password'] as String).isNotEmpty, isTrue,
+            reason: 'User ${user['id']} has empty password');
+      }
     });
 
     test('should insert products matching seed format via datasource', () async {

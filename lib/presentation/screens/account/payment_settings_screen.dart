@@ -16,7 +16,7 @@ class PaymentSettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pengaturan QRIS'),
+        title: const Text('Pengaturan Doku'),
         titleSpacing: 0,
       ),
       body: !state.isLoaded
@@ -26,25 +26,43 @@ class PaymentSettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SectionTitle(text: 'Koneksi InterActive QRIS'),
+                  _SectionTitle(text: 'Koneksi Doku SNAP QRIS'),
                   const SizedBox(height: AppSizes.padding / 2),
-                  _ApiKeyField(
-                    initialValue: state.apiKey,
-                    onChanged: notifier.onChangedApiKey,
+                  _ClientIdField(
+                    initialValue: state.clientId,
+                    onChanged: notifier.onChangedClientId,
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _MidField(
-                    initialValue: state.mid,
-                    onChanged: notifier.onChangedMid,
+                  _ClientSecretField(
+                    initialValue: state.clientSecret,
+                    onChanged: notifier.onChangedClientSecret,
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _MerchantNameField(
-                    initialValue: state.merchantName,
-                    onChanged: notifier.onChangedMerchantName,
+                  _MerchantIdField(
+                    initialValue: state.merchantId,
+                    onChanged: notifier.onChangedMerchantId,
+                  ),
+                  const SizedBox(height: AppSizes.padding),
+                  _TerminalIdField(
+                    initialValue: state.terminalId,
+                    onChanged: notifier.onChangedTerminalId,
+                  ),
+                  const SizedBox(height: AppSizes.padding),
+                  _SandboxToggle(
+                    value: state.isSandbox,
+                    onChanged: notifier.onChangedIsSandbox,
+                  ),
+                  const SizedBox(height: AppSizes.padding),
+                  _PrivateKeyField(
+                    initialValue: state.privateKey,
+                    onChanged: notifier.onChangedPrivateKey,
                   ),
                   const SizedBox(height: AppSizes.padding),
                   _InfoBox(
-                    isConfigured: state.apiKey.isNotEmpty && state.mid.isNotEmpty,
+                    clientId: state.clientId,
+                    clientSecret: state.clientSecret,
+                    merchantId: state.merchantId,
+                    isSandbox: state.isSandbox,
                   ),
                 ],
               ),
@@ -68,11 +86,11 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _ApiKeyField extends ConsumerWidget {
+class _ClientIdField extends ConsumerWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
 
-  const _ApiKeyField({required this.initialValue, required this.onChanged});
+  const _ClientIdField({required this.initialValue, required this.onChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,19 +98,19 @@ class _ApiKeyField extends ConsumerWidget {
 
     return AppTextField(
       controller: controller,
-      labelText: 'API Key',
-      hintText: 'Isi dengan API Key dari InterActive QRIS',
+      labelText: 'Client ID',
+      hintText: 'X-PARTNER-ID dari Doku Dashboard',
       obscureText: true,
       onChanged: onChanged,
     );
   }
 }
 
-class _MidField extends ConsumerWidget {
+class _ClientSecretField extends ConsumerWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
 
-  const _MidField({required this.initialValue, required this.onChanged});
+  const _ClientSecretField({required this.initialValue, required this.onChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,18 +118,19 @@ class _MidField extends ConsumerWidget {
 
     return AppTextField(
       controller: controller,
-      labelText: 'mID',
-      hintText: 'Isi dengan Merchant ID (mID) dari InterActive QRIS',
+      labelText: 'Client Secret',
+      hintText: 'Secret Key dari Doku Dashboard',
+      obscureText: true,
       onChanged: onChanged,
     );
   }
 }
 
-class _MerchantNameField extends ConsumerWidget {
+class _MerchantIdField extends ConsumerWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
 
-  const _MerchantNameField({required this.initialValue, required this.onChanged});
+  const _MerchantIdField({required this.initialValue, required this.onChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -119,20 +138,124 @@ class _MerchantNameField extends ConsumerWidget {
 
     return AppTextField(
       controller: controller,
-      labelText: 'Nama Merchant',
-      hintText: 'Nama merchant untuk ditampilkan di QR',
+      labelText: 'Merchant ID',
+      hintText: 'Merchant ID dari Doku',
+      onChanged: onChanged,
+    );
+  }
+}
+
+class _TerminalIdField extends ConsumerWidget {
+  final String initialValue;
+  final ValueChanged<String> onChanged;
+
+  const _TerminalIdField({required this.initialValue, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(text: initialValue);
+
+    return AppTextField(
+      controller: controller,
+      labelText: 'Terminal ID',
+      hintText: 'ID terminal (contoh: POS-001)',
+      onChanged: onChanged,
+    );
+  }
+}
+
+class _SandboxToggle extends ConsumerWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SandboxToggle({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radius),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sandbox Mode',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value ? 'Menggunakan environment sandbox Doku' : 'Menggunakan environment production Doku',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrivateKeyField extends ConsumerWidget {
+  final String initialValue;
+  final ValueChanged<String> onChanged;
+
+  const _PrivateKeyField({required this.initialValue, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(text: initialValue);
+
+    return AppTextField(
+      controller: controller,
+      labelText: 'RSA Private Key',
+      hintText: 'Masukkan RSA private key (format PEM)',
+      obscureText: true,
+      minLines: 4,
+      maxLines: 6,
       onChanged: onChanged,
     );
   }
 }
 
 class _InfoBox extends StatelessWidget {
-  final bool isConfigured;
-  const _InfoBox({required this.isConfigured});
+  final String clientId;
+  final String clientSecret;
+  final String merchantId;
+  final bool isSandbox;
+
+  const _InfoBox({
+    required this.clientId,
+    required this.clientSecret,
+    required this.merchantId,
+    required this.isSandbox,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isConfigured = clientId.isNotEmpty && clientSecret.isNotEmpty && merchantId.isNotEmpty;
+
     if (isConfigured) {
+      final modeText = isSandbox ? 'Sandbox' : 'Production';
+
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(AppSizes.padding),
@@ -144,10 +267,10 @@ class _InfoBox extends StatelessWidget {
           children: [
             Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary, size: 20),
             const SizedBox(width: AppSizes.padding / 2),
-            const Expanded(
+            Expanded(
               child: Text(
-                'QRIS sudah dikonfigurasi. Mode live akan digunakan.',
-                style: TextStyle(fontSize: 12),
+                'Doku SNAP QRIS dikonfigurasi. Mode $modeText akan digunakan.',
+                style: const TextStyle(fontSize: 12),
               ),
             ),
           ],
@@ -169,8 +292,8 @@ class _InfoBox extends StatelessWidget {
           const SizedBox(width: AppSizes.padding / 2),
           const Expanded(
             child: Text(
-              'Mode Mock: QRIS akan menggunakan simulasi tanpa koneksi ke InterActive QRIS. '
-              'Isi API Key dan mID di atas untuk mengaktifkan mode live.',
+              'Mode Mock: QRIS akan menggunakan simulasi tanpa koneksi ke Doku. '
+              'Isi Client ID, Client Secret, dan Merchant ID untuk mengaktifkan mode Doku langsung.',
               style: TextStyle(fontSize: 12),
             ),
           ),

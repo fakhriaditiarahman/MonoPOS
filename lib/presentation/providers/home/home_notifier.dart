@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
@@ -101,7 +100,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     }
   }
 
-  Future<Result<int>> createQrisTransaction(GoRouter router) async {
+  Future<Result<int>> createQrisTransaction() async {
     try {
       final authState = ref.read(authNotifierProvider);
       if (!authState.isAuthenticated) throw 'Unauthenticated!';
@@ -122,15 +121,14 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         paymentStatus: 'pending',
       );
 
-      final qrisNotifier = ref.read(qrisPaymentNotifierProvider.notifier);
-      var res = await qrisNotifier.startQrisPayment(
+      final qrisNotifier = ref.read(dokuPaymentNotifierProvider.notifier);
+      var res = await qrisNotifier.startDokuPayment(
         transaction: transaction,
         totalAmount: getTotalAmount(),
       );
 
       if (res.isSuccess) {
         ref.read(productsNotifierProvider.notifier).getAllProducts();
-        router.go('/payment/qris');
         _checkLowStock(user.id);
       }
 

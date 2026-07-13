@@ -12,10 +12,13 @@ class Constants {
   static const String storeAddressKey = 'store_address';
   static const String receiptFooterKey = 'receipt_footer';
 
-  // QRIS Payment Gateway settings (InterActive QRIS)
-  static const String qrisApiKey = 'qris_api_key';
-  static const String qrisMid = 'qris_mid';
-  static const String qrisMerchantName = 'qris_merchant_name';
+  // Doku Payment Gateway settings (SNAP QRIS)
+  static const String dokuClientId = 'doku_client_id';
+  static const String dokuClientSecret = 'doku_client_secret';
+  static const String dokuMerchantId = 'doku_merchant_id';
+  static const String dokuTerminalId = 'doku_terminal_id';
+  static const String dokuPrivateKey = 'doku_private_key';
+  static const String dokuIsSandbox = 'doku_is_sandbox';
 
   static const int minSyncIntervalToleranceForCriticalInMinutes = 5;
   static const int minSyncIntervalToleranceForLessCriticalInMinutes = 100;
@@ -32,5 +35,6 @@ class Constants {
     'gestures library',
     'scheduler library',
     'rendering library',
+    'widgets library',
   };
 }
