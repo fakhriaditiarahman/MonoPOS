@@ -6,6 +6,8 @@ class PaymentSettingsState {
   final String privateKey;
   final bool isSandbox;
   final bool isLoaded;
+  final bool isSaving;
+  final bool hasChanges;
 
   const PaymentSettingsState({
     this.clientId = '',
@@ -15,6 +17,8 @@ class PaymentSettingsState {
     this.privateKey = '',
     this.isSandbox = true,
     this.isLoaded = false,
+    this.isSaving = false,
+    this.hasChanges = false,
   });
 
   PaymentSettingsState copyWith({
@@ -25,6 +29,8 @@ class PaymentSettingsState {
     String? privateKey,
     bool? isSandbox,
     bool? isLoaded,
+    bool? isSaving,
+    bool? hasChanges,
   }) {
     return PaymentSettingsState(
       clientId: clientId ?? this.clientId,
@@ -34,6 +40,8 @@ class PaymentSettingsState {
       privateKey: privateKey ?? this.privateKey,
       isSandbox: isSandbox ?? this.isSandbox,
       isLoaded: isLoaded ?? this.isLoaded,
+      isSaving: isSaving ?? this.isSaving,
+      hasChanges: hasChanges ?? this.hasChanges,
     );
   }
 }

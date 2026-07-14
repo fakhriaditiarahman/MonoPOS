@@ -3,14 +3,71 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/themes/app_sizes.dart';
 import '../../providers/account/payment_settings_notifier.dart';
-import '../../widgets/app_progress_indicator.dart';
+import '../../widgets/app_button.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_text_field.dart';
 
-class PaymentSettingsScreen extends ConsumerWidget {
+class PaymentSettingsScreen extends ConsumerStatefulWidget {
   const PaymentSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PaymentSettingsScreen> createState() => _PaymentSettingsScreenState();
+}
+
+class _PaymentSettingsScreenState extends ConsumerState<PaymentSettingsScreen> {
+  late TextEditingController _clientIdController;
+  late TextEditingController _clientSecretController;
+  late TextEditingController _merchantIdController;
+  late TextEditingController _terminalIdController;
+  late TextEditingController _privateKeyController;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = ref.read(paymentSettingsNotifierProvider);
+    _clientIdController = TextEditingController(text: state.clientId);
+    _clientSecretController = TextEditingController(text: state.clientSecret);
+    _merchantIdController = TextEditingController(text: state.merchantId);
+    _terminalIdController = TextEditingController(text: state.terminalId);
+    _privateKeyController = TextEditingController(text: state.privateKey);
+
+    _clientIdController.addListener(() {
+      ref.read(paymentSettingsNotifierProvider.notifier).onChangedClientId(_clientIdController.text);
+    });
+    _clientSecretController.addListener(() {
+      ref.read(paymentSettingsNotifierProvider.notifier).onChangedClientSecret(_clientSecretController.text);
+    });
+    _merchantIdController.addListener(() {
+      ref.read(paymentSettingsNotifierProvider.notifier).onChangedMerchantId(_merchantIdController.text);
+    });
+    _terminalIdController.addListener(() {
+      ref.read(paymentSettingsNotifierProvider.notifier).onChangedTerminalId(_terminalIdController.text);
+    });
+    _privateKeyController.addListener(() {
+      ref.read(paymentSettingsNotifierProvider.notifier).onChangedPrivateKey(_privateKeyController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _clientIdController.dispose();
+    _clientSecretController.dispose();
+    _merchantIdController.dispose();
+    _terminalIdController.dispose();
+    _privateKeyController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onSave() async {
+    final notifier = ref.read(paymentSettingsNotifierProvider.notifier);
+    await notifier.save();
+    if (mounted) {
+      AppSnackBar.show('Pengaturan Doku tersimpan');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(paymentSettingsNotifierProvider);
     final notifier = ref.read(paymentSettingsNotifierProvider.notifier);
 
@@ -20,7 +77,7 @@ class PaymentSettingsScreen extends ConsumerWidget {
         titleSpacing: 0,
       ),
       body: !state.isLoaded
-          ? const AppProgressIndicator()
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(AppSizes.padding),
               child: Column(
@@ -28,24 +85,30 @@ class PaymentSettingsScreen extends ConsumerWidget {
                 children: [
                   _SectionTitle(text: 'Koneksi Doku SNAP QRIS'),
                   const SizedBox(height: AppSizes.padding / 2),
-                  _ClientIdField(
-                    initialValue: state.clientId,
-                    onChanged: notifier.onChangedClientId,
+                  AppTextField(
+                    controller: _clientIdController,
+                    labelText: 'Client ID',
+                    hintText: 'X-PARTNER-ID dari Doku Dashboard',
+                    obscureText: true,
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _ClientSecretField(
-                    initialValue: state.clientSecret,
-                    onChanged: notifier.onChangedClientSecret,
+                  AppTextField(
+                    controller: _clientSecretController,
+                    labelText: 'Client Secret',
+                    hintText: 'Secret Key dari Doku Dashboard',
+                    obscureText: true,
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _MerchantIdField(
-                    initialValue: state.merchantId,
-                    onChanged: notifier.onChangedMerchantId,
+                  AppTextField(
+                    controller: _merchantIdController,
+                    labelText: 'Merchant ID',
+                    hintText: 'Merchant ID dari Doku',
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _TerminalIdField(
-                    initialValue: state.terminalId,
-                    onChanged: notifier.onChangedTerminalId,
+                  AppTextField(
+                    controller: _terminalIdController,
+                    labelText: 'Terminal ID',
+                    hintText: 'ID terminal (contoh: POS-001)',
                   ),
                   const SizedBox(height: AppSizes.padding),
                   _SandboxToggle(
@@ -53,9 +116,13 @@ class PaymentSettingsScreen extends ConsumerWidget {
                     onChanged: notifier.onChangedIsSandbox,
                   ),
                   const SizedBox(height: AppSizes.padding),
-                  _PrivateKeyField(
-                    initialValue: state.privateKey,
-                    onChanged: notifier.onChangedPrivateKey,
+                  AppTextField(
+                    controller: _privateKeyController,
+                    labelText: 'RSA Private Key',
+                    hintText: 'Masukkan RSA private key (format PEM)',
+                    obscureText: true,
+                    minLines: 4,
+                    maxLines: 6,
                   ),
                   const SizedBox(height: AppSizes.padding),
                   _InfoBox(
@@ -63,6 +130,22 @@ class PaymentSettingsScreen extends ConsumerWidget {
                     clientSecret: state.clientSecret,
                     merchantId: state.merchantId,
                     isSandbox: state.isSandbox,
+                  ),
+                  const SizedBox(height: AppSizes.padding * 1.5),
+                  AppButton(
+                    text: state.isSaving ? 'Menyimpan...' : 'Simpan Pengaturan',
+                    enabled: state.hasChanges && !state.isSaving,
+                    onTap: _onSave,
+                    child: state.isSaving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
                   ),
                 ],
               ),
@@ -86,92 +169,14 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _ClientIdField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _ClientIdField({required this.initialValue, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return AppTextField(
-      controller: controller,
-      labelText: 'Client ID',
-      hintText: 'X-PARTNER-ID dari Doku Dashboard',
-      obscureText: true,
-      onChanged: onChanged,
-    );
-  }
-}
-
-class _ClientSecretField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _ClientSecretField({required this.initialValue, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return AppTextField(
-      controller: controller,
-      labelText: 'Client Secret',
-      hintText: 'Secret Key dari Doku Dashboard',
-      obscureText: true,
-      onChanged: onChanged,
-    );
-  }
-}
-
-class _MerchantIdField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _MerchantIdField({required this.initialValue, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return AppTextField(
-      controller: controller,
-      labelText: 'Merchant ID',
-      hintText: 'Merchant ID dari Doku',
-      onChanged: onChanged,
-    );
-  }
-}
-
-class _TerminalIdField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _TerminalIdField({required this.initialValue, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return AppTextField(
-      controller: controller,
-      labelText: 'Terminal ID',
-      hintText: 'ID terminal (contoh: POS-001)',
-      onChanged: onChanged,
-    );
-  }
-}
-
-class _SandboxToggle extends ConsumerWidget {
+class _SandboxToggle extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
   const _SandboxToggle({required this.value, required this.onChanged});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: BoxDecoration(
@@ -210,28 +215,6 @@ class _SandboxToggle extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _PrivateKeyField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _PrivateKeyField({required this.initialValue, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return AppTextField(
-      controller: controller,
-      labelText: 'RSA Private Key',
-      hintText: 'Masukkan RSA private key (format PEM)',
-      obscureText: true,
-      minLines: 4,
-      maxLines: 6,
-      onChanged: onChanged,
     );
   }
 }
