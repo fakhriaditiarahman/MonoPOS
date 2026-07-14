@@ -18,6 +18,16 @@ Follow **Conventional Commits** format:
 | `test`     | Adding or updating tests             |
 | `style`    | Formatting, code style changes       |
 
+Description is written in **Bahasa Indonesia** and can be multi-clause (comma-separated) when a commit covers multiple related changes.
+
+### Examples
+
+```
+feat: integrasi Doku SNAP QRIS payment gateway, ganti Interactive QRIS
+fix: ganti auto-save ke tombol Save di pengaturan Doku, hapus write per ketikan ke SharedPreferences
+feat: manajemen akun karyawan + role-based access control (admin/kasir)
+```
+
 ## Branch Naming
 
 ```
@@ -39,3 +49,20 @@ Use lowercase with hyphens for description.
 2. Make changes and commit with conventional commit messages
 3. Push branch and create a pull request to `main`
 4. Merge via merge commit (preserve full history)
+
+> **Note:** For small/urgent fixes, direct commits to `main` are acceptable when branch + PR overhead is not justified.
+
+## Code Quality
+
+- Format before committing: `dart format lib/ test/ --line-length=120`
+- Lint for large changes: `flutter analyze`
+- Skip lint for small changes (few files) — IDE diagnostics are sufficient
+- No CI/CD pipeline or pre-commit hooks are configured — formatting relies on developer discipline
+- See `CLAUDE.md` for full coding conventions and architecture rules
+
+## Environment
+
+- **Backend:** Supabase (auth, database, S3-compatible storage)
+- **Env vars:** Passed via `--dart-define` at build time (see `.env.example`)
+- **Local DB:** SQLite via `sqflite` (runs on-device, no server needed)
+- **Secrets:** `.env` and `config.example.json` are gitignored; never commit credentials
