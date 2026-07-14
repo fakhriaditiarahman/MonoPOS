@@ -31,8 +31,6 @@ class CustomerFormNotifier extends AutoDisposeNotifier<CustomerFormState> {
       state = state.copyWith(
         name: customer.name,
         phone: customer.phone,
-        type: customer.type,
-        creditLimit: customer.creditLimit,
         isLoaded: true,
       );
     } else {
@@ -46,8 +44,6 @@ class CustomerFormNotifier extends AutoDisposeNotifier<CustomerFormState> {
       var customer = CustomerEntity(
         name: state.name ?? '',
         phone: state.phone,
-        type: state.type,
-        creditLimit: state.creditLimit,
       );
 
       var res = await CreateCustomerUsecase(customerRepository).call(customer);
@@ -67,8 +63,6 @@ class CustomerFormNotifier extends AutoDisposeNotifier<CustomerFormState> {
         id: id,
         name: state.name ?? '',
         phone: state.phone,
-        type: state.type,
-        creditLimit: state.creditLimit,
       );
 
       var res = await UpdateCustomerUsecase(customerRepository).call(customer);
@@ -87,13 +81,5 @@ class CustomerFormNotifier extends AutoDisposeNotifier<CustomerFormState> {
 
   void onChangedPhone(String value) {
     state = state.copyWith(phone: value.isEmpty ? null : value);
-  }
-
-  void onChangedType(String value) {
-    state = state.copyWith(type: value);
-  }
-
-  void onChangedCreditLimit(String value) {
-    state = state.copyWith(creditLimit: int.tryParse(value) ?? 0);
   }
 }

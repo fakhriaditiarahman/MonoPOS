@@ -13,7 +13,6 @@ class DatabaseConfig {
   static const String transactionTableName = 'Transaction';
   static const String orderedProductTableName = 'OrderedProduct';
   static const String queuedActionTableName = 'QueuedAction';
-  static const String receivablePaymentTableName = 'ReceivablePayment';
 
   static const String createUserTable =
       '''
@@ -137,27 +136,9 @@ CREATE TABLE IF NOT EXISTS '$customerTableName' (
     'id' TEXT NOT NULL,
     'name' TEXT NOT NULL,
     'phone' TEXT,
-    'type' TEXT DEFAULT 'retail',
-    'creditLimit' INTEGER DEFAULT 0,
-    'outstandingBalance' INTEGER DEFAULT 0,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ('id')
-);
-''';
-
-  static const String createReceivablePaymentTable =
-      '''
-CREATE TABLE IF NOT EXISTS '$receivablePaymentTableName' (
-    'id' INTEGER NOT NULL,
-    'transactionId' INTEGER NOT NULL,
-    'customerId' TEXT,
-    'amount' INTEGER NOT NULL,
-    'paymentMethod' TEXT DEFAULT 'cash',
-    'notes' TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY ('id'),
-    FOREIGN KEY ('transactionId') REFERENCES 'Transaction' ('id')
 );
 ''';
 

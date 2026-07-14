@@ -5,7 +5,6 @@ import '../../../core/common/result.dart';
 import '../../../domain/entities/ordered_product_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/entities/transaction_entity.dart';
-import '../../../domain/usecases/customer_usecases.dart';
 import '../../../domain/usecases/product_usecases.dart';
 import '../../../domain/usecases/transaction_usecases.dart';
 import '../../widgets/app_low_stock_dialog.dart';
@@ -31,46 +30,27 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       if (!authState.isAuthenticated) throw 'Unauthenticated!';
       final user = authState.user!;
 
-      bool isCredit = state.selectedPaymentType == 'credit';
-
-      if (isCredit && state.customerId != null) {
-        final customerRepository = ref.read(customerRepositoryProvider);
-        final customerRes = await GetCustomerUsecase(customerRepository).call(state.customerId!);
-        if (customerRes.isSuccess && customerRes.data != null) {
-          final customer = customerRes.data!;
-          final newBalance = customer.outstandingBalance + getTotalAmount();
-          if (customer.creditLimit > 0 && newBalance > customer.creditLimit) {
-            return Result.failure(error: 'Melebihi limit kredit (Rp ${customer.creditLimit})');
-          }
-        }
-      }
-
       var transaction = TransactionEntity(
         id: DateTime.now().millisecondsSinceEpoch,
         paymentMethod: state.selectedPaymentMethod,
         paymentType: state.selectedPaymentType,
         customerId: state.customerId,
         customerName: state.customerName,
-        dueDate: isCredit ? state.dueDate : null,
         description: state.description,
         orderedProducts: state.orderedProducts,
         createdById: user.id,
         createdBy: user,
-        receivedAmount: isCredit ? 0 : state.receivedAmount,
-        returnAmount: isCredit ? 0 : state.receivedAmount - getTotalAmount(),
+        receivedAmount: state.receivedAmount,
+        returnAmount: state.receivedAmount - getTotalAmount(),
         totalOrderedProduct: state.orderedProducts.length,
         totalAmount: getTotalAmount(),
-        paymentStatus: isCredit ? 'pending' : 'paid',
+        paymentStatus: 'paid',
       );
 
       final transactionRepository = ref.read(transactionRepositoryProvider);
       var res = await CreateTransactionUsecase(transactionRepository).call(transaction);
 
       if (res.isSuccess) {
-        if (isCredit && state.customerId != null) {
-          await _updateCustomerOutstanding(state.customerId!, getTotalAmount());
-        }
-
         final printResult = await ref.read(printerServiceProvider).printTransaction(transaction);
         if (printResult.isFailure) {
           AppSnackBar.showError('Cetak struk gagal: ${printResult.error}');
@@ -86,17 +66,6 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       return res;
     } catch (e) {
       return Result.failure(error: e);
-    }
-  }
-
-  Future<void> _updateCustomerOutstanding(String customerId, int amount) async {
-    final customerRepository = ref.read(customerRepositoryProvider);
-    final customerRes = await GetCustomerUsecase(customerRepository).call(customerId);
-    if (customerRes.isSuccess && customerRes.data != null) {
-      final customer = customerRes.data!;
-      await UpdateCustomerUsecase(customerRepository).call(
-        customer.copyWith(outstandingBalance: customer.outstandingBalance + amount),
-      );
     }
   }
 
@@ -292,10 +261,6 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
 
   void onChangedPaymentType(String value) {
     state = state.copyWith(selectedPaymentType: value);
-  }
-
-  void onChangedDueDate(String value) {
-    state = state.copyWith(dueDate: value);
   }
 
   void onChangedDescription(String value) {

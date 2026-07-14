@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -6,6 +7,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../../../app/di/app_providers.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utilities/currency_formatter.dart';
+import '../../../../core/utilities/rupiah_input_formatter.dart';
 import '../../../../domain/entities/customer_entity.dart';
 import '../../../../generated/app_localizations.dart';
 import '../../../providers/customer/customer_notifier.dart';
@@ -125,45 +127,15 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
   final _amountController = TextEditingController();
   final _customerController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _dueDateController = TextEditingController();
   List<CustomerEntity> _customerSuggestions = [];
   bool _showCustomerDropdown = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final homeState = ref.read(homeNotifierProvider);
-    if (homeState.dueDate != null) {
-      _dueDateController.text = homeState.dueDate!;
-    }
-  }
 
   @override
   void dispose() {
     _amountController.dispose();
     _customerController.dispose();
     _descriptionController.dispose();
-    _dueDateController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickDueDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: now.add(const Duration(days: 7)),
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-      helpText: AppLocalizations.of(context)!.cart_dueDate,
-      cancelText: AppLocalizations.of(context)!.home_cancel,
-      confirmText: AppLocalizations.of(context)!.cart_confirm,
-    );
-    if (picked != null) {
-      final formatted =
-          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-      _dueDateController.text = formatted;
-      ref.read(homeNotifierProvider.notifier).onChangedDueDate(formatted);
-    }
   }
 
   void _onCustomerSearchChanged(String query) async {
@@ -189,7 +161,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     _customerController.text = customer.name;
     notifier.onChangedCustomerName(customer.name);
     notifier.onChangedCustomerId(customer.id);
-    notifier.onChangedPriceType(customer.type);
+    notifier.onChangedPriceType('grosir');
     setState(() {
       _showCustomerDropdown = false;
       _customerSuggestions = [];
@@ -200,19 +172,6 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     required GoRouter router,
     required HomeNotifier homeNotifier,
   }) async {
-    final homeState = ref.read(homeNotifierProvider);
-
-    if (homeState.selectedPaymentType == 'credit') {
-      if (homeState.customerId == null) {
-        AppDialog.showError(error: 'Pilih pelanggan terlebih dahulu untuk transaksi kredit');
-        return;
-      }
-      if (homeState.dueDate == null || homeState.dueDate!.isEmpty) {
-        AppDialog.showError(error: 'Isi tanggal jatuh tempo untuk transaksi kredit');
-        return;
-      }
-    }
-
     var res = await AppDialog.showProgress(() {
       return homeNotifier.createTransaction();
     });
@@ -247,15 +206,30 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (homeState.selectedPaymentMethod != 'qris' && homeState.selectedPaymentType != 'credit') ...[
+        if (homeState.selectedPaymentMethod != 'qris') ...[
           AppTextField(
             autofocus: true,
             keyboardType: TextInputType.number,
             controller: _amountController,
             labelText: AppLocalizations.of(context)!.cart_receivedAmount,
             hintText: AppLocalizations.of(context)!.cart_receivedAmountHint,
+            prefixWidget: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Rp',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              RupiahInputFormatter(),
+            ],
             onChanged: (val) {
-              homeNotifier.onChangedReceivedAmount(int.tryParse(val) ?? 0);
+              final clean = val.replaceAll('.', '');
+              homeNotifier.onChangedReceivedAmount(int.tryParse(clean) ?? 0);
             },
           ),
           const SizedBox(height: AppSizes.padding),
@@ -303,43 +277,9 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           ],
           onChanged: (v) {
             homeNotifier.onChangedPaymentMethod(v);
-            if (v == 'qris') {
-              homeNotifier.onChangedPaymentType('cash');
-            }
           },
         ),
         const SizedBox(height: AppSizes.padding),
-        if (homeState.selectedPaymentMethod != 'qris') ...[
-          AppDropDown(
-            labelText: AppLocalizations.of(context)!.cart_paymentType,
-            selectedValue: homeState.selectedPaymentType,
-            dropdownItems: [
-              DropdownMenuItem(
-                value: 'cash',
-                child: Text(AppLocalizations.of(context)!.cart_cash),
-              ),
-              DropdownMenuItem(
-                value: 'credit',
-                child: Text(AppLocalizations.of(context)!.cart_credit),
-              ),
-            ],
-            onChanged: (v) => homeNotifier.onChangedPaymentType(v ?? 'cash'),
-          ),
-          const SizedBox(height: AppSizes.padding),
-        ],
-        if (homeState.selectedPaymentType == 'credit') ...[
-          AppTextField(
-            controller: _dueDateController,
-            labelText: AppLocalizations.of(context)!.cart_dueDate,
-            hintText: AppLocalizations.of(context)!.cart_dueDateHint,
-            onChanged: (v) => homeNotifier.onChangedDueDate(v),
-            suffixWidget: GestureDetector(
-              onTap: _pickDueDate,
-              child: const Icon(Icons.calendar_today, size: 16),
-            ),
-          ),
-          const SizedBox(height: AppSizes.padding),
-        ],
         Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -358,7 +298,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                         _customerController.clear();
                         homeNotifier.onChangedCustomerName('');
                         homeNotifier.onChangedCustomerId(null);
-                        homeNotifier.onChangedPriceType('retail');
+                        homeNotifier.onChangedPriceType('grosir');
                         setState(() {
                           _customerSuggestions = [];
                           _showCustomerDropdown = false;
@@ -387,7 +327,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                         dense: true,
                         title: Text(c.name, style: const TextStyle(fontSize: 13)),
                         subtitle: Text(
-                          '${c.phone ?? "-"} | ${c.type == 'grosir' ? 'Grosir' : 'Retail'}',
+                          c.phone ?? '-',
                           style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline),
                         ),
                         onTap: () => _onCustomerSelected(c),
@@ -423,12 +363,10 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
             Expanded(
               flex: 2,
               child: AppButton(
-                text: homeState.selectedPaymentType == 'credit'
-                    ? AppLocalizations.of(context)!.cart_credit
-                    : AppLocalizations.of(context)!.home_pay,
-                enabled: homeState.selectedPaymentMethod == 'qris' || homeState.selectedPaymentType == 'credit'
+                text: AppLocalizations.of(context)!.home_pay,
+                enabled: homeState.selectedPaymentMethod == 'qris'
                     ? true
-                    : (int.tryParse(_amountController.text) ?? 0) >= homeNotifier.getTotalAmount(),
+                    : (int.tryParse(_amountController.text.replaceAll('.', '')) ?? 0) >= homeNotifier.getTotalAmount(),
                 onTap: () {
                   final router = ref.read(goRouterProvider);
 

@@ -7,7 +7,6 @@ class HomeState {
   final String selectedPaymentType;
   final String? customerName;
   final String? customerId;
-  final String? dueDate;
   final String? description;
   final bool isPanelExpanded;
   final String selectedPriceType;
@@ -19,7 +18,6 @@ class HomeState {
     this.selectedPaymentType = 'cash',
     this.customerName,
     this.customerId,
-    this.dueDate,
     this.description,
     this.isPanelExpanded = false,
     this.selectedPriceType = 'retail',
@@ -32,7 +30,6 @@ class HomeState {
     String? selectedPaymentType,
     String? customerName,
     String? customerId,
-    String? dueDate,
     String? description,
     bool? isPanelExpanded,
     String? selectedPriceType,
@@ -44,7 +41,6 @@ class HomeState {
       selectedPaymentType: selectedPaymentType ?? this.selectedPaymentType,
       customerName: customerName ?? this.customerName,
       customerId: customerId ?? this.customerId,
-      dueDate: dueDate ?? this.dueDate,
       description: description ?? this.description,
       isPanelExpanded: isPanelExpanded ?? this.isPanelExpanded,
       selectedPriceType: selectedPriceType ?? this.selectedPriceType,

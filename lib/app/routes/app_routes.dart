@@ -6,8 +6,7 @@ import '../../presentation/providers/auth/auth_notifier.dart';
 import '../../presentation/screens/account/about_screen.dart';
 import '../../presentation/screens/account/account_screen.dart';
 import '../../presentation/screens/account/payment_settings_screen.dart';
-import '../../presentation/screens/account/piutang/piutang_detail_screen.dart';
-import '../../presentation/screens/account/piutang/piutang_screen.dart';
+
 import '../../presentation/screens/account/printer_settings_screen.dart';
 import '../../presentation/screens/account/profile_form_screen.dart';
 import '../../presentation/screens/account/store_settings_screen.dart';
@@ -45,7 +44,6 @@ class AppRoutes {
     '/account/employees',
     '/account/store-settings',
     '/account/revenue',
-    '/account/piutang',
     '/account/payment-settings',
     '/products/product-create',
     '/products/product-edit',
@@ -193,7 +191,6 @@ class AppRoutes {
         _paymentSettings(),
         _revenue(),
         _customers(),
-        _piutang(),
         _employees(),
       ],
     );
@@ -318,33 +315,6 @@ class AppRoutes {
         _customerCreate(),
         _customerEdit(),
       ],
-    );
-  }
-
-  GoRoute _piutang() {
-    return GoRoute(
-      path: 'piutang',
-      builder: (context, state) {
-        return const PiutangScreen();
-      },
-      routes: [
-        _piutangDetail(),
-      ],
-    );
-  }
-
-  GoRoute _piutangDetail() {
-    return GoRoute(
-      path: 'piutang-detail/:id',
-      builder: (context, state) {
-        int? id = int.tryParse(state.pathParameters["id"] ?? '');
-
-        if (id == null) {
-          throw 'Required piutangId is not provided!';
-        }
-
-        return PiutangDetailScreen(id: id);
-      },
     );
   }
 

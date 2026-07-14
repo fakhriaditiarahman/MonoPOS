@@ -34,7 +34,6 @@ class AccountScreen extends StatelessWidget {
                 _StoreSettingsButton(),
                 _RevenueButton(),
                 _CustomerButton(),
-                _PiutangButton(),
                 _ThemeButton(),
                 _LanguageButton(),
                 _PrinterSettingsButton(),
@@ -256,52 +255,6 @@ class _CustomerButton extends StatelessWidget {
         ),
         onTap: () {
           context.go('/account/customers');
-        },
-      ),
-    );
-  }
-}
-
-class _PiutangButton extends ConsumerWidget {
-  const _PiutangButton();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
-
-    if (!isAdmin) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: AppButton(
-        buttonColor: Theme.of(context).colorScheme.surface,
-        borderColor: Theme.of(context).colorScheme.surfaceContainer,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.receipt_long_outlined,
-                  size: 18,
-                ),
-                const SizedBox(width: AppSizes.padding / 1.5),
-                Text(
-                  'Piutang',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 18,
-            ),
-          ],
-        ),
-        onTap: () {
-          context.go('/account/piutang');
         },
       ),
     );

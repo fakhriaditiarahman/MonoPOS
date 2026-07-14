@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class CurrencyFormatter {
   CurrencyFormatter._();
 
-  static const int defaultDecimalDigits = 0;
+  static const int defaultDecimalDigits = 2;
 
   static String format(num data, {int? decimalDigits}) {
     return NumberFormat.simpleCurrency(
