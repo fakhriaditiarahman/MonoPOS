@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/themes/app_sizes.dart';
-import '../../../core/utilities/currency_formatter.dart';
 import '../../providers/customer/customer_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
@@ -62,45 +61,12 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
               separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, i) {
                 final customer = state.customers[i];
-                final hasLimit = customer.creditLimit > 0;
-                final hasOutstanding = customer.outstandingBalance > 0;
-                final isOverLimit = hasLimit && customer.outstandingBalance > customer.creditLimit;
 
                 return ListTile(
                   title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${customer.phone ?? "-"} | ${customer.type == 'grosir' ? 'Grosir' : 'Retail'}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      if (hasLimit || hasOutstanding)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Row(
-                            children: [
-                              if (hasLimit)
-                                Text(
-                                  'Limit: ${CurrencyFormatter.format(customer.creditLimit)}',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).colorScheme.outline,
-                                  ),
-                                ),
-                              if (hasLimit && hasOutstanding)
-                                Text('  |  ', style: Theme.of(context).textTheme.bodySmall),
-                              if (hasOutstanding)
-                                Text(
-                                  'Piutang: ${CurrencyFormatter.format(customer.outstandingBalance)}',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: isOverLimit ? Theme.of(context).colorScheme.error : Colors.orange,
-                                    fontWeight: isOverLimit ? FontWeight.bold : null,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                    ],
+                  subtitle: Text(
+                    customer.phone ?? '-',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                   trailing: SizedBox(
                     width: 60,

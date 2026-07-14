@@ -7,7 +7,6 @@ import '../../../core/themes/app_sizes.dart';
 import '../../providers/customer/customer_form_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
-import '../../widgets/app_drop_down.dart';
 import '../../widgets/app_progress_indicator.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_text_field.dart';
@@ -24,7 +23,6 @@ class CustomerFormScreen extends ConsumerStatefulWidget {
 class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
-  final creditLimitController = TextEditingController();
 
   @override
   void initState() {
@@ -35,7 +33,6 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
       final state = ref.read(customerFormNotifierProvider);
       nameController.text = state.name ?? '';
       phoneController.text = state.phone ?? '';
-      creditLimitController.text = state.creditLimit.toString();
     });
   }
 
@@ -43,7 +40,6 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   void dispose() {
     nameController.dispose();
     phoneController.dispose();
-    creditLimitController.dispose();
     super.dispose();
   }
 
@@ -104,26 +100,6 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     hintText: 'contoh: 0812xxxxxx',
                     keyboardType: TextInputType.phone,
                     onChanged: notifier.onChangedPhone,
-                  ),
-                  const SizedBox(height: AppSizes.padding),
-                  AppDropDown(
-                    labelText: 'Tipe Pelanggan',
-                    selectedValue: ref.watch(customerFormNotifierProvider.select((s) => s.type)),
-                    dropdownItems: const [
-                      DropdownMenuItem(value: 'retail', child: Text('Retail')),
-                      DropdownMenuItem(value: 'grosir', child: Text('Grosir')),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) notifier.onChangedType(v);
-                    },
-                  ),
-                  const SizedBox(height: AppSizes.padding),
-                  AppTextField(
-                    controller: creditLimitController,
-                    labelText: 'Limit Kredit (opsional)',
-                    hintText: '0 = tanpa limit',
-                    type: AppTextFieldType.currency,
-                    onChanged: notifier.onChangedCreditLimit,
                   ),
                   const SizedBox(height: AppSizes.padding * 2),
                   AppButton(

@@ -118,86 +118,95 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSizes.padding),
-      child: Column(
-        children: [
-          const SizedBox(height: AppSizes.padding),
-          Text(
-            'Total Pembayaran',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: AppSizes.padding / 2),
-          Text(
-            CurrencyFormatter.format(state.transaction?.totalAmount ?? 0),
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: AppSizes.padding * 2),
-          Container(
-            width: 260,
-            height: 260,
-            padding: const EdgeInsets.all(AppSizes.padding),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppSizes.radius),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outlineVariant,
+      child: Center(
+        child: SizedBox(
+          width: 420,
+          child: Column(
+            children: [
+              const SizedBox(height: AppSizes.padding),
+              Text(
+                'Total Pembayaran',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
-            ),
-            child: Center(
-              child: state.qrCode.isNotEmpty ? _buildQrDisplay(state.qrCode) : const AppProgressIndicator(),
-            ),
-          ),
-          const SizedBox(height: AppSizes.padding),
-          Text(
-            'Scan QRIS di atas untuk membayar',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: AppSizes.padding * 2),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.padding,
-              vertical: AppSizes.padding / 2,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppSizes.radius),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.timer_outlined, size: 18),
-                const SizedBox(width: AppSizes.padding / 2),
-                Text(
-                  '$minutes:$seconds',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+              const SizedBox(height: AppSizes.padding / 2),
+              Text(
+                CurrencyFormatter.format(state.transaction?.totalAmount ?? 0),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: AppSizes.padding * 2),
+              Container(
+                width: 260,
+                height: 260,
+                padding: const EdgeInsets.all(AppSizes.padding),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppSizes.radius),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
                   ),
                 ),
+                child: Center(
+                  child: state.qrCode.isNotEmpty ? _buildQrDisplay(state.qrCode) : const AppProgressIndicator(),
+                ),
+              ),
+              const SizedBox(height: AppSizes.padding),
+              Text(
+                'Scan QRIS di atas untuk membayar',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: AppSizes.padding * 2),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSizes.padding,
+                  vertical: AppSizes.padding / 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(AppSizes.radius),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.timer_outlined, size: 18),
+                    const SizedBox(width: AppSizes.padding / 2),
+                    Text(
+                      '$minutes:$seconds',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSizes.padding),
+              Text(
+                state.autoCheckDone ? 'Tekan tombol di bawah setelah pelanggan membayar' : 'Menunggu pembayaran...',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+              if (state.autoCheckDone) ...[
+                const SizedBox(height: AppSizes.padding * 2),
+                AppButton(
+                  text: state.isManualChecking ? 'Memeriksa...' : 'Cek Pembayaran',
+                  enabled: !state.isManualChecking,
+                  onTap: () {
+                    ref.read(dokuPaymentNotifierProvider.notifier).checkPaymentManually();
+                  },
+                ),
               ],
-            ),
+            ],
           ),
-          const SizedBox(height: AppSizes.padding),
-          Text(
-            state.autoCheckDone ? 'Tekan tombol di bawah setelah pelanggan membayar' : 'Menunggu pembayaran...',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
-            ),
-          ),
-          if (state.autoCheckDone) ...[
-            const SizedBox(height: AppSizes.padding * 2),
-            AppButton(
-              text: state.isManualChecking ? 'Memeriksa...' : 'Cek Pembayaran',
-              enabled: !state.isManualChecking,
-              onTap: () {
-                ref.read(dokuPaymentNotifierProvider.notifier).checkPaymentManually();
-              },
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

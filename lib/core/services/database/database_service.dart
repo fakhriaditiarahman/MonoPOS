@@ -38,7 +38,6 @@ class DatabaseService {
           db.execute(DatabaseConfig.createCustomerTable),
           db.execute(DatabaseConfig.createTransactionTable),
           db.execute(DatabaseConfig.createOrderedProductTable),
-          db.execute(DatabaseConfig.createReceivablePaymentTable),
           db.execute(DatabaseConfig.createQueuedActionTable),
         ]);
       },
@@ -206,11 +205,6 @@ class DatabaseService {
 
     // Migration: add dueDate column to Transaction
     await _addColumnIfNotExists(db, 'Transaction', 'dueDate', 'TEXT');
-
-    // Migration: create receivable payment table
-    try {
-      await db.execute(DatabaseConfig.createReceivablePaymentTable);
-    } catch (_) {}
   }
 
   Future<void> _seedProducts() async {
@@ -326,7 +320,6 @@ class DatabaseService {
       database.execute(DatabaseConfig.createCustomerTable),
       database.execute(DatabaseConfig.createTransactionTable),
       database.execute(DatabaseConfig.createOrderedProductTable),
-      database.execute(DatabaseConfig.createReceivablePaymentTable),
       database.execute(DatabaseConfig.createQueuedActionTable),
     ]);
 

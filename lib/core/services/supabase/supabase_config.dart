@@ -77,5 +77,4 @@ class SupabaseConfig {
   static const String transactionsTable = 'transactions';
   static const String orderedProductsTable = 'ordered_products';
   static const String queuedActionsTable = 'queued_actions';
-  static const String receivablePaymentsTable = 'receivable_payments';
 }

@@ -17,27 +17,23 @@ import '../../core/services/sync/sync_service.dart';
 import '../../data/datasources/interfaces/auth_datasource.dart';
 import '../../data/datasources/interfaces/customer_datasource.dart';
 import '../../data/datasources/interfaces/product_datasource.dart';
-import '../../data/datasources/interfaces/receivable_payment_datasource.dart';
 import '../../data/datasources/interfaces/transaction_datasource.dart';
 import '../../data/datasources/interfaces/user_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource_impl.dart';
 import '../../data/datasources/local/customer_local_datasource_impl.dart';
 import '../../data/datasources/local/product_local_datasource_impl.dart';
 import '../../data/datasources/local/queued_action_local_datasource_impl.dart';
-import '../../data/datasources/local/receivable_payment_local_datasource_impl.dart';
 import '../../data/datasources/local/transaction_local_datasource_impl.dart';
 import '../../data/datasources/local/user_local_datasource_impl.dart';
 import '../../data/datasources/remote/auth_remote_datasource_impl.dart';
 import '../../data/datasources/remote/customer_remote_datasource_impl.dart';
 import '../../data/datasources/remote/product_remote_datasource_impl.dart';
-import '../../data/datasources/remote/receivable_payment_remote_datasource_impl.dart';
 import '../../data/datasources/remote/transaction_remote_datasource_impl.dart';
 import '../../data/datasources/remote/user_remote_datasource_impl.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/customer_repository_impl.dart';
 import '../../data/repositories/product_repository_impl.dart';
 import '../../data/repositories/queued_action_repository_impl.dart';
-import '../../data/repositories/receivable_payment_repository_impl.dart';
 import '../../data/repositories/storage_repository_impl.dart';
 import '../../data/repositories/transaction_repository_impl.dart';
 import '../../data/repositories/user_repository_impl.dart';
@@ -45,7 +41,6 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/customer_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/queued_action_repository.dart';
-import '../../domain/repositories/receivable_payment_repository.dart';
 import '../../domain/repositories/storage_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -193,25 +188,6 @@ final customerRepositoryProvider = Provider<CustomerRepository>(
   (ref) => CustomerRepositoryImpl(
     customerLocalDatasource: ref.watch(customerLocalDatasourceProvider),
     customerRemoteDatasource: ref.watch(customerRemoteDatasourceProvider),
-    syncService: ref.watch(syncServiceProvider),
-    queuedActionRepository: ref.watch(queuedActionRepositoryProvider),
-  ),
-);
-
-// Receivable Payment Datasources
-final receivablePaymentLocalDatasourceProvider = Provider<ReceivablePaymentLocalDatasourceImpl>(
-  (ref) => ReceivablePaymentLocalDatasourceImpl(ref.watch(databaseServiceProvider)),
-);
-final receivablePaymentRemoteDatasourceProvider = Provider<ReceivablePaymentDatasource?>((ref) {
-  if (!SupabaseConfig.isConfigured) return null;
-  return ReceivablePaymentRemoteDatasourceImpl();
-});
-
-// Receivable Payment Repository
-final receivablePaymentRepositoryProvider = Provider<ReceivablePaymentRepository>(
-  (ref) => ReceivablePaymentRepositoryImpl(
-    localDatasource: ref.watch(receivablePaymentLocalDatasourceProvider),
-    remoteDatasource: ref.watch(receivablePaymentRemoteDatasourceProvider),
     syncService: ref.watch(syncServiceProvider),
     queuedActionRepository: ref.watch(queuedActionRepositoryProvider),
   ),
