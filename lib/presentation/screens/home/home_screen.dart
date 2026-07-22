@@ -20,6 +20,7 @@ import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_text_field.dart';
 import '../../../generated/app_localizations.dart';
 import '../products/components/products_card.dart';
+import 'components/barcode_hid_listener.dart';
 import 'components/barcode_scanner_screen.dart';
 import 'components/cart_panel_body.dart';
 import 'components/cart_panel_footer.dart';
@@ -76,59 +77,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (isWide) {
       return Scaffold(
         appBar: _AppBar(searchFieldController: searchFieldController),
-        body: Row(
+        body: Column(
           children: [
             Expanded(
-              flex: 3,
-              child: _ProductGrid(
-                scrollController: scrollController,
-                searchFieldController: searchFieldController,
-                onRefresh: onRefresh,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: _ProductGrid(
+                      scrollController: scrollController,
+                      searchFieldController: searchFieldController,
+                      onRefresh: onRefresh,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 380,
+                    child: _CartPanel(
+                      panelController: panelController,
+                      onRefresh: onRefresh,
+                      isPanelUsed: false,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(
-              width: 380,
-              child: _CartPanel(
-                panelController: panelController,
-                onRefresh: onRefresh,
-                isPanelUsed: false,
-              ),
-            ),
+            const BarcodeHidListener(),
           ],
         ),
       );
     }
 
     return Scaffold(
-      body: SlidingUpPanel(
-        controller: panelController,
-        minHeight: 88,
-        maxHeight: AppSizes.screenHeight(context) - AppSizes.appBarHeight() - AppSizes.viewPadding(context).top,
-        color: Theme.of(context).colorScheme.surfaceContainerLowest,
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.04),
-            offset: const Offset(0, -4),
-            blurRadius: 12,
+      body: Column(
+        children: [
+          Expanded(
+            child: SlidingUpPanel(
+              controller: panelController,
+              minHeight: 88,
+              maxHeight: AppSizes.screenHeight(context) - AppSizes.appBarHeight() - AppSizes.viewPadding(context).top,
+              color: Theme.of(context).colorScheme.surfaceContainerLowest,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.04),
+                  offset: const Offset(0, -4),
+                  blurRadius: 12,
+                ),
+              ],
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(AppSizes.radius * 2),
+                topRight: Radius.circular(AppSizes.radius * 2),
+              ),
+              body: Scaffold(
+                appBar: _AppBar(searchFieldController: searchFieldController),
+                body: _ProductGrid(
+                  scrollController: scrollController,
+                  searchFieldController: searchFieldController,
+                  onRefresh: onRefresh,
+                ),
+              ),
+              header: CartPanelHeader(panelController: panelController),
+              panel: CartPanelBody(panelController: panelController),
+              footer: CartPanelFooter(panelController: panelController),
+              onPanelOpened: () => ref.read(homeNotifierProvider.notifier).onChangedIsPanelExpanded(true),
+              onPanelClosed: () => ref.read(homeNotifierProvider.notifier).onChangedIsPanelExpanded(false),
+            ),
           ),
+          const BarcodeHidListener(),
         ],
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppSizes.radius * 2),
-          topRight: Radius.circular(AppSizes.radius * 2),
-        ),
-        body: Scaffold(
-          appBar: _AppBar(searchFieldController: searchFieldController),
-          body: _ProductGrid(
-            scrollController: scrollController,
-            searchFieldController: searchFieldController,
-            onRefresh: onRefresh,
-          ),
-        ),
-        header: CartPanelHeader(panelController: panelController),
-        panel: CartPanelBody(panelController: panelController),
-        footer: CartPanelFooter(panelController: panelController),
-        onPanelOpened: () => ref.read(homeNotifierProvider.notifier).onChangedIsPanelExpanded(true),
-        onPanelClosed: () => ref.read(homeNotifierProvider.notifier).onChangedIsPanelExpanded(false),
       ),
     );
   }

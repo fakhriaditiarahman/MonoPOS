@@ -154,6 +154,14 @@ class DatabaseService {
         "UPDATE '${DatabaseConfig.userTableName}' SET password = ? WHERE id = ? AND (password IS NULL OR password = '')",
         [user['password'], user['id']],
       );
+
+      // Fix: ensure admin users keep admin role after migration (role column default is 'kasir')
+      if (user['role'] == 'admin') {
+        await db.rawUpdate(
+          "UPDATE '${DatabaseConfig.userTableName}' SET role = 'admin' WHERE id = ? AND (role IS NULL OR role != 'admin')",
+          [user['id']],
+        );
+      }
     }
   }
 
