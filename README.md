@@ -223,6 +223,8 @@ This project includes documentation files designed for AI coding agents (e.g., C
 - [`UI.md`](UI.md) — UI reference (layouts, components, design specs)
 - [`DATABASE.md`](DATABASE.md) — Database schema reference (tables, columns)
 - [`WORKFLOW.md`](WORKFLOW.md) — Git workflow (commits, branches, PRs)
+- [`DOKU_PAYMENT_GATEWAY.md`](DOKU_PAYMENT_GATEWAY.md) — Doku SNAP QRIS integration (API, signature, webhook)
+- [`SYNC.md`](SYNC.md) — Offline-first sync architecture
 
 ## Contributing
 

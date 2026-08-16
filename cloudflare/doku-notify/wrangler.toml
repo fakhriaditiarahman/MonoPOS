@@ -1,0 +1,15 @@
+name = "doku-notify"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# Idempotency + token cache (optional but recommended)
+[[kv_namespaces]]
+binding = "DOKU_NOTIFY_KV"
+id = "02e3751cb32b4402a546c69a0f9303db"
+
+[vars]
+DOKU_IS_SANDBOX = "true"
