@@ -27,5 +27,7 @@ abstract class TransactionDatasource {
     String userId, {
     required String startDate,
     required String endDate,
+    String? paymentStatus,
+    bool showAllUsers = false,
   });
 }

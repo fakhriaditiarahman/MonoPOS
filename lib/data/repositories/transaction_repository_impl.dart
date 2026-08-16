@@ -143,12 +143,16 @@ class TransactionRepositoryImpl extends TransactionRepository {
     String userId, {
     required String startDate,
     required String endDate,
+    String? paymentStatus,
+    bool showAllUsers = false,
   }) async {
     try {
       var local = await transactionLocalDatasource.getTransactionsByDateRange(
         userId,
         startDate: startDate,
         endDate: endDate,
+        paymentStatus: paymentStatus,
+        showAllUsers: showAllUsers,
       );
 
       if (local.isFailure) return Result.failure(error: local.error!);

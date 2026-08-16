@@ -14,6 +14,8 @@ class GetDailyRevenueUsecase extends Usecase<Result, GetDailyRevenueParams> {
       params.userId,
       startDate: params.startDate,
       endDate: params.endDate,
+      paymentStatus: params.paymentStatus,
+      showAllUsers: params.showAllUsers,
     );
   }
 }
@@ -22,10 +24,14 @@ class GetDailyRevenueParams {
   final String userId;
   final String startDate;
   final String endDate;
+  final String? paymentStatus;
+  final bool showAllUsers;
 
   const GetDailyRevenueParams({
     required this.userId,
     required this.startDate,
     required this.endDate,
+    this.paymentStatus,
+    this.showAllUsers = false,
   });
 }

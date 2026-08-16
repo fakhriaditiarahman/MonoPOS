@@ -30,5 +30,7 @@ abstract class TransactionRepository {
     String userId, {
     required String startDate,
     required String endDate,
+    String? paymentStatus,
+    bool showAllUsers = false,
   });
 }

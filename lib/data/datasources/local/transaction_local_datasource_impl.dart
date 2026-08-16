@@ -333,13 +333,27 @@ class TransactionLocalDatasourceImpl extends TransactionDatasource {
     String userId, {
     required String startDate,
     required String endDate,
+    String? paymentStatus,
+    bool showAllUsers = false,
   }) async {
     try {
       final transactions = await _databaseService.database.transaction((trx) async {
+        var conditions = <String>['createdAt >= ?', 'createdAt <= ?'];
+        var args = <dynamic>[startDate, endDate];
+
+        if (!showAllUsers) {
+          conditions.insert(0, 'createdById = ?');
+          args.insert(0, userId);
+        }
+        if (paymentStatus != null) {
+          conditions.add('paymentStatus = ?');
+          args.add(paymentStatus);
+        }
+
         var rawTransactions = await trx.query(
           DatabaseConfig.transactionTableName,
-          where: 'createdById = ? AND createdAt >= ? AND createdAt <= ?',
-          whereArgs: [userId, startDate, endDate],
+          where: conditions.join(' AND '),
+          whereArgs: args,
           orderBy: 'createdAt DESC',
         );
 

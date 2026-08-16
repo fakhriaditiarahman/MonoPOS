@@ -23,6 +23,7 @@ class RevenueNotifier extends Notifier<RevenueState> {
 
     var authState = ref.read(authNotifierProvider);
     var userId = authState.user?.id ?? '';
+    var isAdmin = authState.user?.role?.value == 'admin';
     if (userId.isEmpty) {
       state = state.copyWith(isLoading: false, revenues: []);
       return;
@@ -32,8 +33,10 @@ class RevenueNotifier extends Notifier<RevenueState> {
     var res = await GetDailyRevenueUsecase(repo).call(
       GetDailyRevenueParams(
         userId: userId,
-        startDate: '$startDate 00:00:00',
-        endDate: '$endDate 23:59:59',
+        startDate: '${startDate}T00:00:00',
+        endDate: '${endDate}T23:59:59',
+        paymentStatus: 'paid',
+        showAllUsers: isAdmin,
       ),
     );
 

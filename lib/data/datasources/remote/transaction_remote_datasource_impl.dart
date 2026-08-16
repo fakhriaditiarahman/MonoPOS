@@ -160,18 +160,27 @@ class TransactionRemoteDatasourceImpl extends TransactionDatasource {
     String userId, {
     required String startDate,
     required String endDate,
+    String? paymentStatus,
+    bool showAllUsers = false,
   }) async {
     try {
       final client = _client;
       if (client == null) return Result.success(data: []);
 
-      final res = await client
+      var query = client
           .from(SupabaseConfig.transactionsTable)
           .select()
-          .eq('createdById', userId)
           .gte('createdAt', startDate)
-          .lte('createdAt', endDate)
-          .order('createdAt', ascending: false);
+          .lte('createdAt', endDate);
+
+      if (!showAllUsers) {
+        query = query.eq('createdById', userId);
+      }
+      if (paymentStatus != null) {
+        query = query.eq('paymentStatus', paymentStatus);
+      }
+
+      final res = await query.order('createdAt', ascending: false);
 
       final transactions = <TransactionModel>[];
       for (final row in res) {
