@@ -42,6 +42,9 @@ migrate_working_dir/
 lib/firebase_options.dart
 .env
 
+# Docs (kept local only)
+DOKU_PAYMENT_GATEWAY.md
+
 # Symbolication related
 app.*.symbols
 
