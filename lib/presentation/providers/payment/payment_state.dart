@@ -1,6 +1,6 @@
 import '../../../domain/entities/transaction_entity.dart';
 
-class DokuPaymentState {
+class KlikQrisPaymentState {
   final TransactionEntity? transaction;
   final String qrCode;
   final String paymentStatus;
@@ -9,10 +9,11 @@ class DokuPaymentState {
   final int elapsedSeconds;
   final bool autoCheckDone;
   final bool isManualChecking;
-  final String partnerReferenceNo;
-  final String referenceNo;
+  final String orderId;
+  final String signature;
+  final int totalAmount;
 
-  const DokuPaymentState({
+  const KlikQrisPaymentState({
     this.transaction,
     this.qrCode = '',
     this.paymentStatus = 'pending',
@@ -21,11 +22,12 @@ class DokuPaymentState {
     this.elapsedSeconds = 0,
     this.autoCheckDone = false,
     this.isManualChecking = false,
-    this.partnerReferenceNo = '',
-    this.referenceNo = '',
+    this.orderId = '',
+    this.signature = '',
+    this.totalAmount = 0,
   });
 
-  DokuPaymentState copyWith({
+  KlikQrisPaymentState copyWith({
     TransactionEntity? transaction,
     String? qrCode,
     String? paymentStatus,
@@ -34,10 +36,11 @@ class DokuPaymentState {
     int? elapsedSeconds,
     bool? autoCheckDone,
     bool? isManualChecking,
-    String? partnerReferenceNo,
-    String? referenceNo,
+    String? orderId,
+    String? signature,
+    int? totalAmount,
   }) {
-    return DokuPaymentState(
+    return KlikQrisPaymentState(
       transaction: transaction ?? this.transaction,
       qrCode: qrCode ?? this.qrCode,
       paymentStatus: paymentStatus ?? this.paymentStatus,
@@ -46,8 +49,9 @@ class DokuPaymentState {
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       autoCheckDone: autoCheckDone ?? this.autoCheckDone,
       isManualChecking: isManualChecking ?? this.isManualChecking,
-      partnerReferenceNo: partnerReferenceNo ?? this.partnerReferenceNo,
-      referenceNo: referenceNo ?? this.referenceNo,
+      orderId: orderId ?? this.orderId,
+      signature: signature ?? this.signature,
+      totalAmount: totalAmount ?? this.totalAmount,
     );
   }
 

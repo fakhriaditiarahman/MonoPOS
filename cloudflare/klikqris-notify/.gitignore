@@ -1,0 +1,6 @@
+node_modules/
+.dev.vars
+!package.json
+!package-lock.json
+!tsconfig.json
+!.dev.vars.example

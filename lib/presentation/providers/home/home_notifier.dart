@@ -90,8 +90,8 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         paymentStatus: 'pending',
       );
 
-      final qrisNotifier = ref.read(dokuPaymentNotifierProvider.notifier);
-      var res = await qrisNotifier.startDokuPayment(
+      final qrisNotifier = ref.read(klikQrisPaymentNotifierProvider.notifier);
+      var res = await qrisNotifier.startKlikQrisPayment(
         transaction: transaction,
         totalAmount: getTotalAmount(),
       );

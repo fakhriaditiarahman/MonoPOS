@@ -4,30 +4,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
-import '../../../core/constants/constants.dart';
+import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/usecases/transaction_usecases.dart';
 import '../../widgets/app_snack_bar.dart';
 import 'payment_state.dart';
 
-final dokuPaymentNotifierProvider = NotifierProvider.autoDispose<DokuPaymentNotifier, DokuPaymentState>(
-  DokuPaymentNotifier.new,
+final klikQrisPaymentNotifierProvider = NotifierProvider<KlikQrisPaymentNotifier, KlikQrisPaymentState>(
+  KlikQrisPaymentNotifier.new,
 );
 
-class DokuPaymentNotifier extends AutoDisposeNotifier<DokuPaymentState> {
+class KlikQrisPaymentNotifier extends Notifier<KlikQrisPaymentState> {
   Timer? _pollTimer;
   Timer? _elapsedTimer;
 
   @override
-  DokuPaymentState build() {
+  KlikQrisPaymentState build() {
     ref.onDispose(() {
       _pollTimer?.cancel();
       _elapsedTimer?.cancel();
     });
-    return const DokuPaymentState();
+    return const KlikQrisPaymentState();
   }
 
-  Future<Result<int>> startDokuPayment({
+  Future<Result<int>> startKlikQrisPayment({
     required TransactionEntity transaction,
     required int totalAmount,
   }) async {
@@ -46,52 +46,50 @@ class DokuPaymentNotifier extends AutoDisposeNotifier<DokuPaymentState> {
       final transactionId = saveResult.data!;
       final orderId = transactionId.toString();
 
-      final dokuService = ref.read(dokuPaymentServiceProvider);
-      final qrisResult = await dokuService.generateQris(
+      final klikQrisService = ref.read(klikQrisPaymentServiceProvider);
+      final qrisResult = await klikQrisService.generateQris(
         orderId: orderId,
         grossAmount: totalAmount,
       );
 
       if (qrisResult.isFailure) {
         await DeleteTransactionUsecase(transactionRepo).call(transactionId);
-        return Result.failure(error: qrisResult.error ?? 'Failed to create Doku QRIS invoice');
+        state = state.copyWith(isPolling: false, errorMessage: qrisResult.error?.toString());
+        return Result.failure(error: qrisResult.error ?? 'Failed to create KlikQRIS invoice');
       }
 
       final qrisData = qrisResult.data!;
+      final paymentQR = qrisData.qrImageBase64.isNotEmpty ? qrisData.qrImageBase64 : qrisData.qrUrl;
+      final paymentTimeout = qrisData.expiredMinutes * 60;
+
+      cl(
+        '[KlikQRIS] paymentQR: len=${paymentQR.length} prefix=${paymentQR.length > 20 ? paymentQR.substring(0, 20) : paymentQR}',
+      );
 
       await UpdatePaymentStatusUsecase(transactionRepo).call(
         transactionId,
         'pending',
-        paymentQR: qrisData.qrContent,
-        paymentExternalId: qrisData.partnerReferenceNo,
-      );
-
-      // Print QR slip
-      final printer = ref.read(printerServiceProvider);
-      final storeName = ref.read(sharedPreferencesProvider).getString(Constants.storeNameKey) ?? '';
-      await printer.printQrCode(
-        qrData: qrisData.qrContent,
-        totalAmount: totalAmount,
-        storeName: storeName,
-        merchantName: 'Doku QRIS',
+        paymentQR: paymentQR,
+        paymentExternalId: qrisData.orderId,
       );
 
       state = state.copyWith(
         transaction: transaction.copyWith(
           id: transactionId,
           paymentStatus: 'pending',
-          paymentQR: qrisData.qrContent,
-          paymentExternalId: qrisData.partnerReferenceNo,
+          paymentQR: paymentQR,
+          paymentExternalId: qrisData.orderId,
         ),
-        qrCode: qrisData.qrContent,
+        qrCode: paymentQR,
         paymentStatus: 'pending',
         isPolling: false,
         elapsedSeconds: 0,
-        partnerReferenceNo: qrisData.partnerReferenceNo,
-        referenceNo: qrisData.referenceNo,
+        orderId: qrisData.orderId,
+        signature: qrisData.signature,
+        totalAmount: qrisData.totalAmount,
       );
 
-      _startPolling(transactionId);
+      _startPolling(transactionId, paymentTimeout);
 
       return Result.success(data: transactionId);
     } catch (e) {
@@ -100,12 +98,12 @@ class DokuPaymentNotifier extends AutoDisposeNotifier<DokuPaymentState> {
     }
   }
 
-  void _startPolling(int transactionId) {
+  void _startPolling(int transactionId, int timeoutSeconds) {
     _pollTimer?.cancel();
     _elapsedTimer?.cancel();
 
     _elapsedTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (state.elapsedSeconds >= 1800) {
+      if (state.elapsedSeconds >= timeoutSeconds) {
         _onPaymentFailed('Waktu pembayaran habis');
         return;
       }
@@ -116,17 +114,14 @@ class DokuPaymentNotifier extends AutoDisposeNotifier<DokuPaymentState> {
   }
 
   Future<void> _autoPollStatus(int transactionId) async {
-    final dokuService = ref.read(dokuPaymentServiceProvider);
+    final klikQrisService = ref.read(klikQrisPaymentServiceProvider);
     int attempts = 0;
 
     while (state.paymentStatus == 'pending' && attempts < 3) {
       await Future.delayed(const Duration(seconds: 15));
       attempts++;
 
-      final result = await dokuService.queryQrisStatus(
-        partnerReferenceNo: state.partnerReferenceNo,
-        referenceNo: state.referenceNo,
-      );
+      final result = await klikQrisService.queryQrisStatus(orderId: state.orderId);
 
       if (result.isFailure) continue;
 
@@ -148,11 +143,8 @@ class DokuPaymentNotifier extends AutoDisposeNotifier<DokuPaymentState> {
 
     state = state.copyWith(isManualChecking: true);
 
-    final dokuService = ref.read(dokuPaymentServiceProvider);
-    final result = await dokuService.queryQrisStatus(
-      partnerReferenceNo: state.partnerReferenceNo,
-      referenceNo: state.referenceNo,
-    );
+    final klikQrisService = ref.read(klikQrisPaymentServiceProvider);
+    final result = await klikQrisService.queryQrisStatus(orderId: state.orderId);
 
     if (result.isSuccess && result.data == 'paid') {
       _onPaymentSuccess(state.transaction!.id!);
@@ -194,6 +186,6 @@ class DokuPaymentNotifier extends AutoDisposeNotifier<DokuPaymentState> {
   void reset() {
     _pollTimer?.cancel();
     _elapsedTimer?.cancel();
-    state = const DokuPaymentState();
+    state = const KlikQrisPaymentState();
   }
 }

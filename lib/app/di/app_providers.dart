@@ -9,7 +9,7 @@ import '../../core/services/connectivity/ping_service.dart';
 import '../../core/services/database/database_service.dart';
 import '../../core/services/info/device_info_service.dart';
 import '../../core/services/logger/error_logger_service.dart';
-import '../../core/services/payment/doku_payment_service.dart';
+import '../../core/services/payment/klik_qris_payment_service.dart';
 import '../../core/services/printer/printer_service.dart';
 import '../../core/services/supabase/supabase_config.dart';
 import '../../core/services/supabase/supabase_service.dart';
@@ -86,8 +86,8 @@ final printerServiceProvider = Provider<PrinterService>((ref) {
   return service;
 });
 
-final dokuPaymentServiceProvider = Provider<DokuPaymentService>(
-  (ref) => DokuPaymentService(ref.watch(sharedPreferencesProvider)),
+final klikQrisPaymentServiceProvider = Provider<KlikQrisPaymentService>(
+  (ref) => KlikQrisPaymentService(ref.watch(sharedPreferencesProvider)),
 );
 
 // Sync

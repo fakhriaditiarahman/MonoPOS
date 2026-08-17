@@ -12,13 +12,10 @@ class Constants {
   static const String storeAddressKey = 'store_address';
   static const String receiptFooterKey = 'receipt_footer';
 
-  // Doku Payment Gateway settings (SNAP QRIS)
-  static const String dokuClientId = 'doku_client_id';
-  static const String dokuClientSecret = 'doku_client_secret';
-  static const String dokuMerchantId = 'doku_merchant_id';
-  static const String dokuTerminalId = 'doku_terminal_id';
-  static const String dokuPrivateKey = 'doku_private_key';
-  static const String dokuIsSandbox = 'doku_is_sandbox';
+  // KlikQRIS Payment Gateway settings
+  static const String klikQrisApiKey = 'klikqris_api_key';
+  static const String klikQrisMerchantId = 'klikqris_merchant_id';
+  static const String klikQrisIsSandbox = 'klikqris_is_sandbox';
 
   static const int minSyncIntervalToleranceForCriticalInMinutes = 5;
   static const int minSyncIntervalToleranceForLessCriticalInMinutes = 100;

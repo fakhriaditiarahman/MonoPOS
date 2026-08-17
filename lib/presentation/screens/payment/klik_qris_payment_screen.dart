@@ -1,29 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/themes/app_colors.dart';
 import '../../../core/themes/app_sizes.dart';
+import '../../../core/utilities/console_logger.dart';
 import '../../../core/utilities/currency_formatter.dart';
 import '../../../generated/app_localizations.dart';
 import '../../providers/payment/payment_notifier.dart';
 import '../../providers/payment/payment_state.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_progress_indicator.dart';
+import '../../widgets/app_snack_bar.dart';
 
-class DokuPaymentScreen extends ConsumerStatefulWidget {
-  const DokuPaymentScreen({super.key});
+class KlikQrisPaymentScreen extends ConsumerStatefulWidget {
+  const KlikQrisPaymentScreen({super.key});
 
   @override
-  ConsumerState<DokuPaymentScreen> createState() => _DokuPaymentScreenState();
+  ConsumerState<KlikQrisPaymentScreen> createState() => _KlikQrisPaymentScreenState();
 }
 
-class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
+class _KlikQrisPaymentScreenState extends ConsumerState<KlikQrisPaymentScreen> {
+  late final KlikQrisPaymentNotifier _notifier;
   bool _navigated = false;
 
   @override
+  void initState() {
+    super.initState();
+    _notifier = ref.read(klikQrisPaymentNotifierProvider.notifier);
+  }
+
+  @override
+  void dispose() {
+    _notifier.reset();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final state = ref.watch(dokuPaymentNotifierProvider);
+    final state = ref.watch(klikQrisPaymentNotifierProvider);
 
     if (state.isPaid && !_navigated) {
       _navigated = true;
@@ -50,7 +66,7 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
     );
   }
 
-  Widget _buildContent(DokuPaymentState state) {
+  Widget _buildContent(KlikQrisPaymentState state) {
     if (state.errorMessage != null && state.qrCode.isEmpty) {
       return Center(
         child: Padding(
@@ -76,7 +92,7 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
               AppButton(
                 text: AppLocalizations.of(context)!.home_cancel,
                 onTap: () {
-                  ref.read(dokuPaymentNotifierProvider.notifier).reset();
+                  _notifier.reset();
                   context.pop();
                 },
               ),
@@ -116,6 +132,8 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
     final minutes = (state.elapsedSeconds ~/ 60).toString().padLeft(2, '0');
     final seconds = (state.elapsedSeconds % 60).toString().padLeft(2, '0');
 
+    final displayAmount = state.totalAmount > 0 ? state.totalAmount : state.transaction?.totalAmount ?? 0;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSizes.padding),
       child: Center(
@@ -131,7 +149,7 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
               ),
               const SizedBox(height: AppSizes.padding / 2),
               Text(
-                CurrencyFormatter.format(state.transaction?.totalAmount ?? 0),
+                CurrencyFormatter.format(displayAmount),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -194,13 +212,55 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
                   color: Theme.of(context).colorScheme.outline,
                 ),
               ),
+              if (state.signature.isNotEmpty) ...[
+                const SizedBox(height: AppSizes.padding * 2),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSizes.padding),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(AppSizes.radius),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sandbox: salin signature untuk Simulasi Pembayaran',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: AppSizes.padding / 2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              state.signature,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.copy, size: 18),
+                            tooltip: 'Salin signature',
+                            onPressed: () => _copySignature(state.signature),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               if (state.autoCheckDone) ...[
                 const SizedBox(height: AppSizes.padding * 2),
                 AppButton(
                   text: state.isManualChecking ? 'Memeriksa...' : 'Cek Pembayaran',
                   enabled: !state.isManualChecking,
                   onTap: () {
-                    ref.read(dokuPaymentNotifierProvider.notifier).checkPaymentManually();
+                    _notifier.checkPaymentManually();
                   },
                 ),
               ],
@@ -213,12 +273,14 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
 
   Widget _buildQrDisplay(String qrData) {
     if (qrData.startsWith('http://') || qrData.startsWith('https://')) {
+      cl('[KlikQRIS] QR display: network URL len=${qrData.length}');
       return Image.network(
         qrData,
         width: 220,
         height: 220,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
+          cl('[KlikQRIS] QR display: network error $error');
           return _FallbackQrDisplay(qrData: qrData);
         },
         loadingBuilder: (context, child, loadingProgress) {
@@ -228,6 +290,12 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
       );
     }
 
+    if (qrData.startsWith('data:image')) {
+      cl('[KlikQRIS] QR display: base64 len=${qrData.length}');
+      return _Base64QrDisplay(base64Data: qrData);
+    }
+
+    cl('[KlikQRIS] QR display: fallback (prefix="${qrData.length > 12 ? qrData.substring(0, 12) : qrData}")');
     return _FallbackQrDisplay(qrData: qrData);
   }
 
@@ -236,7 +304,7 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Batalkan Pembayaran?'),
-        content: const Text('Pembayaran Doku QRIS akan dibatalkan.'),
+        content: const Text('Pembayaran KlikQRIS akan dibatalkan.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
@@ -245,7 +313,7 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              ref.read(dokuPaymentNotifierProvider.notifier).cancelPolling();
+              _notifier.cancelPolling();
               context.pop();
             },
             child: const Text('Ya, Batalkan'),
@@ -253,6 +321,11 @@ class _DokuPaymentScreenState extends ConsumerState<DokuPaymentScreen> {
         ],
       ),
     );
+  }
+
+  void _copySignature(String signature) {
+    Clipboard.setData(ClipboardData(text: signature));
+    AppSnackBar.show('Signature disalin');
   }
 }
 
@@ -283,5 +356,43 @@ class _FallbackQrDisplay extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _Base64QrDisplay extends StatelessWidget {
+  final String base64Data;
+
+  const _Base64QrDisplay({required this.base64Data});
+
+  @override
+  Widget build(BuildContext context) {
+    try {
+      final dataUri = Uri.tryParse(base64Data)?.data;
+      final bytes = dataUri?.contentAsBytes();
+
+      if (bytes == null || bytes.isEmpty) {
+        cl('[KlikQRIS] QR display: base64 decode returned empty');
+        return const _FallbackQrDisplay(qrData: '');
+      }
+
+      cl('[KlikQRIS] QR display: base64 decoded ${bytes.length} bytes');
+      return Image.memory(
+        bytes,
+        width: 220,
+        height: 220,
+        fit: BoxFit.contain,
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded || frame != null) return child;
+          return const AppProgressIndicator();
+        },
+        errorBuilder: (context, error, stackTrace) {
+          cl('[KlikQRIS] QR display: image decode error $error');
+          return const _FallbackQrDisplay(qrData: '');
+        },
+      );
+    } catch (e) {
+      cl('[KlikQRIS] QR display: base64 decode exception $e');
+      return const _FallbackQrDisplay(qrData: '');
+    }
   }
 }

@@ -1,0 +1,15 @@
+name = "klikqris-notify"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# Idempotency dedup (optional but recommended)
+[[kv_namespaces]]
+binding = "KLIKQRIS_NOTIFY_KV"
+id = "2079ccea31eb479aa08f2c437606c7d4"
+
+[vars]
+KLIKQRIS_VERIFY_SIGNATURE = "false"
