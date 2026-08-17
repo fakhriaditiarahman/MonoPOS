@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../../core/common/result.dart';
 import '../../../core/services/sync/sync_service.dart';
+import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/queued_action_entity.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/repositories/queued_action_repository.dart';
@@ -188,13 +189,24 @@ class TransactionRepositoryImpl extends TransactionRepository {
     required String method,
     required Map<String, dynamic> param,
   }) async {
-    if (transactionRemoteDatasource == null) return;
+    if (transactionRemoteDatasource == null) {
+      cw('Sync transaksi nonaktif — Supabase tidak dikonfigurasi ($method)');
+      return;
+    }
 
     if (syncService.isOnline) {
       try {
         final result = await remoteCall();
         if (result?.isSuccess == true) return;
-      } catch (_) {}
+
+        ce(
+          result?.error ?? 'Sync gagal',
+          title: 'Sync transaksi gagal — $method',
+          message: 'Ditambahkan ke antrian sync',
+        );
+      } catch (e) {
+        ce(e, title: 'Sync transaksi error — $method');
+      }
     }
 
     await queuedActionRepository.createQueuedAction(

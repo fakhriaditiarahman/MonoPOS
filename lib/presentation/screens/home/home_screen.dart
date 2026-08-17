@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
+import '../../../core/services/supabase/supabase_config.dart';
 import '../../../core/services/sync/sync_service.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../domain/entities/product_entity.dart';
@@ -449,10 +450,13 @@ class _SyncButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isConfigured = SupabaseConfig.isConfigured;
     final isHasQueuedActions = ref.watch(mainNotifierProvider.select((p) => p.isHasQueuedActions));
     final isSyncronizing = ref.watch(mainNotifierProvider.select((p) => p.isSyncronizing));
 
-    final (IconData icon, Color color, String label) = isSyncronizing
+    final (IconData icon, Color color, String label) = !isConfigured
+        ? (Icons.cloud_off_sharp, Theme.of(context).colorScheme.error, 'Sync off')
+        : isSyncronizing
         ? (Icons.sync, Theme.of(context).colorScheme.primary, 'Sync...')
         : isHasQueuedActions
         ? (Icons.sync_problem_sharp, Colors.orange, 'Pending')
@@ -482,7 +486,14 @@ class _SyncButton extends ConsumerWidget {
           ],
         ),
         onTap: () {
-          ref.read(mainNotifierProvider.notifier).getUserData();
+          if (!SupabaseConfig.isConfigured) {
+            AppSnackBar.show('Sync nonaktif: build tanpa config.json (--dart-define-from-file config.json)');
+            return;
+          }
+
+          final notifier = ref.read(mainNotifierProvider.notifier);
+          notifier.syncNow();
+          notifier.getUserData();
           final syncState = ref.read(mainNotifierProvider);
           final msg = syncState.isSyncronizing
               ? 'Sync: Mengirim data antrian...'

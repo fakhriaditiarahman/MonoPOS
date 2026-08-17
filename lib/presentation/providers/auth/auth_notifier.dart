@@ -23,16 +23,24 @@ class AuthNotifier extends Notifier<AuthState> {
     final result = await usecase.call(username: username, password: password);
 
     if (result.isSuccess) {
-      state = AuthState(user: result.data, isChecking: false);
-
       final userRepository = ref.read(userRepositoryProvider);
       final getUsecase = GetUserUsecase(userRepository);
       final existingUser = await getUsecase.call(result.data!.id);
 
+      var loggedInUser = result.data!;
+
       if (existingUser.isSuccess && existingUser.data == null) {
         final createUsecase = CreateUserUsecase(userRepository);
-        await createUsecase.call(result.data!);
+        await createUsecase.call(loggedInUser);
+      } else if (existingUser.isSuccess && existingUser.data != null) {
+        // Local DB is the source of truth for roles; prefer it over the remote profile.
+        final localRole = existingUser.data!.role;
+        if (localRole != null && localRole != loggedInUser.role) {
+          loggedInUser = loggedInUser.copyWith(role: localRole);
+        }
       }
+
+      state = AuthState(user: loggedInUser, isChecking: false);
     } else {
       state = state.copyWith(
         isChecking: false,

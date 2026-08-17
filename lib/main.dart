@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/app.dart';
 import 'app/di/app_providers.dart';
 import 'core/services/supabase/supabase_service.dart';
+import 'core/utilities/console_logger.dart';
 
 void main() async {
   // Initialize binding
@@ -15,7 +16,10 @@ void main() async {
   final sharedPreferences = await SharedPreferences.getInstance();
 
   // Initialize Supabase (if configured)
-  await SupabaseService.initialize();
+  final supabaseReady = await SupabaseService.initialize();
+  if (!supabaseReady) {
+    cw('Supabase tidak dikonfigurasi — sync & remote nonaktif. Jalankan dengan --dart-define-from-file config.json');
+  }
 
   // Set/lock screen orientation
   await SystemChrome.setPreferredOrientations([]);

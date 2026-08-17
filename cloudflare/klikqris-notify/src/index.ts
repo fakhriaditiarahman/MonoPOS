@@ -92,6 +92,13 @@ export default {
       return json({ message: 'Upstream update failed' }, 502);
     }
 
+    if (!result.matched) {
+      // No matching transaction yet (e.g. the app syncs paymentExternalId later).
+      // Do NOT mark KV processed so KlikQRIS retries once the row exists.
+      console.warn('Transaction not found, deferring', { orderId, status: statusCode });
+      return json({ status: false, message: 'Transaction not found, retry later' }, 202);
+    }
+
     // Mark processed only after a successful update (so retries actually update).
     if (env.KLIKQRIS_NOTIFY_KV) {
       await env.KLIKQRIS_NOTIFY_KV.put(`${KV_ORDER_ID_PREFIX}${orderId}`, '1', {

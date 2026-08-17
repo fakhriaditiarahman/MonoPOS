@@ -69,6 +69,8 @@ class MainNotifier extends Notifier<MainState> {
     syncService.toggleMode();
   }
 
+  Future<void> syncNow() => _processQueuedActions();
+
   void _registerConnectivityListener() {
     if (_listenerRegistered) return;
     _listenerRegistered = true;

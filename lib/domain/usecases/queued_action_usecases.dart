@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../core/common/result.dart';
 import '../../core/usecase/usecase.dart';
+import '../../core/utilities/console_logger.dart';
 import '../../data/datasources/interfaces/product_datasource.dart';
 import '../../data/datasources/interfaces/transaction_datasource.dart';
 import '../../data/datasources/interfaces/user_datasource.dart';
@@ -106,8 +107,15 @@ class ProcessQueuedActionUsecase extends Usecase<Result<void>, QueuedActionEntit
         return Result.success(data: null);
       }
 
+      ce(
+        result?.error ?? 'Sync gagal',
+        title: 'Replay antrian gagal — ${params.repository}/${params.method}',
+        state: 'actionId: ${params.id}',
+      );
+
       return Result.failure(error: result?.error ?? 'Sync failed');
     } catch (e) {
+      ce(e, title: 'Replay antrian error — ${params.repository}/${params.method}');
       return Result.failure(error: e);
     }
   }
