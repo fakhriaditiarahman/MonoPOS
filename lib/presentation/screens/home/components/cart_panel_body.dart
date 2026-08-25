@@ -61,6 +61,7 @@ class _OrderList extends ConsumerWidget {
                 priceType: homeState.orderedProducts[i].priceType,
                 unit: homeState.orderedProducts[i].unit,
                 initialQuantity: homeState.orderedProducts[i].quantity,
+                conversionValue: homeState.orderedProducts[i].conversionValue,
                 onChangedQuantity: (val) {
                   ref.read(homeNotifierProvider.notifier).onChangedOrderedProductQuantity(i, val);
                 },

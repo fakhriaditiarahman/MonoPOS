@@ -399,7 +399,7 @@ class _WholesalePriceField extends StatelessWidget {
   }
 }
 
-class _StockField extends StatelessWidget {
+class _StockField extends ConsumerWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
 
@@ -409,18 +409,60 @@ class _StockField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final units = ref.watch(productFormNotifierProvider.select((s) => s.units));
+    final stockUnit = ref.watch(productFormNotifierProvider.select((s) => s.stockUnit));
+    final unitNames = units.map((u) => u.unitName).toList();
+
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: AppTextField(
-        controller: controller,
-        labelText: AppLocalizations.of(context)!.product_stockLabel,
-        hintText: AppLocalizations.of(context)!.product_stockHint,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        onChanged: onChanged,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppTextField(
+            controller: controller,
+            labelText: AppLocalizations.of(context)!.product_stockLabel,
+            hintText: AppLocalizations.of(context)!.product_stockHint,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: onChanged,
+          ),
+          const SizedBox(height: 8),
+          if (unitNames.length > 1) ...[
+            AppDropDown(
+              labelText: '${AppLocalizations.of(context)!.product_stockLabel} satuan',
+              selectedValue: stockUnit,
+              dropdownItems: unitNames
+                  .map(
+                    (name) => DropdownMenuItem(value: name, child: Text(name)),
+                  )
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) {
+                  ref.read(productFormNotifierProvider.notifier).onChangedStockUnit(v);
+                }
+              },
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _conversionHint(units, stockUnit),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+          ],
+        ],
       ),
     );
+  }
+
+  String _conversionHint(List<ProductUnitEntity> units, String stockUnit) {
+    final base = units.where((u) => u.isBase).firstOrNull;
+    final selected = units.where((u) => u.unitName == stockUnit).firstOrNull;
+
+    if (base == null || selected == null || selected.isBase) return '';
+    return '1 $stockUnit = ${selected.conversionValue} ${base.unitName}. Stok dikonversi otomatis ke ${base.unitName}.';
   }
 }
 

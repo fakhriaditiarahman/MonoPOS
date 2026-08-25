@@ -23,6 +23,7 @@ class OrderCard extends StatefulWidget {
   final List<String>? availableUnits;
   final String? selectedUnit;
   final ValueChanged<String?>? onChangedUnit;
+  final int conversionValue;
 
   const OrderCard({
     super.key,
@@ -39,6 +40,7 @@ class OrderCard extends StatefulWidget {
     this.availableUnits,
     this.selectedUnit,
     this.onChangedUnit,
+    this.conversionValue = 1,
   });
 
   @override
@@ -73,6 +75,11 @@ class _OrderCardState extends State<OrderCard> {
 
   String _formatQty(double val) {
     return val == val.roundToDouble() ? val.toInt().toString() : val.toStringAsFixed(1);
+  }
+
+  int _stockInSelectedUnit() {
+    if (widget.conversionValue <= 1) return widget.stock;
+    return (widget.stock / widget.conversionValue).floor();
   }
 
   void _updateQuantity(double val) {
@@ -153,7 +160,7 @@ class _OrderCardState extends State<OrderCard> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${AppLocalizations.of(context)!.cart_stock(widget.stock)} ${widget.selectedUnit ?? widget.unit}',
+                          '${AppLocalizations.of(context)!.cart_stock(_stockInSelectedUnit())} ${widget.selectedUnit ?? widget.unit}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
                         ),
                         const SizedBox(height: 6),

@@ -16,9 +16,10 @@ import '../auth/auth_notifier.dart';
 import 'product_form_state.dart';
 import 'products_notifier.dart';
 
-final productFormNotifierProvider = NotifierProvider.autoDispose<ProductFormNotifier, ProductFormState>(
-  ProductFormNotifier.new,
-);
+final productFormNotifierProvider =
+    NotifierProvider.autoDispose<ProductFormNotifier, ProductFormState>(
+      ProductFormNotifier.new,
+    );
 
 class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   @override
@@ -54,6 +55,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         price: product?.price,
         wholesalePrice: product?.wholesalePrice,
         stock: product?.stock,
+        stockUnit: _findBaseUnitName(product?.units ?? const []),
         unit: defaultUnit,
         barcode: product?.barcode,
         description: product?.description,
@@ -69,7 +71,9 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
       for (int i = 0; i < units.length; i++) {
         final unit = units[i];
         if (unit.id != null && unit.id! > 0) {
-          final tierRes = await GetProductTiersUsecase(productRepository).call(unit.id!);
+          final tierRes = await GetProductTiersUsecase(
+            productRepository,
+          ).call(unit.id!);
           if (tierRes.isSuccess && tierRes.data!.isNotEmpty) {
             tierMap[i] = tierRes.data!;
           }
@@ -83,7 +87,11 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     }
   }
 
-  Future<String?> _saveImageLocally(File source, String subDir, String fileName) async {
+  Future<String?> _saveImageLocally(
+    File source,
+    String subDir,
+    String fileName,
+  ) async {
     try {
       final appDir = await getApplicationDocumentsDirectory();
       final targetDir = Directory('${appDir.path}/$subDir');
@@ -121,7 +129,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         createdById: userId,
         name: state.name ?? '',
         imageUrl: imageUrl ?? '',
-        stock: state.stock ?? 0,
+        stock: _convertStockToBase(state.stock ?? 0, state.stockUnit),
         price: state.price ?? 0,
         wholesalePrice: state.wholesalePrice,
         unit: state.unit,
@@ -166,7 +174,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         createdById: userId,
         name: state.name!,
         imageUrl: imageUrl ?? '',
-        stock: state.stock ?? 0,
+        stock: _convertStockToBase(state.stock ?? 0, state.stockUnit),
         price: state.price ?? 0,
         wholesalePrice: state.wholesalePrice,
         unit: state.unit,
@@ -240,29 +248,62 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     state = state.copyWith(stock: int.tryParse(value));
   }
 
+  void onChangedStockUnit(String value) {
+    state = state.copyWith(stockUnit: value);
+  }
+
   void onChangedUnit(String value) {
     state = state.copyWith(unit: value);
     _ensureDefaultUnitInList(value);
   }
 
   void _ensureDefaultUnitInList(String defaultUnit) {
-    // Ensure default unit exists in units list
+    // Base unit (smallest) always stays pcs so stock conversion math stays correct.
     final units = [...state.units];
-    final unitExists = units.any((u) => u.unitName == defaultUnit);
-
-    if (!unitExists) {
-      // Create default unit with 0 price initially (user must fill in)
-      final defaultUnitEntity = ProductUnitEntity(
-        unitName: defaultUnit,
-        conversionValue: 1,
-        price: state.price ?? 0, // Use current price
-        wholesalePrice: state.wholesalePrice,
-        isBase: true,
-        productId: 0,
+    final hasBase = units.any((u) => u.isBase);
+    if (!hasBase) {
+      units.add(
+        ProductUnitEntity(
+          unitName: 'pcs',
+          conversionValue: 1,
+          price: state.price ?? 0,
+          wholesalePrice: state.wholesalePrice,
+          isBase: true,
+          productId: 0,
+        ),
       );
-      units.add(defaultUnitEntity);
-      state = state.copyWith(units: units);
     }
+
+    // Ensure the selected default unit exists as a regular (non-base) unit.
+    if (defaultUnit != 'pcs') {
+      final unitExists = units.any((u) => u.unitName == defaultUnit);
+      if (!unitExists) {
+        units.add(
+          ProductUnitEntity(
+            unitName: defaultUnit,
+            conversionValue: 1,
+            price: state.price ?? 0,
+            wholesalePrice: state.wholesalePrice,
+            productId: 0,
+          ),
+        );
+      }
+    }
+
+    state = state.copyWith(units: units);
+  }
+
+  String _findBaseUnitName(List<ProductUnitEntity> units) {
+    final base = units.where((u) => u.isBase).firstOrNull;
+    return base?.unitName ?? 'pcs';
+  }
+
+  int _convertStockToBase(int stock, String unit) {
+    final base = state.units.where((u) => u.isBase).firstOrNull;
+    final selected = state.units.where((u) => u.unitName == unit).firstOrNull;
+
+    if (base == null || selected == null || selected.isBase) return stock;
+    return (stock * selected.conversionValue).round();
   }
 
   void onChangedBarcode(String value) {
@@ -289,13 +330,17 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   void removeUnit(int index) {
     final units = [...state.units];
     units.removeAt(index);
-    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(
+      state.tieredPrices,
+    );
     tieredPrices.remove(index);
     state = state.copyWith(units: units, tieredPrices: tieredPrices);
   }
 
   void addTier(int unitIndex, ProductTierEntity tier) {
-    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(
+      state.tieredPrices,
+    );
     final tiers = <ProductTierEntity>[...(tieredPrices[unitIndex] ?? [])];
     tiers.add(tier);
     tieredPrices[unitIndex] = tiers;
@@ -303,7 +348,9 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   }
 
   void updateTier(int unitIndex, int tierIndex, ProductTierEntity tier) {
-    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(
+      state.tieredPrices,
+    );
     final tiers = <ProductTierEntity>[...(tieredPrices[unitIndex] ?? [])];
     if (tierIndex < tiers.length) {
       tiers[tierIndex] = tier;
@@ -313,7 +360,9 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   }
 
   void removeTier(int unitIndex, int tierIndex) {
-    final tieredPrices = Map<int, List<ProductTierEntity>>.from(state.tieredPrices);
+    final tieredPrices = Map<int, List<ProductTierEntity>>.from(
+      state.tieredPrices,
+    );
     final tiers = <ProductTierEntity>[...(tieredPrices[unitIndex] ?? [])];
     if (tierIndex < tiers.length) {
       tiers.removeAt(tierIndex);

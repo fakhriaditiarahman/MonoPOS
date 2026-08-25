@@ -634,6 +634,7 @@ class _AddToCartDialogState extends State<_AddToCartDialog> {
       initialQuantity: _quantity,
       selectedUnit: _selectedUnit,
       availableUnits: widget.effectiveUnits.map((u) => u.unitName).toList(),
+      conversionValue: _conversionValue,
       onChangedUnit: _onChangedUnit,
       onChangedQuantity: (val) {
         _quantity = val;

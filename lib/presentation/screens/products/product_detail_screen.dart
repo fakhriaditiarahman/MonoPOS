@@ -69,7 +69,10 @@ class ProductDetailScreen extends ConsumerWidget {
                           ),
                           _ProductPrice(price: product.price),
                           _ProductBarcode(barcode: product.barcode),
-                          _ProductStock(stock: product.stock, unit: product.unit),
+                          _ProductStock(
+                            stock: product.stock,
+                            unit: product.units.where((u) => u.isBase).firstOrNull?.unitName ?? product.unit,
+                          ),
                           _ProductSold(sold: product.sold),
                           if (product.units.length > 1) _ProductUnits(product: product),
                           _ProductDescription(description: product.description),

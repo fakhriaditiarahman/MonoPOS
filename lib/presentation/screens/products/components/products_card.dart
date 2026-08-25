@@ -24,6 +24,8 @@ class ProductsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseUnit = product.units.where((u) => u.isBase).firstOrNull?.unitName ?? product.unit;
+
     return RepaintBoundary(
       child: InkWell(
         onTap: enabled ? onTap : null,
@@ -81,7 +83,7 @@ class ProductsCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      '${AppLocalizations.of(context)!.product_stockSold(product.stock, product.sold ?? 0)} ${product.unit}',
+                      '${AppLocalizations.of(context)!.product_stockSold(product.stock, product.sold ?? 0)} $baseUnit',
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 8),
                     ),
