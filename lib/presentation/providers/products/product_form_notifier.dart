@@ -16,10 +16,9 @@ import '../auth/auth_notifier.dart';
 import 'product_form_state.dart';
 import 'products_notifier.dart';
 
-final productFormNotifierProvider =
-    NotifierProvider.autoDispose<ProductFormNotifier, ProductFormState>(
-      ProductFormNotifier.new,
-    );
+final productFormNotifierProvider = NotifierProvider.autoDispose<ProductFormNotifier, ProductFormState>(
+  ProductFormNotifier.new,
+);
 
 class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   @override
@@ -38,7 +37,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   Future<void> initProductForm(int? productId) async {
     if (productId == null) {
       state = state.copyWith(isLoaded: true);
-      _ensureDefaultUnitInList('pcs');
+      _syncManagedUnits();
       return;
     }
 
@@ -63,7 +62,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         isLoaded: true,
       );
 
-      _ensureDefaultUnitInList(defaultUnit);
+      _syncManagedUnits();
 
       // Load existing tiered prices for each unit
       final units = state.units;
@@ -238,10 +237,12 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
   void onChangedPrice(String value) {
     state = state.copyWith(price: int.tryParse(value));
+    _syncManagedUnits();
   }
 
   void onChangedWholesalePrice(String value) {
     state = state.copyWith(wholesalePrice: int.tryParse(value));
+    _syncManagedUnits();
   }
 
   void onChangedStock(String value) {
@@ -254,39 +255,45 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
   void onChangedUnit(String value) {
     state = state.copyWith(unit: value);
-    _ensureDefaultUnitInList(value);
+    _syncManagedUnits();
   }
 
-  void _ensureDefaultUnitInList(String defaultUnit) {
-    // Base unit (smallest) always stays pcs so stock conversion math stays correct.
+  void _syncManagedUnits() {
+    final price = state.price ?? 0;
+    final wholesalePrice = state.wholesalePrice;
+    final defaultUnit = state.unit;
     final units = [...state.units];
-    final hasBase = units.any((u) => u.isBase);
-    if (!hasBase) {
-      units.add(
-        ProductUnitEntity(
-          unitName: 'pcs',
-          conversionValue: 1,
-          price: state.price ?? 0,
-          wholesalePrice: state.wholesalePrice,
-          isBase: true,
-          productId: 0,
-        ),
-      );
+
+    final baseIdx = units.indexWhere((u) => u.isBase);
+    final baseUnit = ProductUnitEntity(
+      unitName: 'pcs',
+      conversionValue: 1,
+      price: price,
+      wholesalePrice: wholesalePrice,
+      isBase: true,
+      productId: 0,
+      id: baseIdx >= 0 ? units[baseIdx].id : null,
+    );
+    if (baseIdx >= 0) {
+      units[baseIdx] = baseUnit;
+    } else {
+      units.insert(0, baseUnit);
     }
 
-    // Ensure the selected default unit exists as a regular (non-base) unit.
     if (defaultUnit != 'pcs') {
-      final unitExists = units.any((u) => u.unitName == defaultUnit);
-      if (!unitExists) {
-        units.add(
-          ProductUnitEntity(
-            unitName: defaultUnit,
-            conversionValue: 1,
-            price: state.price ?? 0,
-            wholesalePrice: state.wholesalePrice,
-            productId: 0,
-          ),
-        );
+      final defIdx = units.indexWhere((u) => !u.isBase && u.unitName == defaultUnit);
+      final defUnit = ProductUnitEntity(
+        unitName: defaultUnit,
+        conversionValue: 1,
+        price: price,
+        wholesalePrice: wholesalePrice,
+        productId: 0,
+        id: defIdx >= 0 ? units[defIdx].id : null,
+      );
+      if (defIdx >= 0) {
+        units[defIdx] = defUnit;
+      } else {
+        units.add(defUnit);
       }
     }
 
