@@ -8,6 +8,7 @@ import '../../../../core/utilities/currency_formatter.dart';
 import '../../../../generated/app_localizations.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_dialog.dart';
+import '../../../widgets/app_price_type_toggle.dart';
 
 class OrderCard extends StatefulWidget {
   final String name;
@@ -24,6 +25,7 @@ class OrderCard extends StatefulWidget {
   final String? selectedUnit;
   final ValueChanged<String?>? onChangedUnit;
   final int conversionValue;
+  final ValueChanged<String>? onChangedPriceType;
 
   const OrderCard({
     super.key,
@@ -41,6 +43,7 @@ class OrderCard extends StatefulWidget {
     this.selectedUnit,
     this.onChangedUnit,
     this.conversionValue = 1,
+    this.onChangedPriceType,
   });
 
   @override
@@ -158,6 +161,13 @@ class _OrderCardState extends State<OrderCard> {
                             ),
                           ],
                         ),
+                        if (widget.onChangedPriceType != null) ...[
+                          const SizedBox(height: 6),
+                          AppPriceTypeToggle(
+                            value: widget.priceType,
+                            onChanged: widget.onChangedPriceType!,
+                          ),
+                        ],
                         const SizedBox(height: 8),
                         Text(
                           '${AppLocalizations.of(context)!.cart_stock(_stockInSelectedUnit())} ${widget.selectedUnit ?? widget.unit}',

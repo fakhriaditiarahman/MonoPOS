@@ -65,6 +65,9 @@ class _OrderList extends ConsumerWidget {
                 onChangedQuantity: (val) {
                   ref.read(homeNotifierProvider.notifier).onChangedOrderedProductQuantity(i, val);
                 },
+                onChangedPriceType: (val) {
+                  ref.read(homeNotifierProvider.notifier).onChangedOrderedProductPriceType(i, val);
+                },
                 onTapRemove: () {
                   final isLast = homeState.orderedProducts.length == 1;
                   ref.read(homeNotifierProvider.notifier).onRemoveOrderedProduct(homeState.orderedProducts[i]);

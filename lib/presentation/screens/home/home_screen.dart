@@ -435,6 +435,7 @@ class _ScanButton extends ConsumerWidget {
                     unitName: state.selectedUnit,
                     conversionValue: state.conversionValue,
                     overridePrice: state.price,
+                    priceType: state.priceType,
                   );
               context.pop();
             },
@@ -592,16 +593,19 @@ class _AddToCartDialogState extends State<_AddToCartDialog> {
   late String _selectedUnit;
   late int _conversionValue;
   late int _price;
+  late String _priceType;
 
   double get quantity => _quantity;
   String get selectedUnit => _selectedUnit;
   int get conversionValue => _conversionValue;
   int get price => _price;
+  String get priceType => _priceType;
 
   @override
   void initState() {
     super.initState();
     _quantity = widget.initialQuantity == 0 ? 1 : widget.initialQuantity;
+    _priceType = widget.isGrosir ? 'grosir' : 'retail';
 
     var defaultUnit = widget.effectiveUnits.firstWhere(
       (u) => u.unitName == widget.product.unit,
@@ -609,7 +613,12 @@ class _AddToCartDialogState extends State<_AddToCartDialog> {
     );
     _selectedUnit = defaultUnit.unitName;
     _conversionValue = defaultUnit.conversionValue;
-    _price = widget.isGrosir && defaultUnit.wholesalePrice != null ? defaultUnit.wholesalePrice! : defaultUnit.price;
+    _recomputePrice();
+  }
+
+  void _recomputePrice() {
+    var unit = widget.effectiveUnits.firstWhere((u) => u.unitName == _selectedUnit);
+    _price = _priceType == 'grosir' && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
   }
 
   void _onChangedUnit(String? val) {
@@ -618,7 +627,14 @@ class _AddToCartDialogState extends State<_AddToCartDialog> {
     setState(() {
       _selectedUnit = unit.unitName;
       _conversionValue = unit.conversionValue;
-      _price = widget.isGrosir && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
+      _recomputePrice();
+    });
+  }
+
+  void _onChangedPriceType(String value) {
+    setState(() {
+      _priceType = value;
+      _recomputePrice();
     });
   }
 
@@ -629,13 +645,14 @@ class _AddToCartDialogState extends State<_AddToCartDialog> {
       imageUrl: widget.product.imageUrl,
       stock: widget.product.stock,
       price: _price,
-      priceType: widget.isGrosir ? 'grosir' : 'retail',
+      priceType: _priceType,
       unit: widget.product.unit,
       initialQuantity: _quantity,
       selectedUnit: _selectedUnit,
       availableUnits: widget.effectiveUnits.map((u) => u.unitName).toList(),
       conversionValue: _conversionValue,
       onChangedUnit: _onChangedUnit,
+      onChangedPriceType: _onChangedPriceType,
       onChangedQuantity: (val) {
         _quantity = val;
       },
@@ -736,6 +753,7 @@ class _ProductCard extends ConsumerWidget {
                   unitName: state.selectedUnit,
                   conversionValue: state.conversionValue,
                   overridePrice: state.price,
+                  priceType: state.priceType,
                 );
             context.pop();
           },
