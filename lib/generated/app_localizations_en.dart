@@ -503,11 +503,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get about_description =>
-      'A Point of Sale (POS) application built with Flutter framework. This application manages product data, transactions, and user data. The data is stored locally using SQLite database and can be synchronized with REST API server.';
-
-  @override
-  String get about_learningResource =>
-      'This project serves as a learning resource for Flutter developers who want to learn about Clean Architecture, Riverpod state management, GoRouter navigation, and SQLite database integration. The project is open source and available on GitHub.';
+      'Mono POS is a Flutter-based Point of Sale (POS) application for managing products, sales transactions, customers, and employees. It supports QRIS payments (Klik QRIS) and revenue reports, stores data locally with SQLite, and can be synchronized to a REST API server.';
 
   @override
   String get about_developedBy => 'Developed with ❤️ by';

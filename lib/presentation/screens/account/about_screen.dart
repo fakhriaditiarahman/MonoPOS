@@ -80,12 +80,6 @@ class _AboutScreenState extends State<AboutScreen> {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              const SizedBox(height: AppSizes.padding * 2),
-              Text(
-                AppLocalizations.of(context)!.about_learningResource,
-                textAlign: TextAlign.justify,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
               const SizedBox(height: AppSizes.padding),
               Row(
                 children: [
@@ -130,7 +124,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     ],
                   ),
                   onTap: () {
-                    ExternalLauncher.openUrl('https://github.com/elrizwiraswara');
+                    ExternalLauncher.openUrl('https://github.com/monodev-id/MonoPOS');
                   },
                 ),
               ),
@@ -158,7 +152,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     ],
                   ),
                   onTap: () {
-                    ExternalLauncher.openUrl('https://elriztechnology.com');
+                    ExternalLauncher.openUrl('https://monodev.tech/');
                   },
                 ),
               ),
