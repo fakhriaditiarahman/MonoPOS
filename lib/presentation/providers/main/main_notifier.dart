@@ -110,7 +110,12 @@ class MainNotifier extends Notifier<MainState> {
     pingService.stopPing();
   }
 
+  bool _isSyncing = false;
+
   Future<void> _processQueuedActions() async {
+    if (_isSyncing) return;
+    _isSyncing = true;
+
     state = state.copyWith(isSyncronizing: true);
 
     try {
@@ -133,6 +138,8 @@ class MainNotifier extends Notifier<MainState> {
         }
       }
     } catch (_) {}
+
+    _isSyncing = false;
 
     _refreshSyncStatus();
   }

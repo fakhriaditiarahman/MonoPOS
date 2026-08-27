@@ -22,16 +22,18 @@ class TransactionRemoteDatasourceImpl extends TransactionDatasource {
       json.remove('orderedProducts');
       json.remove('createdBy');
 
-      await client.from(SupabaseConfig.transactionsTable).insert(json);
+      await client.from(SupabaseConfig.transactionsTable).upsert(json, onConflict: 'id');
 
       if (transaction.orderedProducts?.isNotEmpty ?? false) {
-        for (final op in transaction.orderedProducts!) {
-          op.transactionId = transaction.id;
+        final rows = _uniqueRowsById(transaction.orderedProducts!.map((e) => e.toJson()).toList());
+        for (final op in rows) {
+          op['transactionId'] = transaction.id;
         }
         await client
             .from(SupabaseConfig.orderedProductsTable)
-            .insert(
-              transaction.orderedProducts!.map((e) => e.toJson()).toList(),
+            .upsert(
+              rows,
+              onConflict: 'id',
             );
       }
 
@@ -54,15 +56,17 @@ class TransactionRemoteDatasourceImpl extends TransactionDatasource {
       await client.from(SupabaseConfig.transactionsTable).update(json).eq('id', transaction.id);
 
       if (transaction.orderedProducts?.isNotEmpty ?? false) {
+        final rows = _uniqueRowsById(transaction.orderedProducts!.map((e) => e.toJson()).toList());
         await client.from(SupabaseConfig.orderedProductsTable).delete().eq('transactionId', transaction.id);
 
-        for (final op in transaction.orderedProducts!) {
-          op.transactionId = transaction.id;
+        for (final op in rows) {
+          op['transactionId'] = transaction.id;
         }
         await client
             .from(SupabaseConfig.orderedProductsTable)
-            .insert(
-              transaction.orderedProducts!.map((e) => e.toJson()).toList(),
+            .upsert(
+              rows,
+              onConflict: 'id',
             );
       }
 
@@ -235,5 +239,30 @@ class TransactionRemoteDatasourceImpl extends TransactionDatasource {
     final opRes = await client.from(SupabaseConfig.orderedProductsTable).select().eq('transactionId', transaction.id);
 
     transaction.orderedProducts = opRes.map((e) => OrderedProductModel.fromJson(Map<String, dynamic>.from(e))).toList();
+  }
+
+  List<Map<String, dynamic>> _uniqueRowsById(List<dynamic> rows) {
+    final seen = <int>{};
+    var counter = 0;
+    final out = <Map<String, dynamic>>[];
+
+    for (final raw in rows) {
+      final m = Map<String, dynamic>.from(raw as Map);
+      var id = m['id'];
+
+      if (id is! int) {
+        id = DateTime.now().millisecondsSinceEpoch + (counter++);
+      } else {
+        while (seen.contains(id)) {
+          id = DateTime.now().millisecondsSinceEpoch + (counter++);
+        }
+      }
+
+      seen.add(id);
+      m['id'] = id;
+      out.add(m);
+    }
+
+    return out;
   }
 }

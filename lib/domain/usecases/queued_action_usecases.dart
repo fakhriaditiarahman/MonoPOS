@@ -107,6 +107,11 @@ class ProcessQueuedActionUsecase extends Usecase<Result<void>, QueuedActionEntit
         return Result.success(data: null);
       }
 
+      if (_isUniqueViolation(result?.error)) {
+        await _queuedActionRepository.deleteQueuedAction(params.id!);
+        return Result.success(data: null);
+      }
+
       ce(
         result?.error ?? 'Sync gagal',
         title: 'Replay antrian gagal — ${params.repository}/${params.method}',
@@ -117,6 +122,14 @@ class ProcessQueuedActionUsecase extends Usecase<Result<void>, QueuedActionEntit
     } catch (e) {
       ce(e, title: 'Replay antrian error — ${params.repository}/${params.method}');
       return Result.failure(error: e);
+    }
+  }
+
+  bool _isUniqueViolation(dynamic error) {
+    try {
+      return error is Object && (error as dynamic).code == '23505';
+    } catch (_) {
+      return false;
     }
   }
 }

@@ -24,13 +24,14 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
       final json = product.toJson();
       final units = json.remove('units') as List<dynamic>?;
 
-      await client.from(SupabaseConfig.productsTable).insert(json);
+      await client.from(SupabaseConfig.productsTable).upsert(json, onConflict: 'id');
 
       if (units != null && units.isNotEmpty) {
-        for (final unit in units) {
-          (unit as Map<String, dynamic>)['productId'] = product.id;
+        final uniqueUnits = _uniqueRowsById(units);
+        for (final unit in uniqueUnits) {
+          unit['productId'] = product.id;
         }
-        await client.from(SupabaseConfig.productUnitsTable).insert(units);
+        await client.from(SupabaseConfig.productUnitsTable).upsert(uniqueUnits, onConflict: 'id');
       }
 
       return Result.success(data: product.id);
@@ -51,12 +52,13 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
       await client.from(SupabaseConfig.productsTable).update(json).eq('id', product.id);
 
       if (units != null) {
+        final uniqueUnits = _uniqueRowsById(units);
         await client.from(SupabaseConfig.productUnitsTable).delete().eq('productId', product.id);
 
-        for (final unit in units) {
-          (unit as Map<String, dynamic>)['productId'] = product.id;
+        for (final unit in uniqueUnits) {
+          unit['productId'] = product.id;
         }
-        await client.from(SupabaseConfig.productUnitsTable).insert(units);
+        await client.from(SupabaseConfig.productUnitsTable).upsert(uniqueUnits, onConflict: 'id');
       }
 
       return Result.success(data: null);
@@ -188,10 +190,11 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
 
       await client.from(SupabaseConfig.productUnitsTable).delete().eq('productId', productId);
 
-      for (final unit in units) {
-        unit.productId = productId;
+      final rows = _uniqueRowsById(units.map((e) => e.toJson()).toList());
+      for (final unit in rows) {
+        unit['productId'] = productId;
       }
-      await client.from(SupabaseConfig.productUnitsTable).insert(units.map((e) => e.toJson()).toList());
+      await client.from(SupabaseConfig.productUnitsTable).upsert(rows, onConflict: 'id');
 
       return Result.success(data: null);
     } catch (e) {
@@ -257,13 +260,15 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
 
       await client.from(SupabaseConfig.productTieredPricesTable).delete().eq('productUnitId', productUnitId);
 
-      for (final tier in tiers) {
-        tier.productUnitId = productUnitId;
+      final tierRows = _uniqueRowsById(tiers.map((e) => e.toJson()).toList());
+      for (final tier in tierRows) {
+        tier['productUnitId'] = productUnitId;
       }
       await client
           .from(SupabaseConfig.productTieredPricesTable)
-          .insert(
-            tiers.map((e) => e.toJson()).toList(),
+          .upsert(
+            tierRows,
+            onConflict: 'id',
           );
 
       return Result.success(data: null);
@@ -317,5 +322,30 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
     final unitRes = await client.from(SupabaseConfig.productUnitsTable).select().eq('productId', product.id);
 
     product.units = unitRes.map((e) => ProductUnitModel.fromJson(Map<String, dynamic>.from(e))).toList();
+  }
+
+  List<Map<String, dynamic>> _uniqueRowsById(List<dynamic> rows) {
+    final seen = <int>{};
+    var counter = 0;
+    final out = <Map<String, dynamic>>[];
+
+    for (final raw in rows) {
+      final m = Map<String, dynamic>.from(raw as Map);
+      var id = m['id'];
+
+      if (id is! int) {
+        id = DateTime.now().millisecondsSinceEpoch + (counter++);
+      } else {
+        while (seen.contains(id)) {
+          id = DateTime.now().millisecondsSinceEpoch + (counter++);
+        }
+      }
+
+      seen.add(id);
+      m['id'] = id;
+      out.add(m);
+    }
+
+    return out;
   }
 }

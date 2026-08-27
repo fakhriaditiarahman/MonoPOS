@@ -34,6 +34,8 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
   int _unitIdCounter = 0;
 
+  int _nextUnitId() => DateTime.now().millisecondsSinceEpoch + (++_unitIdCounter);
+
   Future<void> initProductForm(int? productId) async {
     if (productId == null) {
       state = state.copyWith(isLoaded: true);
@@ -272,7 +274,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
       wholesalePrice: wholesalePrice,
       isBase: true,
       productId: 0,
-      id: baseIdx >= 0 ? units[baseIdx].id : null,
+      id: baseIdx >= 0 ? units[baseIdx].id : _nextUnitId(),
     );
     if (baseIdx >= 0) {
       units[baseIdx] = baseUnit;
@@ -288,7 +290,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         price: price,
         wholesalePrice: wholesalePrice,
         productId: 0,
-        id: defIdx >= 0 ? units[defIdx].id : null,
+        id: defIdx >= 0 ? units[defIdx].id : _nextUnitId(),
       );
       if (defIdx >= 0) {
         units[defIdx] = defUnit;
@@ -323,7 +325,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
   void addUnit(ProductUnitEntity unit) {
     final units = [...state.units];
-    final newUnit = unit.copyWith(id: _unitIdCounter--);
+    final newUnit = unit.copyWith(id: unit.id ?? _nextUnitId());
     units.add(newUnit);
     state = state.copyWith(units: units);
   }

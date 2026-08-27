@@ -1,6 +1,8 @@
 import '../../domain/entities/product_unit_entity.dart';
 
 class ProductUnitModel {
+  static int _fallbackCounter = 0;
+
   int id;
   int productId;
   String unitName;
@@ -45,7 +47,7 @@ class ProductUnitModel {
 
   factory ProductUnitModel.fromEntity(ProductUnitEntity entity) {
     return ProductUnitModel(
-      id: entity.id ?? DateTime.now().millisecondsSinceEpoch,
+      id: entity.id ?? DateTime.now().millisecondsSinceEpoch + (_fallbackCounter++),
       productId: entity.productId,
       unitName: entity.unitName,
       conversionValue: entity.conversionValue,
