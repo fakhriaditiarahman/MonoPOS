@@ -99,98 +99,103 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
                 buttonText: 'Tambah Karyawan',
                 onTapButton: () => context.push('/account/employees/add'),
               )
-            : ListView.separated(
-                padding: const EdgeInsets.all(AppSizes.padding),
-                itemCount: allEmployees.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (context, i) {
-                  final user = allEmployees[i];
-                  final isAdmin = user.role?.value == 'admin';
+            : Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: AppSizes.contentMaxWidth),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(AppSizes.padding),
+                    itemCount: allEmployees.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (context, i) {
+                      final user = allEmployees[i];
+                      final isAdmin = user.role?.value == 'admin';
 
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(AppSizes.radius),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: isAdmin
-                              ? Theme.of(context).colorScheme.primaryContainer
-                              : Theme.of(context).colorScheme.surfaceContainerHighest,
-                          child: Text(
-                            (user.name ?? user.id)[0].toUpperCase(),
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isAdmin ? Theme.of(context).colorScheme.primary : null,
-                            ),
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(AppSizes.radius),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user.name ?? user.id,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: isAdmin
+                                  ? Theme.of(context).colorScheme.primaryContainer
+                                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+                              child: Text(
+                                (user.name ?? user.id)[0].toUpperCase(),
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
+                                  color: isAdmin ? Theme.of(context).colorScheme.primary : null,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '@${user.id}',
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.outline,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: isAdmin
-                                ? Theme.of(context).colorScheme.primaryContainer
-                                : Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            isAdmin ? 'Admin' : 'Kasir',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: isAdmin ? Theme.of(context).colorScheme.primary : null,
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.name ?? user.id,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '@${user.id}',
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: Theme.of(context).colorScheme.outline,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: isAdmin
+                                    ? Theme.of(context).colorScheme.primaryContainer
+                                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                isAdmin ? 'Admin' : 'Kasir',
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: isAdmin ? Theme.of(context).colorScheme.primary : null,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                              onPressed: () => context.push('/account/employees/edit/${user.id}'),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                              onPressed: () => deleteEmployee(user.id, user.name ?? user.id),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 4),
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                          onPressed: () => context.push('/account/employees/edit/${user.id}'),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_outline,
-                            size: 18,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          onPressed: () => deleteEmployee(user.id, user.name ?? user.id),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                      );
+                    },
+                  ),
+                ),
               ),
       ),
     );

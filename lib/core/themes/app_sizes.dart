@@ -9,6 +9,7 @@ class AppSizes {
 
   static const double tabletBreakpoint = 720;
   static const double desktopBreakpoint = 1100;
+  static const double contentMaxWidth = 960;
 
   static Size size(BuildContext context) => MediaQuery.sizeOf(context);
   static double screenWidth(BuildContext context) => MediaQuery.sizeOf(context).width;

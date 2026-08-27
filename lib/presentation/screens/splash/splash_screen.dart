@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../core/themes/app_colors.dart';
+import '../../../core/themes/app_sizes.dart';
 import '../../providers/splash/splash_notifier.dart';
 import '../../providers/splash/splash_state.dart';
 
@@ -34,7 +35,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
     final width = MediaQueryData.fromView(
       WidgetsBinding.instance.platformDispatcher.views.first,
     ).size.width;
-    final isTablet = width >= 600;
+    final isTablet = width >= AppSizes.tabletBreakpoint;
 
     _videoController = VideoPlayerController.asset(
       isTablet ? _videoTablet : _videoPhone,

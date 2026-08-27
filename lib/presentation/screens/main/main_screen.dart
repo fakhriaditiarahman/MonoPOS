@@ -115,7 +115,7 @@ class _NavRail extends ConsumerWidget {
     return NavigationRail(
       selectedIndex: _calculateSelectedIndex(ref),
       onDestinationSelected: (int idx) => _onItemTapped(ref, idx),
-      labelType: NavigationRailLabelType.all,
+      labelType: AppSizes.isTablet(context) ? NavigationRailLabelType.none : NavigationRailLabelType.selected,
       leading: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         child: AppImage(

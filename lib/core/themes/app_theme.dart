@@ -131,7 +131,10 @@ class AppTheme {
         showCloseIcon: true,
         elevation: 1,
       ),
-      dialogTheme: DialogThemeData(backgroundColor: colorScheme.surfaceContainerLowest),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colorScheme.surfaceContainerLowest,
+        constraints: const BoxConstraints(maxWidth: 512),
+      ),
     );
   }
 }

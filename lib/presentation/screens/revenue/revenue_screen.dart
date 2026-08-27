@@ -38,48 +38,53 @@ class _RevenueScreenState extends ConsumerState<RevenueScreen> {
       body: RefreshIndicator(
         onRefresh: () => ref.read(revenueNotifierProvider.notifier).loadRevenue(),
         displacement: 60,
-        child: CustomScrollView(
-          physics: (revenues?.isEmpty ?? true)
-              ? const NeverScrollableScrollPhysics()
-              : const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSizes.padding,
-                AppSizes.padding,
-                AppSizes.padding,
-                AppSizes.padding,
-              ),
-              sliver: SliverLayoutBuilder(
-                builder: (context, constraint) {
-                  if (isLoading && revenues == null) {
-                    return const SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: AppProgressIndicator(),
-                    );
-                  }
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: AppSizes.contentMaxWidth),
+            child: CustomScrollView(
+              physics: (revenues?.isEmpty ?? true)
+                  ? const NeverScrollableScrollPhysics()
+                  : const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.padding,
+                    AppSizes.padding,
+                    AppSizes.padding,
+                    AppSizes.padding,
+                  ),
+                  sliver: SliverLayoutBuilder(
+                    builder: (context, constraint) {
+                      if (isLoading && revenues == null) {
+                        return const SliverFillRemaining(
+                          hasScrollBody: false,
+                          fillOverscroll: true,
+                          child: AppProgressIndicator(),
+                        );
+                      }
 
-                  if (revenues == null || revenues.isEmpty) {
-                    return SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: AppEmptyState(
-                        subtitle: AppLocalizations.of(context)!.revenue_noData,
-                      ),
-                    );
-                  }
+                      if (revenues == null || revenues.isEmpty) {
+                        return SliverFillRemaining(
+                          hasScrollBody: false,
+                          fillOverscroll: true,
+                          child: AppEmptyState(
+                            subtitle: AppLocalizations.of(context)!.revenue_noData,
+                          ),
+                        );
+                      }
 
-                  return SliverList.builder(
-                    itemCount: revenues.length,
-                    itemBuilder: (context, i) {
-                      return RevenueCard(revenue: revenues[i]);
+                      return SliverList.builder(
+                        itemCount: revenues.length,
+                        itemBuilder: (context, i) {
+                          return RevenueCard(revenue: revenues[i]);
+                        },
+                      );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

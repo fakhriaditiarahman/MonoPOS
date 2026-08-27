@@ -66,59 +66,64 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         onRefresh: () => ref.read(transactionsNotifierProvider.notifier).getAllTransactions(),
         displacement: 60,
         child: Scrollbar(
-          child: CustomScrollView(
-            controller: scrollController,
-            // Disable scroll when data is null or empty
-            physics: (allTransactions?.isEmpty ?? true)
-                ? const NeverScrollableScrollPhysics()
-                : const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                floating: true,
-                snap: true,
-                automaticallyImplyLeading: false,
-                collapsedHeight: 70,
-                titleSpacing: 0,
-                title: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
-                  child: _SearchField(controller: searchFieldController),
-                ),
-              ),
-              SliverLayoutBuilder(
-                builder: (context, constraint) {
-                  if (allTransactions == null) {
-                    return const SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: AppProgressIndicator(),
-                    );
-                  }
-
-                  if (allTransactions.isEmpty) {
-                    return SliverFillRemaining(
-                      hasScrollBody: false,
-                      fillOverscroll: true,
-                      child: AppEmptyState(
-                        subtitle: AppLocalizations.of(context)!.transaction_noTransaction,
-                      ),
-                    );
-                  }
-
-                  return SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(AppSizes.padding, 2, AppSizes.padding, AppSizes.padding),
-                    sliver: SliverList.builder(
-                      itemCount: allTransactions.length,
-                      itemBuilder: (context, i) {
-                        return TransactionCard(transaction: allTransactions[i]);
-                      },
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: AppSizes.contentMaxWidth),
+              child: CustomScrollView(
+                controller: scrollController,
+                // Disable scroll when data is null or empty
+                physics: (allTransactions?.isEmpty ?? true)
+                    ? const NeverScrollableScrollPhysics()
+                    : const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverAppBar(
+                    floating: true,
+                    snap: true,
+                    automaticallyImplyLeading: false,
+                    collapsedHeight: 70,
+                    titleSpacing: 0,
+                    title: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding),
+                      child: _SearchField(controller: searchFieldController),
                     ),
-                  );
-                },
+                  ),
+                  SliverLayoutBuilder(
+                    builder: (context, constraint) {
+                      if (allTransactions == null) {
+                        return const SliverFillRemaining(
+                          hasScrollBody: false,
+                          fillOverscroll: true,
+                          child: AppProgressIndicator(),
+                        );
+                      }
+
+                      if (allTransactions.isEmpty) {
+                        return SliverFillRemaining(
+                          hasScrollBody: false,
+                          fillOverscroll: true,
+                          child: AppEmptyState(
+                            subtitle: AppLocalizations.of(context)!.transaction_noTransaction,
+                          ),
+                        );
+                      }
+
+                      return SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(AppSizes.padding, 2, AppSizes.padding, AppSizes.padding),
+                        sliver: SliverList.builder(
+                          itemCount: allTransactions.length,
+                          itemBuilder: (context, i) {
+                            return TransactionCard(transaction: allTransactions[i]);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  SliverToBoxAdapter(
+                    child: AppLoadingMoreIndicator(isLoading: isLoadingMore),
+                  ),
+                ],
               ),
-              SliverToBoxAdapter(
-                child: AppLoadingMoreIndicator(isLoading: isLoadingMore),
-              ),
-            ],
+            ),
           ),
         ),
       ),

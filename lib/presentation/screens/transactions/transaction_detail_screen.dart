@@ -64,17 +64,22 @@ class TransactionDetailScreen extends ConsumerWidget {
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSizes.padding),
-            child: Column(
-              children: [
-                const _StatusSection(),
-                const SizedBox(height: AppSizes.padding * 2),
-                const _StoreInfoSection(),
-                const SizedBox(height: AppSizes.padding),
-                _TransactionDetail(transaction: transaction),
-                const SizedBox(height: AppSizes.padding),
-                _PaymentDetail(transaction: transaction),
-                const SizedBox(height: AppSizes.padding),
-              ],
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: AppSizes.contentMaxWidth),
+                child: Column(
+                  children: [
+                    const _StatusSection(),
+                    const SizedBox(height: AppSizes.padding * 2),
+                    const _StoreInfoSection(),
+                    const SizedBox(height: AppSizes.padding),
+                    _TransactionDetail(transaction: transaction),
+                    const SizedBox(height: AppSizes.padding),
+                    _PaymentDetail(transaction: transaction),
+                    const SizedBox(height: AppSizes.padding),
+                  ],
+                ),
+              ),
             ),
           );
         },

@@ -55,51 +55,56 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
               buttonText: 'Tambah Pelanggan',
               onTapButton: () => context.push('/account/customers/customer-create'),
             )
-          : ListView.separated(
-              padding: const EdgeInsets.all(AppSizes.padding),
-              itemCount: state.customers.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final customer = state.customers[i];
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: AppSizes.contentMaxWidth),
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(AppSizes.padding),
+                  itemCount: state.customers.length,
+                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  itemBuilder: (context, i) {
+                    final customer = state.customers[i];
 
-                return ListTile(
-                  title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(
-                    customer.phone ?? '-',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  trailing: SizedBox(
-                    width: 60,
-                    child: AppButton(
-                      text: 'Edit',
-                      textColor: Theme.of(context).colorScheme.primary,
-                      height: 28,
-                      fontSize: 10,
-                      borderRadius: BorderRadius.circular(4),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      buttonColor: Theme.of(context).colorScheme.surfaceContainer,
-                      onTap: () => context.push('/account/customers/customer-edit/${customer.id}'),
-                    ),
-                  ),
-                  onLongPress: () {
-                    AppDialog.show(
-                      title: 'Hapus Pelanggan',
-                      text: 'Yakin ingin menghapus ${customer.name}?',
-                      rightButtonText: 'Hapus',
-                      leftButtonText: 'Batal',
-                      rightButtonColor: Theme.of(context).colorScheme.error,
-                      onTapRightButton: (ctx) async {
-                        ctx.pop();
-                        var res = await ref.read(customerNotifierProvider.notifier).deleteCustomer(customer.id!);
+                    return ListTile(
+                      title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                        customer.phone ?? '-',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      trailing: SizedBox(
+                        width: 60,
+                        child: AppButton(
+                          text: 'Edit',
+                          textColor: Theme.of(context).colorScheme.primary,
+                          height: 28,
+                          fontSize: 10,
+                          borderRadius: BorderRadius.circular(4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          buttonColor: Theme.of(context).colorScheme.surfaceContainer,
+                          onTap: () => context.push('/account/customers/customer-edit/${customer.id}'),
+                        ),
+                      ),
+                      onLongPress: () {
+                        AppDialog.show(
+                          title: 'Hapus Pelanggan',
+                          text: 'Yakin ingin menghapus ${customer.name}?',
+                          rightButtonText: 'Hapus',
+                          leftButtonText: 'Batal',
+                          rightButtonColor: Theme.of(context).colorScheme.error,
+                          onTapRightButton: (ctx) async {
+                            ctx.pop();
+                            var res = await ref.read(customerNotifierProvider.notifier).deleteCustomer(customer.id!);
 
-                        if (res.isSuccess) {
-                          AppSnackBar.show('Pelanggan dihapus');
-                        }
+                            if (res.isSuccess) {
+                              AppSnackBar.show('Pelanggan dihapus');
+                            }
+                          },
+                        );
                       },
                     );
                   },
-                );
-              },
+                ),
+              ),
             ),
     );
   }
