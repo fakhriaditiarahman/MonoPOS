@@ -380,6 +380,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Message at the bottom of receipt, e.g: Thank you for shopping';
 
   @override
+  String get storeSettings_save => 'Save';
+
+  @override
+  String get storeSettings_saving => 'Saving...';
+
+  @override
+  String get storeSettings_saved => 'Store settings saved';
+
+  @override
   String get settings_title => 'Settings';
 
   @override

@@ -377,6 +377,15 @@ class AppLocalizationsId extends AppLocalizations {
       'Pesan di bagian bawah struk, misal: Terima kasih telah berbelanja';
 
   @override
+  String get storeSettings_save => 'Simpan';
+
+  @override
+  String get storeSettings_saving => 'Menyimpan...';
+
+  @override
+  String get storeSettings_saved => 'Pengaturan toko tersimpan';
+
+  @override
   String get settings_title => 'Pengaturan';
 
   @override

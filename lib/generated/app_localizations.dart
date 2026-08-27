@@ -782,6 +782,24 @@ abstract class AppLocalizations {
   /// **'Message at the bottom of receipt, e.g: Thank you for shopping'**
   String get storeSettings_receiptFooterHint;
 
+  /// No description provided for @storeSettings_save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get storeSettings_save;
+
+  /// No description provided for @storeSettings_saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get storeSettings_saving;
+
+  /// No description provided for @storeSettings_saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Store settings saved'**
+  String get storeSettings_saved;
+
   /// No description provided for @settings_title.
   ///
   /// In en, this message translates to:

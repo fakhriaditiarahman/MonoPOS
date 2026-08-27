@@ -178,6 +178,9 @@
   "storeSettings_storeAddressHint": "Your store address...",
   "storeSettings_receiptFooterLabel": "Receipt Footer",
   "storeSettings_receiptFooterHint": "Message at the bottom of receipt, e.g: Thank you for shopping",
+  "storeSettings_save": "Save",
+  "storeSettings_saving": "Saving...",
+  "storeSettings_saved": "Store settings saved",
 
   "settings_title": "Settings",
   "settings_profile": "Profile",

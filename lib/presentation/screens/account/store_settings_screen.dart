@@ -4,16 +4,61 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../generated/app_localizations.dart';
 import '../../providers/account/store_settings_notifier.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/app_progress_indicator.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_text_field.dart';
 
-class StoreSettingsScreen extends ConsumerWidget {
+class StoreSettingsScreen extends ConsumerStatefulWidget {
   const StoreSettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(storeSettingsNotifierProvider);
+  ConsumerState<StoreSettingsScreen> createState() => _StoreSettingsScreenState();
+}
+
+class _StoreSettingsScreenState extends ConsumerState<StoreSettingsScreen> {
+  late TextEditingController _storeNameController;
+  late TextEditingController _storeAddressController;
+  late TextEditingController _receiptFooterController;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = ref.read(storeSettingsNotifierProvider);
+    _storeNameController = TextEditingController(text: state.storeName);
+    _storeAddressController = TextEditingController(text: state.storeAddress);
+    _receiptFooterController = TextEditingController(text: state.receiptFooter);
+
+    _storeNameController.addListener(() {
+      ref.read(storeSettingsNotifierProvider.notifier).onChangedStoreName(_storeNameController.text);
+    });
+    _storeAddressController.addListener(() {
+      ref.read(storeSettingsNotifierProvider.notifier).onChangedStoreAddress(_storeAddressController.text);
+    });
+    _receiptFooterController.addListener(() {
+      ref.read(storeSettingsNotifierProvider.notifier).onChangedReceiptFooter(_receiptFooterController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _storeNameController.dispose();
+    _storeAddressController.dispose();
+    _receiptFooterController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onSave() async {
     final notifier = ref.read(storeSettingsNotifierProvider.notifier);
+    await notifier.save();
+    if (mounted) {
+      AppSnackBar.show(AppLocalizations.of(context)!.storeSettings_saved);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(storeSettingsNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -27,98 +72,46 @@ class StoreSettingsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _StoreNameField(
-                    initialValue: state.storeName,
-                    onChanged: notifier.onChangedStoreName,
+                  AppTextField(
+                    controller: _storeNameController,
+                    labelText: AppLocalizations.of(context)!.storeSettings_storeNameLabel,
+                    hintText: AppLocalizations.of(context)!.storeSettings_storeNameHint,
                   ),
-                  _StoreAddressField(
-                    initialValue: state.storeAddress,
-                    onChanged: notifier.onChangedStoreAddress,
+                  const SizedBox(height: AppSizes.padding),
+                  AppTextField(
+                    controller: _storeAddressController,
+                    labelText: AppLocalizations.of(context)!.storeSettings_storeAddressLabel,
+                    hintText: AppLocalizations.of(context)!.storeSettings_storeAddressHint,
+                    maxLines: 3,
                   ),
-                  _ReceiptFooterField(
-                    initialValue: state.receiptFooter,
-                    onChanged: notifier.onChangedReceiptFooter,
+                  const SizedBox(height: AppSizes.padding),
+                  AppTextField(
+                    controller: _receiptFooterController,
+                    labelText: AppLocalizations.of(context)!.storeSettings_receiptFooterLabel,
+                    hintText: AppLocalizations.of(context)!.storeSettings_receiptFooterHint,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: AppSizes.padding * 1.5),
+                  AppButton(
+                    text: state.isSaving
+                        ? AppLocalizations.of(context)!.storeSettings_saving
+                        : AppLocalizations.of(context)!.storeSettings_save,
+                    enabled: state.hasChanges && !state.isSaving,
+                    onTap: _onSave,
+                    child: state.isSaving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
                   ),
                 ],
               ),
             ),
-    );
-  }
-}
-
-class _StoreNameField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _StoreNameField({
-    required this.initialValue,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: AppTextField(
-        controller: controller,
-        labelText: AppLocalizations.of(context)!.storeSettings_storeNameLabel,
-        hintText: AppLocalizations.of(context)!.storeSettings_storeNameHint,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _StoreAddressField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _StoreAddressField({
-    required this.initialValue,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: AppTextField(
-        controller: controller,
-        labelText: AppLocalizations.of(context)!.storeSettings_storeAddressLabel,
-        hintText: AppLocalizations.of(context)!.storeSettings_storeAddressHint,
-        maxLines: 3,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-class _ReceiptFooterField extends ConsumerWidget {
-  final String initialValue;
-  final ValueChanged<String> onChanged;
-
-  const _ReceiptFooterField({
-    required this.initialValue,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: initialValue);
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: AppTextField(
-        controller: controller,
-        labelText: AppLocalizations.of(context)!.storeSettings_receiptFooterLabel,
-        hintText: AppLocalizations.of(context)!.storeSettings_receiptFooterHint,
-        maxLines: 3,
-        onChanged: onChanged,
-      ),
     );
   }
 }
