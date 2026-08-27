@@ -20,6 +20,7 @@ import '../../widgets/app_drop_down.dart';
 import '../../widgets/app_icon_button.dart';
 import '../../widgets/app_progress_indicator.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 import '../../widgets/app_text_field.dart';
 import '../home/components/barcode_scanner_screen.dart';
 
@@ -129,7 +130,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     if (res.isSuccess) {
       if (!mounted) return;
       context.go('/products');
-      AppSnackBar.show(AppLocalizations.of(context)!.product_deleted);
+      AppSuccessOverlay.show(AppLocalizations.of(context)!.product_deleted);
     } else {
       AppDialog.showError(error: res.error?.toString());
     }

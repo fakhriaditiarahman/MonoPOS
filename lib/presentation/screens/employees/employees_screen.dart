@@ -8,7 +8,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/app_progress_indicator.dart';
-import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 
 class EmployeesScreen extends ConsumerStatefulWidget {
   const EmployeesScreen({super.key});
@@ -42,7 +42,7 @@ class _EmployeesScreenState extends ConsumerState<EmployeesScreen> {
 
         if (!mounted) return;
         if (res.isSuccess) {
-          AppSnackBar.show('Karyawan berhasil dihapus');
+          AppSuccessOverlay.show('Karyawan berhasil dihapus');
         } else {
           AppDialog.showError(error: res.error?.toString());
         }

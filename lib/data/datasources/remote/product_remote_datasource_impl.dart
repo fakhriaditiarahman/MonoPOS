@@ -108,7 +108,7 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
       final client = _client;
       if (client == null) return Result.success(data: []);
 
-      final res = await client.from(SupabaseConfig.productsTable).select().eq('createdById', userId);
+      final res = await client.from(SupabaseConfig.productsTable).select();
 
       final products = <ProductModel>[];
       for (final row in res) {
@@ -155,7 +155,7 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
       final client = _client;
       if (client == null) return Result.success(data: []);
 
-      dynamic query = client.from(SupabaseConfig.productsTable).select().eq('createdById', userId);
+      dynamic query = client.from(SupabaseConfig.productsTable).select();
 
       if (contains != null && contains.isNotEmpty) {
         query = query.ilike('name', '%$contains%');
@@ -300,7 +300,6 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
       final res = await client
           .from(SupabaseConfig.productsTable)
           .select()
-          .eq('createdById', userId)
           .gt('stock', 0)
           .lte('stock', threshold)
           .order('stock', ascending: true);

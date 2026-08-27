@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../providers/account/payment_settings_notifier.dart';
 import '../../widgets/app_button.dart';
-import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 import '../../widgets/app_text_field.dart';
 
 class PaymentSettingsScreen extends ConsumerStatefulWidget {
@@ -44,7 +44,7 @@ class _PaymentSettingsScreenState extends ConsumerState<PaymentSettingsScreen> {
     final notifier = ref.read(paymentSettingsNotifierProvider.notifier);
     await notifier.save();
     if (mounted) {
-      AppSnackBar.show('Pengaturan KlikQRIS tersimpan');
+      AppSuccessOverlay.show('Pengaturan KlikQRIS tersimpan');
     }
   }
 

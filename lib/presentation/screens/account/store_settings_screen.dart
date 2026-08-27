@@ -6,7 +6,7 @@ import '../../../generated/app_localizations.dart';
 import '../../providers/account/store_settings_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_progress_indicator.dart';
-import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 import '../../widgets/app_text_field.dart';
 
 class StoreSettingsScreen extends ConsumerStatefulWidget {
@@ -52,7 +52,7 @@ class _StoreSettingsScreenState extends ConsumerState<StoreSettingsScreen> {
     final notifier = ref.read(storeSettingsNotifierProvider.notifier);
     await notifier.save();
     if (mounted) {
-      AppSnackBar.show(AppLocalizations.of(context)!.storeSettings_saved);
+      AppSuccessOverlay.show(AppLocalizations.of(context)!.storeSettings_saved);
     }
   }
 

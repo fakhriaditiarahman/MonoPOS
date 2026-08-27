@@ -8,6 +8,7 @@ import '../../providers/account/product_data_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
 import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 
 class ProductDataScreen extends ConsumerWidget {
   const ProductDataScreen({super.key});
@@ -22,7 +23,7 @@ class ProductDataScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (state.exportedCount != null) {
-      AppSnackBar.show(l10n.dataProduct_exportSuccess(state.exportedCount!));
+      AppSuccessOverlay.show(l10n.dataProduct_exportSuccess(state.exportedCount!));
     } else if (state.error != null) {
       AppSnackBar.showError(l10n.dataProduct_exportFailed);
     }
@@ -50,7 +51,7 @@ class ProductDataScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (state.importedCount != null) {
-      AppSnackBar.show(l10n.dataProduct_importSuccess(state.importedCount!));
+      AppSuccessOverlay.show(l10n.dataProduct_importSuccess(state.importedCount!));
     } else if (state.error == 'no_file') {
       AppSnackBar.showError(l10n.dataProduct_noFile);
     } else if (state.error == 'invalid_file') {

@@ -138,8 +138,6 @@ class ProductLocalDatasourceImpl extends ProductDatasource {
     try {
       var res = await _databaseService.database.query(
         DatabaseConfig.productTableName,
-        where: 'createdById = ?',
-        whereArgs: [userId],
       );
 
       var products = <ProductModel>[];
@@ -165,8 +163,8 @@ class ProductLocalDatasourceImpl extends ProductDatasource {
     try {
       var res = await _databaseService.database.query(
         DatabaseConfig.productTableName,
-        where: 'createdById = ? AND name LIKE ?',
-        whereArgs: [userId, "%${contains ?? ''}%"],
+        where: 'name LIKE ?',
+        whereArgs: ["%${contains ?? ''}%"],
         orderBy: '$orderBy $sortBy',
         limit: limit,
         offset: offset,
@@ -324,8 +322,8 @@ class ProductLocalDatasourceImpl extends ProductDatasource {
     try {
       var res = await _databaseService.database.query(
         DatabaseConfig.productTableName,
-        where: 'createdById = ? AND stock > 0 AND stock <= ?',
-        whereArgs: [userId, threshold],
+        where: 'stock > 0 AND stock <= ?',
+        whereArgs: [threshold],
         orderBy: 'stock ASC',
       );
 

@@ -9,7 +9,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
 import '../../widgets/app_drop_down.dart';
 import '../../widgets/app_progress_indicator.dart';
-import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 import '../../widgets/app_text_field.dart';
 
 class EmployeeFormScreen extends ConsumerStatefulWidget {
@@ -55,7 +55,7 @@ class _EmployeeFormScreenState extends ConsumerState<EmployeeFormScreen> {
     if (!mounted) return;
     if (res.isSuccess) {
       context.pop();
-      AppSnackBar.show(widget.id == null ? 'Karyawan berhasil ditambahkan' : 'Karyawan berhasil diperbarui');
+      AppSuccessOverlay.show(widget.id == null ? 'Karyawan berhasil ditambahkan' : 'Karyawan berhasil diperbarui');
     } else {
       AppDialog.showError(error: res.error?.toString());
     }

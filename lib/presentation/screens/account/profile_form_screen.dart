@@ -15,7 +15,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
 import '../../widgets/app_icon_button.dart';
 import '../../widgets/app_progress_indicator.dart';
-import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 import '../../widgets/app_text_field.dart';
 
 class ProfileFormScreen extends ConsumerStatefulWidget {
@@ -82,7 +82,7 @@ class _ProfileFormScreenState extends ConsumerState<ProfileFormScreen> {
     if (res.isSuccess) {
       if (!mounted) return;
       Navigator.of(context).pop();
-      AppSnackBar.show(AppLocalizations.of(context)!.profile_updated);
+      AppSuccessOverlay.show(AppLocalizations.of(context)!.profile_updated);
 
       // Refresh user data
       ref.read(mainNotifierProvider.notifier).getUserData();

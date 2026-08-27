@@ -15,7 +15,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/app_progress_indicator.dart';
-import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_success_overlay.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
   final int id;
@@ -199,7 +199,7 @@ class _DeleteButton extends ConsumerWidget {
         if (!context.mounted) return;
 
         if (res.isSuccess) {
-          AppSnackBar.show(l10n.product_deleted);
+          AppSuccessOverlay.show(l10n.product_deleted);
           ref.read(productsNotifierProvider.notifier).resetProducts();
           ref.read(productsNotifierProvider.notifier).getAllProducts();
           context.go('/products');

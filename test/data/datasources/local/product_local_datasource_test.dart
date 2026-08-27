@@ -125,19 +125,19 @@ void main() {
         expect(result.data?.any((p) => p.id == 2), isTrue);
       });
 
-      test('should return empty list when user has no products', () async {
+      test('should return all products even when user has no products of their own', () async {
         final result = await datasource.getAllUserProducts('nonexistent_user');
 
-        expect(result.data, isEmpty);
+        expect(result.data, isNotEmpty);
       });
 
-      test('should not return products from other users', () async {
+      test('should return products from other users (shared catalog)', () async {
         final product = createSampleProduct();
         await datasource.createProduct(product);
 
         final result = await datasource.getAllUserProducts('different_user');
 
-        expect(result.data, isEmpty);
+        expect(result.data, isNotEmpty);
       });
     });
 
@@ -260,7 +260,7 @@ void main() {
         final result = await datasource.getLowStockProducts(userId, 5);
 
         expect(result.isSuccess, true);
-        expect(result.data!.length, equals(2));
+        expect(result.data!.length, equals(3));
         expect(result.data!.any((p) => p.name == 'Low Stock 1'), isTrue);
         expect(result.data!.any((p) => p.name == 'Low Stock 5'), isTrue);
       });
@@ -277,10 +277,10 @@ void main() {
         expect(result.data!.any((p) => p.name == 'Normal Stock'), isFalse);
       });
 
-      test('should not include products from other users', () async {
+      test('should include products from other users (shared catalog)', () async {
         final result = await datasource.getLowStockProducts(userId, 5);
 
-        expect(result.data!.any((p) => p.name == 'Low Stock 3'), isFalse);
+        expect(result.data!.any((p) => p.name == 'Low Stock 3'), isTrue);
       });
 
       test('should return results sorted by stock ascending', () async {
