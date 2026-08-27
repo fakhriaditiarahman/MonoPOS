@@ -10,9 +10,12 @@ import '../../../core/utilities/date_time_formatter.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../providers/auth/auth_notifier.dart';
 import '../../providers/products/product_detail_notifier.dart';
+import '../../providers/products/products_notifier.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_dialog.dart';
 import '../../widgets/app_empty_state.dart';
 import '../../widgets/app_progress_indicator.dart';
+import '../../widgets/app_snack_bar.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
   final int id;
@@ -28,7 +31,10 @@ class ProductDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.product_detailTitle),
         titleSpacing: 0,
-        actions: [_EditButton(id: id)],
+        actions: [
+          _EditButton(id: id),
+          _DeleteButton(id: id),
+        ],
       ),
       body: FutureBuilder(
         future: ref.read(productDetailNotifierProvider.notifier).getProductDetail(id),
@@ -130,6 +136,77 @@ class _EditButton extends ConsumerWidget {
           context.push('/products/product-edit/$id');
         },
       ),
+    );
+  }
+}
+
+class _DeleteButton extends ConsumerWidget {
+  final int id;
+
+  const _DeleteButton({required this.id});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(right: AppSizes.padding),
+      child: AppButton(
+        height: 26,
+        borderRadius: BorderRadius.circular(4),
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.padding / 2),
+        buttonColor: Theme.of(context).colorScheme.errorContainer,
+        child: Row(
+          children: [
+            Icon(
+              Icons.delete_outline_rounded,
+              size: 12,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(width: AppSizes.padding / 4),
+            Text(
+              l10n.product_deleteButton,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+        ),
+        onTap: () => _confirmDelete(context, ref, l10n),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+    AppDialog.show(
+      title: l10n.product_deleteButton,
+      text: l10n.product_deleteConfirm,
+      leftButtonText: l10n.home_cancel,
+      rightButtonText: l10n.product_deleteButton,
+      rightButtonColor: Theme.of(context).colorScheme.errorContainer,
+      rightButtonTextColor: Theme.of(context).colorScheme.error,
+      onTapRightButton: (ctx) async {
+        ctx.pop();
+        final res = await AppDialog.showProgress(
+          () => ref.read(productDetailNotifierProvider.notifier).deleteProduct(id),
+        );
+
+        if (!context.mounted) return;
+
+        if (res.isSuccess) {
+          AppSnackBar.show(l10n.product_deleted);
+          ref.read(productsNotifierProvider.notifier).resetProducts();
+          ref.read(productsNotifierProvider.notifier).getAllProducts();
+          context.go('/products');
+        } else {
+          AppDialog.showError(error: res.error?.toString());
+        }
+      },
     );
   }
 }

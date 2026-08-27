@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/di/app_providers.dart';
+import '../../../core/common/result.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/usecases/product_usecases.dart';
 
@@ -24,5 +25,10 @@ class ProductDetailNotifier extends AutoDisposeNotifier<ProductEntity?> {
     } else {
       throw res.error ?? 'Failed to load data';
     }
+  }
+
+  Future<Result<void>> deleteProduct(int id) async {
+    final productRepository = ref.read(productRepositoryProvider);
+    return DeleteProductUsecase(productRepository).call(id);
   }
 }
