@@ -422,6 +422,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_noName => '(No Name)';
 
   @override
+  String get dataProduct_title => 'Product Data';
+
+  @override
+  String get dataProduct_export => 'Export Data';
+
+  @override
+  String get dataProduct_import => 'Import Data';
+
+  @override
+  String get dataProduct_exporting => 'Exporting...';
+
+  @override
+  String get dataProduct_importing => 'Importing...';
+
+  @override
+  String dataProduct_exportSuccess(Object count) {
+    return 'Exported $count products';
+  }
+
+  @override
+  String dataProduct_importSuccess(Object count) {
+    return 'Imported $count products';
+  }
+
+  @override
+  String get dataProduct_exportFailed => 'Export failed';
+
+  @override
+  String get dataProduct_importFailed => 'Import failed';
+
+  @override
+  String get dataProduct_importTitle => 'Import Products';
+
+  @override
+  String get dataProduct_importConfirm =>
+      'This will add the products from the backup file. Continue?';
+
+  @override
+  String get dataProduct_cancel => 'Cancel';
+
+  @override
+  String get dataProduct_confirm => 'Import';
+
+  @override
+  String get dataProduct_noFile => 'No file selected';
+
+  @override
+  String get dataProduct_invalidFile => 'Invalid backup file';
+
+  @override
   String get profile_editTitle => 'Edit Profile';
 
   @override

@@ -38,6 +38,7 @@ class AccountScreen extends StatelessWidget {
                 _LanguageButton(),
                 _PrinterSettingsButton(),
                 _PaymentSettingsButton(),
+                _ProductDataButton(),
                 _AboutButton(),
                 _LogoutButton(),
               ],
@@ -480,6 +481,52 @@ class _PaymentSettingsButton extends ConsumerWidget {
         ),
         onTap: () {
           context.go('/account/payment-settings');
+        },
+      ),
+    );
+  }
+}
+
+class _ProductDataButton extends ConsumerWidget {
+  const _ProductDataButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.backup_outlined,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  AppLocalizations.of(context)!.dataProduct_title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18,
+            ),
+          ],
+        ),
+        onTap: () {
+          context.go('/account/product-data');
         },
       ),
     );

@@ -419,6 +419,56 @@ class AppLocalizationsId extends AppLocalizations {
   String get settings_noName => '(Tanpa Nama)';
 
   @override
+  String get dataProduct_title => 'Data Produk';
+
+  @override
+  String get dataProduct_export => 'Export Data';
+
+  @override
+  String get dataProduct_import => 'Import Data';
+
+  @override
+  String get dataProduct_exporting => 'Mengekspor...';
+
+  @override
+  String get dataProduct_importing => 'Mengimpor...';
+
+  @override
+  String dataProduct_exportSuccess(Object count) {
+    return '$count produk berhasil diekspor';
+  }
+
+  @override
+  String dataProduct_importSuccess(Object count) {
+    return '$count produk berhasil diimpor';
+  }
+
+  @override
+  String get dataProduct_exportFailed => 'Ekspor gagal';
+
+  @override
+  String get dataProduct_importFailed => 'Impor gagal';
+
+  @override
+  String get dataProduct_importTitle => 'Impor Produk';
+
+  @override
+  String get dataProduct_importConfirm =>
+      'Ini akan menambahkan produk dari file backup. Lanjutkan?';
+
+  @override
+  String get dataProduct_cancel => 'Batal';
+
+  @override
+  String get dataProduct_confirm => 'Impor';
+
+  @override
+  String get dataProduct_noFile => 'Tidak ada file dipilih';
+
+  @override
+  String get dataProduct_invalidFile => 'File backup tidak valid';
+
+  @override
   String get profile_editTitle => 'Edit Profil';
 
   @override

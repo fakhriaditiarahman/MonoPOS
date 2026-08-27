@@ -67,6 +67,7 @@ dependencies:
   supabase_flutter: ^2.8.4
   aws_signature_v4: ^0.6.10
   aws_common: ^0.7.12
+  file_picker: ^8.1.0
 
 dev_dependencies:
   flutter_test:

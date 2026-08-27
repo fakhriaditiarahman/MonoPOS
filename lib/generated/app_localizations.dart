@@ -866,6 +866,96 @@ abstract class AppLocalizations {
   /// **'(No Name)'**
   String get settings_noName;
 
+  /// No description provided for @dataProduct_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Data'**
+  String get dataProduct_title;
+
+  /// No description provided for @dataProduct_export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get dataProduct_export;
+
+  /// No description provided for @dataProduct_import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Data'**
+  String get dataProduct_import;
+
+  /// No description provided for @dataProduct_exporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting...'**
+  String get dataProduct_exporting;
+
+  /// No description provided for @dataProduct_importing.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing...'**
+  String get dataProduct_importing;
+
+  /// No description provided for @dataProduct_exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {count} products'**
+  String dataProduct_exportSuccess(Object count);
+
+  /// No description provided for @dataProduct_importSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} products'**
+  String dataProduct_importSuccess(Object count);
+
+  /// No description provided for @dataProduct_exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed'**
+  String get dataProduct_exportFailed;
+
+  /// No description provided for @dataProduct_importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed'**
+  String get dataProduct_importFailed;
+
+  /// No description provided for @dataProduct_importTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Products'**
+  String get dataProduct_importTitle;
+
+  /// No description provided for @dataProduct_importConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will add the products from the backup file. Continue?'**
+  String get dataProduct_importConfirm;
+
+  /// No description provided for @dataProduct_cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get dataProduct_cancel;
+
+  /// No description provided for @dataProduct_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get dataProduct_confirm;
+
+  /// No description provided for @dataProduct_noFile.
+  ///
+  /// In en, this message translates to:
+  /// **'No file selected'**
+  String get dataProduct_noFile;
+
+  /// No description provided for @dataProduct_invalidFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid backup file'**
+  String get dataProduct_invalidFile;
+
   /// No description provided for @profile_editTitle.
   ///
   /// In en, this message translates to:

@@ -6,6 +6,7 @@ import '../../presentation/providers/auth/auth_notifier.dart';
 import '../../presentation/screens/account/about_screen.dart';
 import '../../presentation/screens/account/account_screen.dart';
 import '../../presentation/screens/account/payment_settings_screen.dart';
+import '../../presentation/screens/account/product_data_screen.dart';
 
 import '../../presentation/screens/account/printer_settings_screen.dart';
 import '../../presentation/screens/account/profile_form_screen.dart';
@@ -45,6 +46,7 @@ class AppRoutes {
     '/account/store-settings',
     '/account/revenue',
     '/account/payment-settings',
+    '/account/product-data',
     '/products/product-create',
     '/products/product-edit',
   ];
@@ -189,6 +191,7 @@ class AppRoutes {
         _printerSettings(),
         _storeSettings(),
         _paymentSettings(),
+        _productData(),
         _revenue(),
         _customers(),
         _employees(),
@@ -292,6 +295,15 @@ class AppRoutes {
       path: 'payment-settings',
       builder: (context, state) {
         return const PaymentSettingsScreen();
+      },
+    );
+  }
+
+  GoRoute _productData() {
+    return GoRoute(
+      path: 'product-data',
+      builder: (context, state) {
+        return const ProductDataScreen();
       },
     );
   }
