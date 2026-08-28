@@ -1,12 +1,25 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'supabase_credentials.dart';
+
 class SupabaseConfig {
   SupabaseConfig._();
 
   static const String _defaultUrl = '';
 
+  static String? _runtimeUrl;
+  static String? _runtimeAnonKey;
+
+  static Future<void> init() async {
+    final creds = await SupabaseCredentials.load();
+    _runtimeUrl = creds?.url;
+    _runtimeAnonKey = creds?.anonKey;
+  }
+
   static String get supabaseUrl {
+    if (_runtimeUrl != null && _runtimeUrl!.isNotEmpty) return _runtimeUrl!;
+
     const envUrl = String.fromEnvironment('SUPABASE_URL');
     if (envUrl.isNotEmpty) return envUrl;
 
@@ -25,6 +38,8 @@ class SupabaseConfig {
   }
 
   static String get supabaseAnonKey {
+    if (_runtimeAnonKey != null && _runtimeAnonKey!.isNotEmpty) return _runtimeAnonKey!;
+
     const publishable = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
     if (publishable.isNotEmpty) return publishable;
 
@@ -49,25 +64,6 @@ class SupabaseConfig {
   }
 
   static bool get isConfigured => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
-
-  static String get supabaseSecretKey {
-    const secret = String.fromEnvironment('SUPABASE_SECRET_KEY');
-    if (secret.isNotEmpty) return secret;
-
-    try {
-      const file = String.fromEnvironment('SUPABASE_CONFIG_PATH');
-      if (file.isNotEmpty) {
-        final configFile = File(file);
-        if (configFile.existsSync()) {
-          final json = jsonDecode(configFile.readAsStringSync()) as Map<String, dynamic>;
-          final fromConfig = json['SUPABASE_SECRET_KEY'] as String?;
-          if (fromConfig != null && fromConfig.isNotEmpty) return fromConfig;
-        }
-      }
-    } catch (_) {}
-
-    return '';
-  }
 
   static const String usersTable = 'users';
   static const String productsTable = 'products';

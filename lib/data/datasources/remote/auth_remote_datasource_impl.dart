@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/common/result.dart';
@@ -63,8 +60,7 @@ class AuthRemoteDataSourceImpl implements AuthDataSource {
         try {
           await client.auth.signUp(email: email, password: password);
         } on AuthException {
-          // User exists — try admin API to reset password
-          await _adminUpsertPassword(email, password);
+          // User already registered — continue to sign in below
         }
 
         final res = await client.auth.signInWithPassword(
@@ -81,43 +77,6 @@ class AuthRemoteDataSourceImpl implements AuthDataSource {
     } catch (e) {
       return Result.failure(error: e);
     }
-  }
-
-  Future<void> _adminUpsertPassword(String email, String password) async {
-    final secretKey = SupabaseConfig.supabaseSecretKey;
-    if (secretKey.isEmpty) return;
-
-    try {
-      final url = Uri.parse('${SupabaseConfig.supabaseUrl}/auth/v1/admin/users');
-      final res = await http.get(
-        url,
-        headers: {
-          'apikey': SupabaseConfig.supabaseAnonKey,
-          'Authorization': 'Bearer $secretKey',
-        },
-      );
-
-      if (res.statusCode != 200) return;
-
-      final users = jsonDecode(res.body) as List;
-      final existing = users.firstWhere(
-        (u) => (u as Map)['email'] == email,
-        orElse: () => null,
-      );
-      if (existing == null) return;
-
-      final userId = (existing as Map)['id'];
-
-      await http.put(
-        Uri.parse('$url/$userId'),
-        headers: {
-          'apikey': SupabaseConfig.supabaseAnonKey,
-          'Authorization': 'Bearer $secretKey',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'password': password}),
-      );
-    } catch (_) {}
   }
 
   Future<UserModel> _fetchOrCreateProfile(SupabaseClient client, User user) async {

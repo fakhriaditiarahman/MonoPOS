@@ -41,9 +41,11 @@ migrate_working_dir/
 !config.example.json
 lib/firebase_options.dart
 .env
+lib/core/services/supabase/supabase_credentials.dart
 
 # Docs (kept local only)
 DOKU_PAYMENT_GATEWAY.md
+docs/
 
 # Symbolication related
 app.*.symbols

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/services/supabase/supabase_config.dart';
+import '../../../core/services/supabase/supabase_credentials.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../generated/app_localizations.dart';
 import '../../providers/auth/auth_notifier.dart';
@@ -11,6 +13,8 @@ import '../../providers/main/main_notifier.dart';
 import '../../providers/theme/theme_notifier.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_dialog.dart';
+import '../../widgets/app_snack_bar.dart';
+import '../../widgets/app_text_field.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -39,6 +43,7 @@ class AccountScreen extends StatelessWidget {
                 _PrinterSettingsButton(),
                 _PaymentSettingsButton(),
                 _ProductDataButton(),
+                _SupabaseConfigButton(),
                 _AboutButton(),
                 _LogoutButton(),
               ],
@@ -689,6 +694,142 @@ class _ThemeDialogBody extends ConsumerWidget {
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SupabaseConfigButton extends ConsumerWidget {
+  const _SupabaseConfigButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isConfigured = SupabaseConfig.isConfigured;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSizes.padding),
+      child: AppButton(
+        buttonColor: Theme.of(context).colorScheme.surface,
+        borderColor: Theme.of(context).colorScheme.surfaceContainer,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.cloud, size: 18),
+                const SizedBox(width: AppSizes.padding / 1.5),
+                Text(
+                  'Supabase Sync',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Text(
+              isConfigured ? 'Aktif' : 'Belum diatur',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: isConfigured ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        onTap: () async {
+          final current = await SupabaseCredentials.load();
+          final dialogKey = GlobalKey<_SupabaseConfigDialogState>();
+
+          if (!context.mounted) return;
+
+          AppDialog.show(
+            title: 'Supabase Sync',
+            child: _SupabaseConfigDialog(
+              key: dialogKey,
+              initialUrl: current?.url ?? '',
+              initialAnonKey: current?.anonKey ?? '',
+            ),
+            rightButtonText: 'Simpan',
+            leftButtonText: 'Batal',
+            onTapLeftButton: (context) => context.pop(),
+            onTapRightButton: (context) async {
+              final state = dialogKey.currentState;
+              if (state == null) return;
+
+              final url = state.url.trim();
+              final anonKey = state.anonKey.trim();
+
+              if (url.isEmpty || anonKey.isEmpty) {
+                AppSnackBar.showError('URL dan Anon Key wajib diisi');
+                return;
+              }
+
+              await SupabaseCredentials.save(url, anonKey);
+              if (context.mounted) context.pop();
+              AppSnackBar.show('Tersimpan. Restart app untuk mengaktifkan sync');
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _SupabaseConfigDialog extends StatefulWidget {
+  final String initialUrl;
+  final String initialAnonKey;
+
+  const _SupabaseConfigDialog({super.key, required this.initialUrl, required this.initialAnonKey});
+
+  @override
+  State<_SupabaseConfigDialog> createState() => _SupabaseConfigDialogState();
+}
+
+class _SupabaseConfigDialogState extends State<_SupabaseConfigDialog> {
+  late final TextEditingController _urlController;
+  late final TextEditingController _anonKeyController;
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController = TextEditingController(text: widget.initialUrl);
+    _anonKeyController = TextEditingController(text: widget.initialAnonKey);
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    _anonKeyController.dispose();
+    super.dispose();
+  }
+
+  String get url => _urlController.text;
+  String get anonKey => _anonKeyController.text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppTextField(
+          controller: _urlController,
+          hintText: 'Supabase URL',
+          keyboardType: TextInputType.url,
+        ),
+        const SizedBox(height: AppSizes.padding),
+        AppTextField(
+          controller: _anonKeyController,
+          hintText: 'Anon / Publishable Key',
+          maxLines: 3,
+        ),
+        const SizedBox(height: AppSizes.padding),
+        AppButton(
+          text: 'Hapus Konfigurasi',
+          textColor: Theme.of(context).colorScheme.error,
+          buttonColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+          onTap: () async {
+            await SupabaseCredentials.clear();
+            if (context.mounted) context.pop();
+            AppSnackBar.show('Konfigurasi dihapus. Restart app');
+          },
         ),
       ],
     );
