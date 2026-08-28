@@ -440,7 +440,7 @@ class _ProductUnits extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '1 ${unit.unitName} = ${unit.conversionValue} ${base.unitName}',
+                    '1 ${base.unitName} = ${unit.conversionValue} ${unit.unitName}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const Spacer(),

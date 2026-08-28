@@ -411,59 +411,17 @@ class _StockField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final units = ref.watch(productFormNotifierProvider.select((s) => s.units));
-    final stockUnit = ref.watch(productFormNotifierProvider.select((s) => s.stockUnit));
-    final unitNames = units.map((u) => u.unitName).toList();
-
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppTextField(
-            controller: controller,
-            labelText: AppLocalizations.of(context)!.product_stockLabel,
-            hintText: AppLocalizations.of(context)!.product_stockHint,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: onChanged,
-          ),
-          const SizedBox(height: 8),
-          if (unitNames.length > 1) ...[
-            AppDropDown(
-              labelText: '${AppLocalizations.of(context)!.product_stockLabel} satuan',
-              selectedValue: stockUnit,
-              dropdownItems: unitNames
-                  .map(
-                    (name) => DropdownMenuItem(value: name, child: Text(name)),
-                  )
-                  .toList(),
-              onChanged: (v) {
-                if (v != null) {
-                  ref.read(productFormNotifierProvider.notifier).onChangedStockUnit(v);
-                }
-              },
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _conversionHint(units, stockUnit),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontSize: 10,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-          ],
-        ],
+      child: AppTextField(
+        controller: controller,
+        labelText: AppLocalizations.of(context)!.product_stockLabel,
+        hintText: AppLocalizations.of(context)!.product_stockHint,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        onChanged: onChanged,
       ),
     );
-  }
-
-  String _conversionHint(List<ProductUnitEntity> units, String stockUnit) {
-    final base = units.where((u) => u.isBase).firstOrNull;
-    final selected = units.where((u) => u.unitName == stockUnit).firstOrNull;
-
-    if (base == null || selected == null || selected.isBase) return '';
-    return '1 $stockUnit = ${selected.conversionValue} ${base.unitName}. Stok dikonversi otomatis ke ${base.unitName}.';
   }
 }
 
@@ -482,6 +440,7 @@ class _UnitField extends ConsumerWidget {
       padding: const EdgeInsets.only(top: AppSizes.padding),
       child: AppDropDown(
         labelText: '${AppLocalizations.of(context)!.product_unitLabel} (default)',
+        hintText: 'Pilih satuan default',
         selectedValue: selectedUnit,
         dropdownItems: const [
           DropdownMenuItem(value: 'pcs', child: Text('pcs')),
@@ -607,7 +566,7 @@ class _UnitManagementSection extends ConsumerWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '1 ${unit.unitName} = ${unit.conversionValue} ${_findBaseUnitName(units)}',
+                                '1 ${_findBaseUnitName(units)} = ${unit.conversionValue} ${unit.unitName}',
                                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                   fontSize: 10,
                                   color: Theme.of(context).colorScheme.outline,
@@ -652,6 +611,11 @@ class _UnitManagementSection extends ConsumerWidget {
     return base?.unitName ?? 'unit';
   }
 
+  String _findBaseUnitNameOrNull(List<ProductUnitEntity> units) {
+    final base = units.where((u) => u.isBase).firstOrNull;
+    return base?.unitName ?? '';
+  }
+
   void _showUnitDialog(BuildContext context, WidgetRef ref, ProductUnitEntity? existing, int index) {
     final nameController = TextEditingController(text: existing?.unitName ?? '');
     final conversionController = TextEditingController(text: existing?.conversionValue.toString() ?? '1');
@@ -678,7 +642,7 @@ class _UnitManagementSection extends ConsumerWidget {
               AppTextField(
                 controller: conversionController,
                 labelText: 'Nilai Konversi',
-                hintText: '1 ${nameController.text} = ? base unit',
+                hintText: '1 ${_findBaseUnitNameOrNull(units)} = ? ${nameController.text}',
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
@@ -958,7 +922,12 @@ class _CreateOrUpdateButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isFormValid = ref.watch(
       productFormNotifierProvider.select((s) {
-        return (s.name?.isNotEmpty ?? false) && (s.price ?? 0) > 0 && (s.stock ?? 0) > 0 && s.units.isNotEmpty;
+        return (s.name?.isNotEmpty ?? false) &&
+            (s.price ?? 0) > 0 &&
+            (s.stock ?? 0) > 0 &&
+            s.unit != null &&
+            s.unit!.isNotEmpty &&
+            s.units.isNotEmpty;
       }),
     );
 

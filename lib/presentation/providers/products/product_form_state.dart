@@ -10,8 +10,7 @@ class ProductFormState {
   final int? price;
   final int? wholesalePrice;
   final int? stock;
-  final String stockUnit;
-  final String unit;
+  final String? unit;
   final String? barcode;
   final String? description;
   final List<ProductUnitEntity> units;
@@ -25,8 +24,7 @@ class ProductFormState {
     this.price,
     this.wholesalePrice,
     this.stock,
-    this.stockUnit = 'pcs',
-    this.unit = 'pcs',
+    this.unit,
     this.barcode,
     this.description,
     this.units = const [],
@@ -41,7 +39,6 @@ class ProductFormState {
     int? price,
     int? wholesalePrice,
     int? stock,
-    String? stockUnit,
     String? unit,
     String? barcode,
     String? description,
@@ -56,7 +53,6 @@ class ProductFormState {
       price: price ?? this.price,
       wholesalePrice: wholesalePrice ?? this.wholesalePrice,
       stock: stock ?? this.stock,
-      stockUnit: stockUnit ?? this.stockUnit,
       unit: unit ?? this.unit,
       barcode: barcode ?? this.barcode,
       description: description ?? this.description,

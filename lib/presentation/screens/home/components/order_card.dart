@@ -81,8 +81,7 @@ class _OrderCardState extends State<OrderCard> {
   }
 
   int _stockInSelectedUnit() {
-    if (widget.conversionValue <= 1) return widget.stock;
-    return (widget.stock / widget.conversionValue).floor();
+    return (widget.stock * widget.conversionValue).floor();
   }
 
   void _updateQuantity(double val) {

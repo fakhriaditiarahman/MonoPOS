@@ -49,7 +49,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
     if (res.isSuccess) {
       var product = res.data;
-      final defaultUnit = product?.unit ?? 'pcs';
+      final defaultUnit = product?.unit;
 
       state = state.copyWith(
         imageUrl: product?.imageUrl,
@@ -57,7 +57,6 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         price: product?.price,
         wholesalePrice: product?.wholesalePrice,
         stock: product?.stock,
-        stockUnit: _findBaseUnitName(product?.units ?? const []),
         unit: defaultUnit,
         barcode: product?.barcode,
         description: product?.description,
@@ -136,10 +135,10 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         createdById: userId,
         name: state.name ?? '',
         imageUrl: imageUrl ?? '',
-        stock: _convertStockToBase(state.stock ?? 0, state.stockUnit),
+        stock: state.stock ?? 0,
         price: state.price ?? 0,
         wholesalePrice: state.wholesalePrice,
-        unit: state.unit,
+        unit: state.unit ?? 'pcs',
         barcode: state.barcode,
         description: state.description ?? '',
         units: state.units,
@@ -187,10 +186,10 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         createdById: userId,
         name: state.name!,
         imageUrl: imageUrl ?? '',
-        stock: _convertStockToBase(state.stock ?? 0, state.stockUnit),
+        stock: state.stock ?? 0,
         price: state.price ?? 0,
         wholesalePrice: state.wholesalePrice,
-        unit: state.unit,
+        unit: state.unit ?? 'pcs',
         barcode: state.barcode,
         description: state.description ?? '',
         units: state.units,
@@ -267,10 +266,6 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     state = state.copyWith(stock: int.tryParse(value));
   }
 
-  void onChangedStockUnit(String value) {
-    state = state.copyWith(stockUnit: value);
-  }
-
   void onChangedUnit(String value) {
     state = state.copyWith(unit: value);
     _syncManagedUnits();
@@ -282,23 +277,44 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     final defaultUnit = state.unit;
     final units = [...state.units];
 
-    final baseIdx = units.indexWhere((u) => u.isBase);
-    final baseUnit = ProductUnitEntity(
-      unitName: 'pcs',
-      conversionValue: 1,
-      price: price,
-      wholesalePrice: wholesalePrice,
-      isBase: true,
-      productId: 0,
-      id: baseIdx >= 0 ? units[baseIdx].id : _nextUnitId(),
-    );
-    if (baseIdx >= 0) {
-      units[baseIdx] = baseUnit;
-    } else {
-      units.insert(0, baseUnit);
+    int baseIdx = units.indexWhere((u) => u.isBase);
+    if (baseIdx < 0) {
+      final defaultIdx = units.indexWhere((u) => u.unitName == defaultUnit);
+      if (defaultIdx >= 0) {
+        units[defaultIdx] = units[defaultIdx].copyWith(isBase: true);
+        baseIdx = defaultIdx;
+      } else if (defaultUnit != null) {
+        baseIdx = 0;
+        units.insert(
+          0,
+          ProductUnitEntity(
+            unitName: defaultUnit,
+            conversionValue: 1,
+            price: price,
+            wholesalePrice: wholesalePrice,
+            isBase: true,
+            productId: 0,
+            id: _nextUnitId(),
+          ),
+        );
+      }
     }
 
-    if (defaultUnit != 'pcs') {
+    if (baseIdx < 0) {
+      state = state.copyWith(units: units);
+      return;
+    }
+
+    for (int i = 0; i < units.length; i++) {
+      if (i != baseIdx && units[i].isBase) units[i] = units[i].copyWith(isBase: false);
+    }
+    units[baseIdx] = units[baseIdx].copyWith(
+      price: price,
+      wholesalePrice: wholesalePrice,
+      conversionValue: 1,
+    );
+
+    if (defaultUnit != null && defaultUnit != units[baseIdx].unitName) {
       final defIdx = units.indexWhere((u) => !u.isBase && u.unitName == defaultUnit);
       final defUnit = ProductUnitEntity(
         unitName: defaultUnit,
@@ -318,19 +334,6 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     state = state.copyWith(units: units);
   }
 
-  String _findBaseUnitName(List<ProductUnitEntity> units) {
-    final base = units.where((u) => u.isBase).firstOrNull;
-    return base?.unitName ?? 'pcs';
-  }
-
-  int _convertStockToBase(int stock, String unit) {
-    final base = state.units.where((u) => u.isBase).firstOrNull;
-    final selected = state.units.where((u) => u.unitName == unit).firstOrNull;
-
-    if (base == null || selected == null || selected.isBase) return stock;
-    return (stock * selected.conversionValue).round();
-  }
-
   void onChangedBarcode(String value) {
     state = state.copyWith(barcode: value.isEmpty ? null : value);
   }
@@ -341,15 +344,33 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
   void addUnit(ProductUnitEntity unit) {
     final units = [...state.units];
+    if (unit.isBase) {
+      for (int i = 0; i < units.length; i++) {
+        if (units[i].isBase) units[i] = units[i].copyWith(isBase: false);
+      }
+    }
+    final idx = units.indexWhere((u) => u.unitName == unit.unitName);
     final newUnit = unit.copyWith(id: unit.id ?? _nextUnitId());
-    units.add(newUnit);
+    if (idx >= 0) {
+      units[idx] = newUnit;
+    } else {
+      units.add(newUnit);
+    }
     state = state.copyWith(units: units);
+    _syncManagedUnits();
   }
 
   void updateUnit(int index, ProductUnitEntity unit) {
     final units = [...state.units];
-    units[index] = unit;
+    if (unit.isBase) {
+      for (int i = 0; i < units.length; i++) {
+        if (i != index && units[i].isBase) units[i] = units[i].copyWith(isBase: false);
+      }
+    }
+    final merged = unit.id != null ? unit : unit.copyWith(id: units[index].id);
+    units[index] = merged;
     state = state.copyWith(units: units);
+    _syncManagedUnits();
   }
 
   void removeUnit(int index) {
@@ -360,6 +381,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     );
     tieredPrices.remove(index);
     state = state.copyWith(units: units, tieredPrices: tieredPrices);
+    _syncManagedUnits();
   }
 
   void addTier(int unitIndex, ProductTierEntity tier) {
