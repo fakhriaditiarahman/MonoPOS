@@ -33,6 +33,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   }
 
   int _unitIdCounter = 0;
+  bool _isSaving = false;
 
   int _nextUnitId() => DateTime.now().millisecondsSinceEpoch + (++_unitIdCounter);
 
@@ -111,6 +112,9 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   }
 
   Future<Result<int>> createProduct() async {
+    if (_isSaving) return Result.success(data: 0);
+    _isSaving = true;
+
     try {
       final userId = _requireUserId();
       final productRepository = ref.read(productRepositoryProvider);
@@ -126,7 +130,9 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
         if (savedPath != null) imageUrl = savedPath;
       }
 
+      final id = DateTime.now().millisecondsSinceEpoch;
       var product = ProductEntity(
+        id: id,
         createdById: userId,
         name: state.name ?? '',
         imageUrl: imageUrl ?? '',
@@ -147,14 +153,20 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
       }
 
       ref.read(productsNotifierProvider.notifier).getAllProducts();
+      ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
 
       return res;
     } catch (e) {
       return Result.failure(error: e);
+    } finally {
+      _isSaving = false;
     }
   }
 
   Future<Result<void>> updatedProduct(int id) async {
+    if (_isSaving) return Result.success(data: null);
+    _isSaving = true;
+
     try {
       final userId = _requireUserId();
       final productRepository = ref.read(productRepositoryProvider);
@@ -192,10 +204,13 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
       }
 
       ref.read(productsNotifierProvider.notifier).getAllProducts();
+      ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
 
       return res;
     } catch (e) {
       return Result.failure(error: e);
+    } finally {
+      _isSaving = false;
     }
   }
 
@@ -222,6 +237,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
 
       // Refresh products
       ref.read(productsNotifierProvider.notifier).getAllProducts();
+      ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
 
       return res;
     } catch (e) {

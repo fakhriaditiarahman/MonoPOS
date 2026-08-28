@@ -55,20 +55,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  void scrollListener() async {
-    final productsState = ref.read(productsNotifierProvider);
+  void scrollListener() {
+    final productsState = ref.read(berandaProductsNotifierProvider);
 
-    if (scrollController.offset == scrollController.position.maxScrollExtent) {
-      await ref
-          .read(productsNotifierProvider.notifier)
-          .getAllProducts(
-            offset: productsState.allProducts?.length,
-          );
+    if (productsState.isLoadingMore) return;
+
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 50) {
+      ref.read(berandaProductsNotifierProvider.notifier).getAllProducts(offset: productsState.allProducts?.length);
     }
   }
 
   Future<void> onRefresh() async {
-    await ref.read(productsNotifierProvider.notifier).getAllProducts();
+    await ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
   }
 
   @override
@@ -221,8 +219,8 @@ class _ProductGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allProducts = ref.watch(productsNotifierProvider.select((p) => p.allProducts));
-    final isLoadingMore = ref.watch(productsNotifierProvider.select((p) => p.isLoadingMore));
+    final allProducts = ref.watch(berandaProductsNotifierProvider.select((p) => p.allProducts));
+    final isLoadingMore = ref.watch(berandaProductsNotifierProvider.select((p) => p.isLoadingMore));
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -375,7 +373,7 @@ class _ScanButton extends ConsumerWidget {
 
           if (barcode == null || barcode.isEmpty) return;
 
-          final products = ref.read(productsNotifierProvider).allProducts;
+          final products = ref.read(berandaProductsNotifierProvider).allProducts;
           final product = products?.where((p) => p.barcode == barcode).firstOrNull;
 
           if (product == null) {
@@ -674,11 +672,11 @@ class _SearchField extends ConsumerWidget {
       textInputAction: TextInputAction.search,
       onEditingComplete: () {
         FocusScope.of(context).unfocus();
-        ref.read(productsNotifierProvider.notifier).resetProducts();
-        ref.read(productsNotifierProvider.notifier).getAllProducts(contains: controller.text);
+        ref.read(berandaProductsNotifierProvider.notifier).resetProducts();
+        ref.read(berandaProductsNotifierProvider.notifier).getAllProducts(contains: controller.text);
       },
       onTapClearButton: () {
-        ref.read(productsNotifierProvider.notifier).getAllProducts(contains: controller.text);
+        ref.read(berandaProductsNotifierProvider.notifier).getAllProducts(contains: controller.text);
       },
     );
   }

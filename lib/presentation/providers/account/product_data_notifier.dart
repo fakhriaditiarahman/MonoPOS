@@ -120,6 +120,10 @@ class ProductDataNotifier extends Notifier<ProductDataState> {
         final productsNotifier = ref.read(productsNotifierProvider.notifier);
         productsNotifier.resetProducts();
         await productsNotifier.getAllProducts();
+
+        final berandaNotifier = ref.read(berandaProductsNotifierProvider.notifier);
+        berandaNotifier.resetProducts();
+        await berandaNotifier.getAllProducts();
       }
     } catch (e) {
       state = state.copyWith(isBusy: false, error: e.toString());

@@ -42,17 +42,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     super.dispose();
   }
 
-  void scrollListener() async {
+  void scrollListener() {
     final productsState = ref.read(productsNotifierProvider);
 
+    if (productsState.isLoadingMore) return;
+
     // Automatically load more data on end of scroll position
-    if (scrollController.offset == scrollController.position.maxScrollExtent) {
-      await ref
-          .read(productsNotifierProvider.notifier)
-          .getAllProducts(
-            offset: productsState.allProducts?.length,
-            contains: searchFieldController.text,
-          );
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 50) {
+      ref.read(productsNotifierProvider.notifier).getAllProducts(offset: productsState.allProducts?.length);
     }
   }
 

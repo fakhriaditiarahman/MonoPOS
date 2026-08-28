@@ -41,7 +41,7 @@ class _BarcodeHidListenerState extends ConsumerState<BarcodeHidListener> {
 
     _isProcessing = true;
 
-    final products = ref.read(productsNotifierProvider).allProducts;
+    final products = ref.read(berandaProductsNotifierProvider).allProducts;
     final product = products?.where((p) => p.barcode == trimmed).firstOrNull;
 
     if (product == null) {
@@ -50,9 +50,9 @@ class _BarcodeHidListenerState extends ConsumerState<BarcodeHidListener> {
 
       if (result.isSuccess && result.data != null) {
         if (mounted) {
-          await ref.read(productsNotifierProvider.notifier).getAllProducts();
+          await ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
         }
-        final refreshedProducts = ref.read(productsNotifierProvider).allProducts;
+        final refreshedProducts = ref.read(berandaProductsNotifierProvider).allProducts;
         final foundProduct = refreshedProducts?.where((p) => p.id == result.data!.id).firstOrNull;
 
         if (foundProduct != null && mounted) {

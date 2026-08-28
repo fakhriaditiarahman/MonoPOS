@@ -57,7 +57,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         }
       }
 
-      ref.read(productsNotifierProvider.notifier).getAllProducts();
+      ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
 
       if (res.isSuccess) {
         _checkLowStock(user.id);
@@ -97,7 +97,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       );
 
       if (res.isSuccess) {
-        ref.read(productsNotifierProvider.notifier).getAllProducts();
+        ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
         _checkLowStock(user.id);
       }
 
@@ -170,7 +170,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     if (index < 0 || index >= orderedProducts.length) return;
 
     final item = orderedProducts[index];
-    final products = ref.read(productsNotifierProvider).allProducts;
+    final products = ref.read(berandaProductsNotifierProvider).allProducts;
     final product = products?.where((p) => p.id == item.productId).firstOrNull;
 
     if (product == null) {
@@ -209,7 +209,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
   Future<void> onChangedOrderedProductQuantity(int index, double value) async {
     final orderedProducts = [...state.orderedProducts];
     final item = orderedProducts[index];
-    final products = ref.read(productsNotifierProvider).allProducts;
+    final products = ref.read(berandaProductsNotifierProvider).allProducts;
     final product = products?.where((p) => p.id == item.productId).firstOrNull;
 
     int price = item.price;

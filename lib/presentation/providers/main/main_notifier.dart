@@ -94,6 +94,7 @@ class MainNotifier extends Notifier<MainState> {
     }
 
     ref.read(productsNotifierProvider.notifier).getAllProducts();
+    ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
 
     state = state.copyWith(isLoaded: true);
 
