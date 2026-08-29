@@ -12,6 +12,7 @@ class PaymentSettingsNotifier extends AutoDisposeNotifier<PaymentSettingsState> 
   String _originalApiKey = '';
   String _originalMerchantId = '';
   bool _originalIsSandbox = true;
+  bool _originalTtsEnabled = true;
 
   @override
   PaymentSettingsState build() {
@@ -20,15 +21,18 @@ class PaymentSettingsNotifier extends AutoDisposeNotifier<PaymentSettingsState> 
     final apiKey = prefs.getString(Constants.klikQrisApiKey) ?? '';
     final merchantId = prefs.getString(Constants.klikQrisMerchantId) ?? '';
     final isSandbox = prefs.getBool(Constants.klikQrisIsSandbox) ?? true;
+    final ttsEnabled = prefs.getBool(Constants.klikQrisTtsEnabled) ?? true;
 
     _originalApiKey = apiKey;
     _originalMerchantId = merchantId;
     _originalIsSandbox = isSandbox;
+    _originalTtsEnabled = ttsEnabled;
 
     return PaymentSettingsState(
       apiKey: apiKey,
       merchantId: merchantId,
       isSandbox: isSandbox,
+      ttsEnabled: ttsEnabled,
       isLoaded: true,
     );
   }
@@ -48,11 +52,17 @@ class PaymentSettingsNotifier extends AutoDisposeNotifier<PaymentSettingsState> 
     _updateHasChanges();
   }
 
+  void onChangedTtsEnabled(bool value) {
+    state = state.copyWith(ttsEnabled: value);
+    _updateHasChanges();
+  }
+
   void _updateHasChanges() {
     final hasChanges =
         state.apiKey != _originalApiKey ||
         state.merchantId != _originalMerchantId ||
-        state.isSandbox != _originalIsSandbox;
+        state.isSandbox != _originalIsSandbox ||
+        state.ttsEnabled != _originalTtsEnabled;
 
     if (hasChanges != state.hasChanges) {
       state = state.copyWith(hasChanges: hasChanges);
@@ -66,10 +76,12 @@ class PaymentSettingsNotifier extends AutoDisposeNotifier<PaymentSettingsState> 
     await prefs.setString(Constants.klikQrisApiKey, state.apiKey);
     await prefs.setString(Constants.klikQrisMerchantId, state.merchantId);
     await prefs.setBool(Constants.klikQrisIsSandbox, state.isSandbox);
+    await prefs.setBool(Constants.klikQrisTtsEnabled, state.ttsEnabled);
 
     _originalApiKey = state.apiKey;
     _originalMerchantId = state.merchantId;
     _originalIsSandbox = state.isSandbox;
+    _originalTtsEnabled = state.ttsEnabled;
 
     state = state.copyWith(isSaving: false, hasChanges: false);
   }

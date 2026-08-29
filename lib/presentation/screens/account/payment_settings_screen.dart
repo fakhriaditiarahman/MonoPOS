@@ -85,6 +85,11 @@ class _PaymentSettingsScreenState extends ConsumerState<PaymentSettingsScreen> {
                     onChanged: notifier.onChangedIsSandbox,
                   ),
                   const SizedBox(height: AppSizes.padding),
+                  _TtsToggle(
+                    value: state.ttsEnabled,
+                    onChanged: notifier.onChangedTtsEnabled,
+                  ),
+                  const SizedBox(height: AppSizes.padding),
                   _InfoBox(
                     apiKey: state.apiKey,
                     merchantId: state.merchantId,
@@ -161,6 +166,56 @@ class _SandboxToggle extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value ? 'Menggunakan environment sandbox KlikQRIS' : 'Menggunakan environment production KlikQRIS',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TtsToggle extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _TtsToggle({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radius),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Suara TTS Pembayaran',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value ? 'Bacakan nominal saat QRIS lunas' : 'Suara TTS dimatikan',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
                   ),

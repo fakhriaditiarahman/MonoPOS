@@ -68,6 +68,8 @@ dependencies:
   aws_signature_v4: ^0.6.10
   aws_common: ^0.7.12
   file_picker: ^8.1.0
+  flutter_tts: ^4.0.2
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -103,6 +105,7 @@ flutter:
   assets:
     - assets/images/
     - assets/videos/
+    - assets/audio/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -169,6 +169,13 @@ class KlikQrisPaymentNotifier extends Notifier<KlikQrisPaymentState> {
       if (printResult.isFailure) {
         AppSnackBar.showError('Cetak struk gagal: ${printResult.error}');
       }
+
+      final tts = ref.read(ttsServiceProvider);
+      await tts.playCashRegister();
+      final spokenAmount = transactionResult.data!.totalAmount > 0
+          ? transactionResult.data!.totalAmount
+          : state.totalAmount;
+      await tts.speakAmount(spokenAmount);
     }
   }
 

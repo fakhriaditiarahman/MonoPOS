@@ -16,6 +16,7 @@ class Constants {
   static const String klikQrisApiKey = 'klikqris_api_key';
   static const String klikQrisMerchantId = 'klikqris_merchant_id';
   static const String klikQrisIsSandbox = 'klikqris_is_sandbox';
+  static const String klikQrisTtsEnabled = 'klikqris_tts_enabled';
 
   static const int minSyncIntervalToleranceForCriticalInMinutes = 5;
   static const int minSyncIntervalToleranceForLessCriticalInMinutes = 100;

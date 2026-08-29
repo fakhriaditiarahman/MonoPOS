@@ -12,6 +12,7 @@ import '../../core/services/logger/error_logger_service.dart';
 import '../../core/services/payment/klik_qris_payment_service.dart';
 import '../../core/services/printer/printer_service.dart';
 import '../../core/services/supabase/supabase_config.dart';
+import '../../core/services/tts/tts_service.dart';
 import '../../core/services/supabase/supabase_service.dart';
 import '../../core/services/sync/sync_service.dart';
 import '../../data/datasources/interfaces/auth_datasource.dart';
@@ -89,6 +90,13 @@ final printerServiceProvider = Provider<PrinterService>((ref) {
 final klikQrisPaymentServiceProvider = Provider<KlikQrisPaymentService>(
   (ref) => KlikQrisPaymentService(ref.watch(sharedPreferencesProvider)),
 );
+
+final ttsServiceProvider = Provider<TtsService>((ref) {
+  final service = TtsService(ref.watch(sharedPreferencesProvider));
+  final locale = ref.watch(languageNotifierProvider.select((s) => s.locale));
+  service.setLocale(locale.languageCode);
+  return service;
+});
 
 // Sync
 final syncServiceProvider = Provider<SyncService>((ref) {
