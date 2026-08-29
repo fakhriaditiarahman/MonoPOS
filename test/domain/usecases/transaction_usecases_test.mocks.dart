@@ -169,12 +169,19 @@ class MockTransactionRepository extends _i1.Mock
     String? userId, {
     required String? startDate,
     required String? endDate,
+    String? paymentStatus,
+    bool? showAllUsers = false,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
               #getTransactionsByDateRange,
               [userId],
-              {#startDate: startDate, #endDate: endDate},
+              {
+                #startDate: startDate,
+                #endDate: endDate,
+                #paymentStatus: paymentStatus,
+                #showAllUsers: showAllUsers,
+              },
             ),
             returnValue:
                 _i3.Future<_i4.Result<List<_i5.TransactionEntity>>>.value(
@@ -183,7 +190,12 @@ class MockTransactionRepository extends _i1.Mock
                     Invocation.method(
                       #getTransactionsByDateRange,
                       [userId],
-                      {#startDate: startDate, #endDate: endDate},
+                      {
+                        #startDate: startDate,
+                        #endDate: endDate,
+                        #paymentStatus: paymentStatus,
+                        #showAllUsers: showAllUsers,
+                      },
                     ),
                   ),
                 ),

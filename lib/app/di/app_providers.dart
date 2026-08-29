@@ -112,7 +112,10 @@ final supabaseInitializedProvider = FutureProvider<bool>((ref) async {
 // Datasources
 // Local Datasources
 final authLocalDataSourceProvider = Provider<AuthLocalDataSourceImpl>(
-  (ref) => AuthLocalDataSourceImpl(ref.watch(userLocalDatasourceProvider)),
+  (ref) => AuthLocalDataSourceImpl(
+    ref.watch(userLocalDatasourceProvider),
+    ref.watch(sharedPreferencesProvider),
+  ),
 );
 final productLocalDatasourceProvider = Provider<ProductLocalDatasourceImpl>(
   (ref) => ProductLocalDatasourceImpl(ref.watch(databaseServiceProvider)),

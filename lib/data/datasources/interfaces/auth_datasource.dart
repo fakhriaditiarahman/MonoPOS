@@ -12,4 +12,8 @@ abstract class AuthDataSource {
   Future<Result<void>> signOut();
 
   Future<Result<UserModel?>> getCurrentUser();
+
+  Future<Result<void>> saveSession(UserModel user);
+
+  Future<Result<void>> clearSession();
 }

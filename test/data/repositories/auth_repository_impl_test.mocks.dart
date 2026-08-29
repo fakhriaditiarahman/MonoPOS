@@ -97,6 +97,32 @@ class MockAuthLocalDataSourceImpl extends _i1.Mock
             ),
           )
           as _i3.Future<_i4.Result<_i5.UserModel?>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> saveSession(_i5.UserModel? user) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveSession, [user]),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(#saveSession, [user]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> clearSession() =>
+      (super.noSuchMethod(
+            Invocation.method(#clearSession, []),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(#clearSession, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
 }
 
 /// A class which mocks [AuthDataSource].
@@ -167,4 +193,30 @@ class MockAuthDataSource extends _i1.Mock implements _i7.AuthDataSource {
             ),
           )
           as _i3.Future<_i4.Result<_i5.UserModel?>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> saveSession(_i5.UserModel? user) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveSession, [user]),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(#saveSession, [user]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> clearSession() =>
+      (super.noSuchMethod(
+            Invocation.method(#clearSession, []),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(#clearSession, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
 }

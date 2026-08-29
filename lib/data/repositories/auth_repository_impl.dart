@@ -22,12 +22,16 @@ class AuthRepositoryImpl implements AuthRepository {
       final remote = authRemoteDataSource;
       if (remote != null) {
         final res = await remote.signInWithGoogle();
-        if (res.isSuccess) return Result.success(data: res.data!.toEntity());
+        if (res.isSuccess) {
+          await authLocalDataSource.saveSession(res.data!);
+          return Result.success(data: res.data!.toEntity());
+        }
       }
 
       final res = await authLocalDataSource.signInWithGoogle();
       if (res.isFailure) return Result.failure(error: res.error!);
 
+      await authLocalDataSource.saveSession(res.data!);
       return Result.success(data: res.data!.toEntity());
     } catch (e) {
       return Result.failure(error: e);
@@ -50,6 +54,7 @@ class AuthRepositoryImpl implements AuthRepository {
         );
         if (remoteRes.isSuccess) {
           cl('[AuthRepo] Remote auth success');
+          await authLocalDataSource.saveSession(remoteRes.data!);
           return Result.success(data: remoteRes.data!.toEntity());
         }
 
@@ -61,6 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
         if (localRes.isSuccess) {
           localUser = localRes.data!.toEntity();
           cl('[AuthRepo] Local fallback success for: $username');
+          await authLocalDataSource.saveSession(localRes.data!);
         } else {
           cl('[AuthRepo] Local fallback also failed: ${localRes.error}');
         }
@@ -73,6 +79,7 @@ class AuthRepositoryImpl implements AuthRepository {
         if (localRes.isSuccess) {
           localUser = localRes.data!.toEntity();
           cl('[AuthRepo] Local auth success for: $username');
+          await authLocalDataSource.saveSession(localRes.data!);
         } else {
           cl('[AuthRepo] Local auth failed: ${localRes.error}');
         }
@@ -110,6 +117,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<void>> signOut() async {
     try {
       await authRemoteDataSource?.signOut();
+
+      final sessionRes = await authLocalDataSource.clearSession();
+      if (sessionRes.isFailure) return Result.failure(error: sessionRes.error!);
 
       final res = await authLocalDataSource.signOut();
       if (res.isFailure) return Result.failure(error: res.error!);

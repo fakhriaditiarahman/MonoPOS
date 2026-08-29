@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../domain/usecases/auth_usecases.dart';
+import '../../../domain/usecases/params/no_param.dart';
 import '../../../domain/usecases/user_usecases.dart';
 import 'auth_state.dart';
 
@@ -13,6 +14,20 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     return const AuthState();
+  }
+
+  Future<void> restoreSession() async {
+    state = state.copyWith(isChecking: true, errorMessage: null);
+
+    final authRepository = ref.read(authRepositoryProvider);
+    final usecase = GetCurrentUserUsecase(authRepository);
+    final result = await usecase.call(NoParam());
+
+    if (result.isSuccess && result.data != null) {
+      state = AuthState(user: result.data, isChecking: false);
+    } else {
+      state = state.copyWith(isChecking: false);
+    }
   }
 
   Future<void> signIn(String username, String password) async {
@@ -49,7 +64,18 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  void signOut() {
+  Future<void> signOut() async {
+    state = state.copyWith(isChecking: true, errorMessage: null);
+
+    final authRepository = ref.read(authRepositoryProvider);
+    final usecase = SignOutUsecase(authRepository);
+    final result = await usecase.call(NoParam());
+
+    if (result.isFailure) {
+      state = state.copyWith(isChecking: false, errorMessage: result.error?.toString());
+      return;
+    }
+
     state = const AuthState();
   }
 }

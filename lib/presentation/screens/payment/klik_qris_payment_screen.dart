@@ -33,8 +33,8 @@ class _KlikQrisPaymentScreenState extends ConsumerState<KlikQrisPaymentScreen> {
 
   @override
   void dispose() {
-    _notifier.reset();
     super.dispose();
+    Future(() => _notifier.reset());
   }
 
   @override

@@ -63,6 +63,36 @@ class UserModel {
     };
   }
 
+  UserModel copyWith({
+    String? id,
+    String? email,
+    String? phone,
+    String? name,
+    String? gender,
+    String? birthdate,
+    String? imageUrl,
+    String? authProvider,
+    String? password,
+    String? role,
+    String? createdAt,
+    String? updatedAt,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      name: name ?? this.name,
+      gender: gender ?? this.gender,
+      birthdate: birthdate ?? this.birthdate,
+      imageUrl: imageUrl ?? this.imageUrl,
+      authProvider: authProvider ?? this.authProvider,
+      password: password ?? this.password,
+      role: role ?? this.role,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   factory UserModel.fromEntity(UserEntity entity) {
     return UserModel(
       id: entity.id,

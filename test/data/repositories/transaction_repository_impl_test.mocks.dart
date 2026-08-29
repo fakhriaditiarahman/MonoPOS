@@ -216,12 +216,19 @@ class MockTransactionLocalDatasourceImpl extends _i1.Mock
     String? userId, {
     required String? startDate,
     required String? endDate,
+    String? paymentStatus,
+    bool? showAllUsers = false,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
               #getTransactionsByDateRange,
               [userId],
-              {#startDate: startDate, #endDate: endDate},
+              {
+                #startDate: startDate,
+                #endDate: endDate,
+                #paymentStatus: paymentStatus,
+                #showAllUsers: showAllUsers,
+              },
             ),
             returnValue:
                 _i5.Future<_i6.Result<List<_i7.TransactionModel>>>.value(
@@ -230,7 +237,12 @@ class MockTransactionLocalDatasourceImpl extends _i1.Mock
                     Invocation.method(
                       #getTransactionsByDateRange,
                       [userId],
-                      {#startDate: startDate, #endDate: endDate},
+                      {
+                        #startDate: startDate,
+                        #endDate: endDate,
+                        #paymentStatus: paymentStatus,
+                        #showAllUsers: showAllUsers,
+                      },
                     ),
                   ),
                 ),
@@ -435,12 +447,19 @@ class MockTransactionDatasource extends _i1.Mock
     String? userId, {
     required String? startDate,
     required String? endDate,
+    String? paymentStatus,
+    bool? showAllUsers = false,
   }) =>
       (super.noSuchMethod(
             Invocation.method(
               #getTransactionsByDateRange,
               [userId],
-              {#startDate: startDate, #endDate: endDate},
+              {
+                #startDate: startDate,
+                #endDate: endDate,
+                #paymentStatus: paymentStatus,
+                #showAllUsers: showAllUsers,
+              },
             ),
             returnValue:
                 _i5.Future<_i6.Result<List<_i7.TransactionModel>>>.value(
@@ -449,7 +468,12 @@ class MockTransactionDatasource extends _i1.Mock
                     Invocation.method(
                       #getTransactionsByDateRange,
                       [userId],
-                      {#startDate: startDate, #endDate: endDate},
+                      {
+                        #startDate: startDate,
+                        #endDate: endDate,
+                        #paymentStatus: paymentStatus,
+                        #showAllUsers: showAllUsers,
+                      },
                     ),
                   ),
                 ),

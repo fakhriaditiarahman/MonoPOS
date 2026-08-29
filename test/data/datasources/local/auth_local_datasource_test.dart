@@ -5,6 +5,7 @@ import 'package:mono_pos/core/services/database/database_service.dart';
 import 'package:mono_pos/data/datasources/local/auth_local_datasource_impl.dart';
 import 'package:mono_pos/data/datasources/local/user_local_datasource_impl.dart';
 import 'package:mono_pos/data/models/user_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -17,6 +18,7 @@ void main() {
   setUpAll(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+    SharedPreferences.setMockInitialValues({});
 
     testDatabase = await openDatabase(inMemoryDatabasePath, version: 1);
 
@@ -24,7 +26,8 @@ void main() {
     await appDatabase.initTestDatabase(testDatabase: testDatabase);
 
     userLocalDatasource = UserLocalDatasourceImpl(appDatabase);
-    authLocalDatasource = AuthLocalDataSourceImpl(userLocalDatasource);
+    final sharedPreferences = await SharedPreferences.getInstance();
+    authLocalDatasource = AuthLocalDataSourceImpl(userLocalDatasource, sharedPreferences);
   });
 
   tearDownAll(() async {

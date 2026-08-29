@@ -113,6 +113,16 @@ class AuthRemoteDataSourceImpl implements AuthDataSource {
   }
 
   @override
+  Future<Result<void>> saveSession(UserModel user) async {
+    return Result.success(data: null);
+  }
+
+  @override
+  Future<Result<void>> clearSession() async {
+    return Result.success(data: null);
+  }
+
+  @override
   Future<Result<UserModel?>> getCurrentUser() async {
     try {
       final client = _client;
