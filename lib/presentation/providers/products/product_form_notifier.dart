@@ -113,10 +113,25 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   Future<Result<int>> createProduct() async {
     if (_isSaving) return Result.success(data: 0);
     _isSaving = true;
+    state = state.copyWith(isSaving: true);
 
     try {
       final userId = _requireUserId();
       final productRepository = ref.read(productRepositoryProvider);
+
+      // Cek duplikat nama
+      final nameCheck = await productRepository.getProductByName(state.name ?? '');
+      if (nameCheck.isSuccess && nameCheck.data != null) {
+        return Result.failure(error: 'Produk dengan nama "${state.name}" sudah ada');
+      }
+
+      // Cek duplikat barcode (jika diisi)
+      if (state.barcode != null && state.barcode!.isNotEmpty) {
+        final barcodeCheck = await productRepository.getProductByBarcode(state.barcode!);
+        if (barcodeCheck.isSuccess && barcodeCheck.data != null) {
+          return Result.failure(error: 'Produk dengan barcode "${state.barcode}" sudah ada');
+        }
+      }
 
       var imageUrl = state.imageUrl;
 
@@ -159,12 +174,14 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
       return Result.failure(error: e);
     } finally {
       _isSaving = false;
+      state = state.copyWith(isSaving: false);
     }
   }
 
   Future<Result<void>> updatedProduct(int id) async {
     if (_isSaving) return Result.success(data: null);
     _isSaving = true;
+    state = state.copyWith(isSaving: true);
 
     try {
       final userId = _requireUserId();
@@ -210,6 +227,7 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
       return Result.failure(error: e);
     } finally {
       _isSaving = false;
+      state = state.copyWith(isSaving: false);
     }
   }
 

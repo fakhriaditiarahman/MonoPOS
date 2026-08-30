@@ -143,6 +143,25 @@ class ProductRemoteDatasourceImpl extends ProductDatasource {
   }
 
   @override
+  Future<Result<ProductModel?>> getProductByName(String name) async {
+    try {
+      final client = _client;
+      if (client == null) return Result.success(data: null);
+
+      final res = await client.from(SupabaseConfig.productsTable).select().eq('name', name).maybeSingle();
+
+      if (res == null) return Result.success(data: null);
+
+      final product = ProductModel.fromJson(Map<String, dynamic>.from(res));
+      await _loadUnits(client, product);
+
+      return Result.success(data: product);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
   Future<Result<List<ProductModel>>> getUserProducts(
     String userId, {
     String orderBy = 'createdAt',

@@ -931,13 +931,17 @@ class _CreateOrUpdateButton extends ConsumerWidget {
       }),
     );
 
+    final isSaving = ref.watch(
+      productFormNotifierProvider.select((s) => s.isSaving),
+    );
+
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding * 1.5),
       child: AppButton(
         text: id == null
             ? AppLocalizations.of(context)!.product_addButton
             : AppLocalizations.of(context)!.product_updateButton,
-        enabled: isFormValid,
+        enabled: isFormValid && !isSaving,
         onTap: () {
           if (id != null) {
             onUpdatedProduct();

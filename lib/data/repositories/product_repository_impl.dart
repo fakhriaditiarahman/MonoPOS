@@ -80,6 +80,18 @@ class ProductRepositoryImpl extends ProductRepository {
   }
 
   @override
+  Future<Result<ProductEntity?>> getProductByName(String name) async {
+    try {
+      final local = await productLocalDatasource.getProductByName(name);
+      if (local.isFailure) return Result.failure(error: local.error!);
+
+      return Result.success(data: local.data?.toEntity());
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
   Future<Result<int>> createProduct(ProductEntity product) async {
     try {
       final data = ProductModel.fromEntity(product);

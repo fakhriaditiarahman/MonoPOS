@@ -8,6 +8,8 @@ abstract class ProductRepository {
 
   Future<Result<ProductEntity?>> getProductByBarcode(String barcode);
 
+  Future<Result<ProductEntity?>> getProductByName(String name);
+
   Future<Result<int>> createProduct(ProductEntity product);
 
   Future<Result<void>> updateProduct(ProductEntity product);

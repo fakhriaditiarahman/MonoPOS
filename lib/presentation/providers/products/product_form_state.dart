@@ -16,6 +16,7 @@ class ProductFormState {
   final List<ProductUnitEntity> units;
   final Map<int, List<ProductTierEntity>> tieredPrices;
   final bool isLoaded;
+  final bool isSaving;
 
   const ProductFormState({
     this.imageFile,
@@ -30,6 +31,7 @@ class ProductFormState {
     this.units = const [],
     this.tieredPrices = const {},
     this.isLoaded = false,
+    this.isSaving = false,
   });
 
   ProductFormState copyWith({
@@ -45,6 +47,7 @@ class ProductFormState {
     List<ProductUnitEntity>? units,
     Map<int, List<ProductTierEntity>>? tieredPrices,
     bool? isLoaded,
+    bool? isSaving,
   }) {
     return ProductFormState(
       imageFile: imageFile ?? this.imageFile,
@@ -59,6 +62,7 @@ class ProductFormState {
       units: units ?? this.units,
       tieredPrices: tieredPrices ?? this.tieredPrices,
       isLoaded: isLoaded ?? this.isLoaded,
+      isSaving: isSaving ?? this.isSaving,
     );
   }
 }

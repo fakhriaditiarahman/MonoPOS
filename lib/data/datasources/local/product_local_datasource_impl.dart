@@ -201,6 +201,26 @@ class ProductLocalDatasourceImpl extends ProductDatasource {
   }
 
   @override
+  Future<Result<ProductModel?>> getProductByName(String name) async {
+    try {
+      var res = await _databaseService.database.query(
+        DatabaseConfig.productTableName,
+        where: 'name = ?',
+        whereArgs: [name],
+        limit: 1,
+      );
+
+      if (res.isEmpty) return Result.success(data: null);
+
+      var product = await _loadProductWithUnits(res.first);
+
+      return Result.success(data: product);
+    } catch (e) {
+      return Result.failure(error: e);
+    }
+  }
+
+  @override
   Future<Result<void>> saveProductUnits(int productId, List<ProductUnitModel> units) async {
     try {
       await _databaseService.database.transaction((trx) async {

@@ -47,6 +47,7 @@ class DatabaseService {
     );
 
     await _applyMigrations(database);
+    await _addProductNameUniqueConstraint(database);
     await _seedUsers(database);
     await _migrateLegacyProductUnits();
     await _seedProducts();
@@ -213,6 +214,9 @@ class DatabaseService {
 
     // Migration: add dueDate column to Transaction
     await _addColumnIfNotExists(db, 'Transaction', 'dueDate', 'TEXT');
+
+    // Migration: add UNIQUE constraint on Product name
+    await _addProductNameUniqueConstraint(db);
   }
 
   Future<void> _seedProducts() async {
@@ -296,6 +300,30 @@ class DatabaseService {
       }
     } catch (e) {
       ce('Migration add column $column failed: $e');
+    }
+  }
+
+  Future<void> _addProductNameUniqueConstraint(Database db) async {
+    try {
+      // Check if unique index already exists
+      final indexes = await db.rawQuery("PRAGMA index_list('Product')");
+      final hasUniqueIndex = indexes.any((row) => row['unique'] == 1 && row['name'] == 'idx_product_name_unique');
+
+      if (!hasUniqueIndex) {
+        // Remove duplicate names before adding constraint (keep the one with the lowest id)
+        await db.rawDelete('''
+          DELETE FROM Product WHERE rowid NOT IN (
+            SELECT MIN(rowid) FROM Product GROUP BY name
+          )
+        ''');
+
+        await db.execute(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_product_name_unique ON Product(name)',
+        );
+        cw('Added UNIQUE constraint on Product.name');
+      }
+    } catch (e) {
+      ce('Migration add UNIQUE constraint on Product.name failed: $e');
     }
   }
 
