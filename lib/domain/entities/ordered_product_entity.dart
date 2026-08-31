@@ -12,6 +12,7 @@ class OrderedProductEntity extends Equatable {
   final String priceType;
   final String unit;
   final int conversionValue;
+  final bool isTieredPrice;
   final String? createdAt;
   final String? updatedAt;
 
@@ -27,6 +28,7 @@ class OrderedProductEntity extends Equatable {
     this.priceType = 'retail',
     this.unit = 'pcs',
     this.conversionValue = 1,
+    this.isTieredPrice = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -43,6 +45,7 @@ class OrderedProductEntity extends Equatable {
     String? priceType,
     String? unit,
     int? conversionValue,
+    bool? isTieredPrice,
     String? createdAt,
     String? updatedAt,
   }) {
@@ -58,6 +61,7 @@ class OrderedProductEntity extends Equatable {
       priceType: priceType ?? this.priceType,
       unit: unit ?? this.unit,
       conversionValue: conversionValue ?? this.conversionValue,
+      isTieredPrice: isTieredPrice ?? this.isTieredPrice,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -76,6 +80,7 @@ class OrderedProductEntity extends Equatable {
     priceType,
     unit,
     conversionValue,
+    isTieredPrice,
     createdAt,
     updatedAt,
   ];

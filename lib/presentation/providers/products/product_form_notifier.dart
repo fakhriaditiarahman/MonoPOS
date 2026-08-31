@@ -289,6 +289,21 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
     _syncManagedUnits();
   }
 
+  void addCustomUnitName(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    if (state.customUnitNames.contains(trimmed)) {
+      state = state.copyWith(unit: trimmed);
+      _syncManagedUnits();
+      return;
+    }
+    state = state.copyWith(
+      customUnitNames: [...state.customUnitNames, trimmed],
+      unit: trimmed,
+    );
+    _syncManagedUnits();
+  }
+
   void _syncManagedUnits() {
     final price = state.price ?? 0;
     final wholesalePrice = state.wholesalePrice;
@@ -394,11 +409,16 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   void removeUnit(int index) {
     final units = [...state.units];
     units.removeAt(index);
-    final tieredPrices = Map<int, List<ProductTierEntity>>.from(
-      state.tieredPrices,
-    );
-    tieredPrices.remove(index);
-    state = state.copyWith(units: units, tieredPrices: tieredPrices);
+    final newTieredPrices = <int, List<ProductTierEntity>>{};
+    for (final entry in state.tieredPrices.entries) {
+      if (entry.key == index) continue;
+      if (entry.key > index) {
+        newTieredPrices[entry.key - 1] = entry.value;
+      } else {
+        newTieredPrices[entry.key] = entry.value;
+      }
+    }
+    state = state.copyWith(units: units, tieredPrices: newTieredPrices);
     _syncManagedUnits();
   }
 

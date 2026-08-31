@@ -432,33 +432,93 @@ class _UnitField extends ConsumerWidget {
     required this.onChanged,
   });
 
+  static const _presetUnits = [
+    'pcs',
+    'dus',
+    'kg',
+    'pack',
+    'box',
+    'sachet',
+    'botol',
+    'lusin',
+    'kodi',
+    'rim',
+    'bungkus',
+  ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedUnit = ref.watch(productFormNotifierProvider.select((s) => s.unit));
+    final customUnits = ref.watch(productFormNotifierProvider.select((s) => s.customUnitNames));
+    final notifier = ref.read(productFormNotifierProvider.notifier);
+
+    final allUnits = [
+      ..._presetUnits,
+      ...customUnits.where((u) => !_presetUnits.contains(u)),
+    ];
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
-      child: AppDropDown(
-        labelText: '${AppLocalizations.of(context)!.product_unitLabel} (default)',
-        hintText: 'Pilih satuan default',
-        selectedValue: selectedUnit,
-        dropdownItems: const [
-          DropdownMenuItem(value: 'pcs', child: Text('pcs')),
-          DropdownMenuItem(value: 'dus', child: Text('dus')),
-          DropdownMenuItem(value: 'kg', child: Text('kg')),
-          DropdownMenuItem(value: 'pack', child: Text('pack')),
-          DropdownMenuItem(value: 'box', child: Text('box')),
-          DropdownMenuItem(value: 'sachet', child: Text('sachet')),
-          DropdownMenuItem(value: 'botol', child: Text('botol')),
-          DropdownMenuItem(value: 'lusin', child: Text('lusin')),
-          DropdownMenuItem(value: 'kodi', child: Text('kodi')),
-          DropdownMenuItem(value: 'rim', child: Text('rim')),
-          DropdownMenuItem(value: 'bungkus', child: Text('bungkus')),
+      child: Row(
+        children: [
+          Expanded(
+            child: AppDropDown(
+              labelText: '${AppLocalizations.of(context)!.product_unitLabel} (default)',
+              hintText: 'Pilih satuan default',
+              selectedValue: selectedUnit,
+              dropdownItems: allUnits.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+              onChanged: (v) {
+                if (v != null) onChanged(v);
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: SizedBox(
+              height: 48,
+              child: Material(
+                color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(AppSizes.radius),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppSizes.radius),
+                  onTap: () => _showAddUnitDialog(context, ref, notifier),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.add,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
-        onChanged: (v) {
-          if (v != null) onChanged(v);
-        },
       ),
+    );
+  }
+
+  void _showAddUnitDialog(BuildContext context, WidgetRef ref, ProductFormNotifier notifier) {
+    final controller = TextEditingController();
+
+    AppDialog.show(
+      title: 'Tambah Nama Satuan',
+      child: AppTextField(
+        controller: controller,
+        labelText: 'Nama Satuan',
+        hintText: 'contoh: karton, lembar',
+      ),
+      rightButtonText: 'Simpan',
+      leftButtonText: 'Batal',
+      onTapLeftButton: (ctx) => ctx.pop(),
+      onTapRightButton: (ctx) {
+        final name = controller.text.trim();
+        if (name.isNotEmpty) {
+          notifier.addCustomUnitName(name);
+        }
+        ctx.pop();
+      },
     );
   }
 }

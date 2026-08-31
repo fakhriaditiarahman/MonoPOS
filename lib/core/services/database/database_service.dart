@@ -48,6 +48,7 @@ class DatabaseService {
     );
 
     await _applyMigrations(database);
+    await _applyMigrationsV3(database);
     await _addProductNameUniqueConstraint(database);
     await _seedUsers(database);
     await _migrateLegacyProductUnits();
@@ -223,6 +224,9 @@ class DatabaseService {
   Future<void> _applyMigrationsV3(Database db) async {
     // Migration: add isCustomPrice column to Product
     await _addColumnIfNotExists(db, 'Product', 'isCustomPrice', 'INTEGER NOT NULL DEFAULT 0');
+
+    // Migration: add isTieredPrice column to OrderedProduct
+    await _addColumnIfNotExists(db, 'OrderedProduct', 'isTieredPrice', 'INTEGER NOT NULL DEFAULT 0');
   }
 
   Future<void> _seedProducts() async {
@@ -290,6 +294,25 @@ class DatabaseService {
         'wholesalePrice': wholesale,
         'isBase': 1,
       });
+
+      if (i % 10 == 8) {
+        final unitRows = await database.query(
+          DatabaseConfig.productUnitTableName,
+          where: 'productId = ?',
+          whereArgs: [productId],
+          limit: 1,
+        );
+        if (unitRows.isNotEmpty) {
+          final unitId = unitRows.first['id'];
+          await database.insert(DatabaseConfig.productTieredPriceTableName, {
+            'productUnitId': unitId,
+            'minQty': 3,
+            'maxQty': null,
+            'price': 5000,
+          });
+          cw('Added tiered price for $name: 3pcs = 5000');
+        }
+      }
     }
 
     cw('Seeded products for user: $userId');

@@ -122,6 +122,7 @@ CREATE TABLE IF NOT EXISTS '$orderedProductTableName' (
     'priceType' TEXT DEFAULT 'retail',
     'unit' TEXT DEFAULT 'pcs',
     'conversionValue' INTEGER NOT NULL DEFAULT 1,
+    'isTieredPrice' INTEGER NOT NULL DEFAULT 0,
     'createdAt' DATETIME DEFAULT CURRENT_TIMESTAMP,
     'updatedAt' DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ('id'),

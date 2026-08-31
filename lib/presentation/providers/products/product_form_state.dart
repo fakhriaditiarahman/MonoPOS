@@ -15,6 +15,7 @@ class ProductFormState {
   final String? description;
   final List<ProductUnitEntity> units;
   final Map<int, List<ProductTierEntity>> tieredPrices;
+  final List<String> customUnitNames;
   final bool isLoaded;
   final bool isSaving;
 
@@ -30,6 +31,7 @@ class ProductFormState {
     this.description,
     this.units = const [],
     this.tieredPrices = const {},
+    this.customUnitNames = const [],
     this.isLoaded = false,
     this.isSaving = false,
   });
@@ -46,6 +48,7 @@ class ProductFormState {
     String? description,
     List<ProductUnitEntity>? units,
     Map<int, List<ProductTierEntity>>? tieredPrices,
+    List<String>? customUnitNames,
     bool? isLoaded,
     bool? isSaving,
   }) {
@@ -61,6 +64,7 @@ class ProductFormState {
       description: description ?? this.description,
       units: units ?? this.units,
       tieredPrices: tieredPrices ?? this.tieredPrices,
+      customUnitNames: customUnitNames ?? this.customUnitNames,
       isLoaded: isLoaded ?? this.isLoaded,
       isSaving: isSaving ?? this.isSaving,
     );

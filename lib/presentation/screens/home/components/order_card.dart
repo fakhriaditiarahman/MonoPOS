@@ -26,6 +26,7 @@ class OrderCard extends StatefulWidget {
   final ValueChanged<String?>? onChangedUnit;
   final int conversionValue;
   final ValueChanged<String>? onChangedPriceType;
+  final bool isTieredPrice;
 
   const OrderCard({
     super.key,
@@ -44,6 +45,7 @@ class OrderCard extends StatefulWidget {
     this.onChangedUnit,
     this.conversionValue = 1,
     this.onChangedPriceType,
+    this.isTieredPrice = false,
   });
 
   @override
@@ -318,7 +320,9 @@ class _OrderCardState extends State<OrderCard> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            CurrencyFormatter.format((widget.price * quantity).round()),
+                            CurrencyFormatter.format(
+                              widget.isTieredPrice ? widget.price : (widget.price * quantity).round(),
+                            ),
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.primary,

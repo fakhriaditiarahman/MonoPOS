@@ -61,7 +61,6 @@ class ProductLocalDatasourceImpl extends ProductDatasource {
         );
 
         for (var unit in product.units) {
-          unit.id = DateTime.now().millisecondsSinceEpoch + unit.id;
           unit.productId = product.id;
           await trx.insert(
             DatabaseConfig.productUnitTableName,

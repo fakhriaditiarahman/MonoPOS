@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/di/app_providers.dart';
 import '../../../core/common/result.dart';
+import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/ordered_product_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/entities/transaction_entity.dart';
@@ -154,11 +155,14 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     String selectedUnit = unitName ?? product.unit;
     int conversion = conversionValue ?? 1;
 
-    int price = overridePrice ?? (isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price);
+    int basePrice =
+        overridePrice ?? (isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price);
+    int price = basePrice;
+    bool isTiered = false;
 
-    if (overridePrice == null) {
-      price = await _resolveTieredPrice(product, selectedUnit, qty, price);
-    }
+    final result = await _resolveTieredPrice(product, selectedUnit, qty, basePrice);
+    price = result.price;
+    isTiered = result.isTiered;
 
     if (currentIndex != -1) {
       orderedProducts[currentIndex] = orderedProducts[currentIndex].copyWith(
@@ -167,6 +171,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         priceType: finalPriceType,
         unit: selectedUnit,
         conversionValue: conversion,
+        isTieredPrice: isTiered,
       );
     } else {
       var order = OrderedProductEntity(
@@ -180,6 +185,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         priceType: finalPriceType,
         unit: selectedUnit,
         conversionValue: conversion,
+        isTieredPrice: isTiered,
       );
 
       orderedProducts.add(order);
@@ -192,7 +198,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     state = state.copyWith(selectedPriceType: value);
   }
 
-  void onChangedOrderedProductPriceType(int index, String priceType) {
+  Future<void> onChangedOrderedProductPriceType(int index, String priceType) async {
     final orderedProducts = [...state.orderedProducts];
     if (index < 0 || index >= orderedProducts.length) return;
 
@@ -219,7 +225,9 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       newPrice = isGrosir && product.wholesalePrice != null ? product.wholesalePrice! : product.price;
     }
 
-    orderedProducts[index] = item.copyWith(price: newPrice, priceType: priceType);
+    final result = await _resolveTieredPrice(product, item.unit, item.quantity, newPrice);
+
+    orderedProducts[index] = item.copyWith(price: result.price, priceType: priceType, isTieredPrice: result.isTiered);
     state = state.copyWith(orderedProducts: orderedProducts);
   }
 
@@ -248,41 +256,64 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     final product = products?.where((p) => p.id == item.productId).firstOrNull;
 
     int price = item.price;
+    bool isTiered = item.isTieredPrice;
     if (product != null) {
-      price = await _resolveTieredPrice(product, item.unit, value, item.price);
+      final result = await _resolveTieredPrice(product, item.unit, value, item.price);
+      price = result.price;
+      isTiered = result.isTiered;
     }
 
-    orderedProducts[index] = item.copyWith(quantity: value, price: price);
+    orderedProducts[index] = item.copyWith(quantity: value, price: price, isTieredPrice: isTiered);
     state = state.copyWith(orderedProducts: orderedProducts);
   }
 
-  Future<int> _resolveTieredPrice(ProductEntity product, String unitName, double qty, int fallbackPrice) async {
+  Future<({int price, bool isTiered})> _resolveTieredPrice(
+    ProductEntity product,
+    String unitName,
+    double qty,
+    int fallbackPrice,
+  ) async {
     try {
-      if (product.units.isEmpty) return fallbackPrice;
+      if (product.units.isEmpty) {
+        cl('TieredPrice: product "${product.name}" has no units');
+        return (price: fallbackPrice, isTiered: false);
+      }
 
       var unit = product.units.firstWhere(
         (u) => u.unitName == unitName,
         orElse: () => product.units.first,
       );
 
-      if (unit.id == null || unit.id! <= 0) return fallbackPrice;
+      if (unit.id == null || unit.id! <= 0) {
+        cl('TieredPrice: unit.id is null or <= 0 for "${product.name}" unit "$unitName"');
+        return (price: fallbackPrice, isTiered: false);
+      }
 
       final productRepository = ref.read(productRepositoryProvider);
       final tierRes = await GetProductTiersUsecase(productRepository).call(unit.id!);
-      if (!tierRes.isSuccess || tierRes.data == null || tierRes.data!.isEmpty) return fallbackPrice;
+      if (!tierRes.isSuccess || tierRes.data == null || tierRes.data!.isEmpty) {
+        cl('TieredPrice: no tiers found for unit.id=${unit.id} (${unit.unitName})');
+        return (price: fallbackPrice, isTiered: false);
+      }
 
+      final intQty = qty.round();
       for (final tier in tierRes.data!) {
-        final maxQty = tier.maxQty;
-        if (maxQty != null) {
-          if (qty >= tier.minQty && qty <= maxQty) return tier.price;
-        } else {
-          if (qty >= tier.minQty) return tier.price;
+        if (intQty >= tier.minQty && intQty % tier.minQty == 0) {
+          final bundles = intQty ~/ tier.minQty;
+          cl(
+            'TieredPrice: tier matched! qty=$intQty, minQty=${tier.minQty}, tierPrice=${tier.price}, bundles=$bundles, total=${bundles * tier.price}',
+          );
+          return (price: bundles * tier.price, isTiered: true);
         }
       }
 
-      return fallbackPrice;
-    } catch (_) {
-      return fallbackPrice;
+      cl(
+        'TieredPrice: no tier matched for qty=$intQty, tiers=${tierRes.data!.map((t) => 'min=${t.minQty}p=${t.price}').join(', ')}',
+      );
+      return (price: fallbackPrice, isTiered: false);
+    } catch (e) {
+      cl('TieredPrice ERROR: $e');
+      return (price: fallbackPrice, isTiered: false);
     }
   }
 
@@ -312,7 +343,9 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
 
   int getTotalAmount() {
     if (state.orderedProducts.isEmpty) return 0;
-    return state.orderedProducts.map((e) => (e.price * e.quantity).round()).reduce((a, b) => a + b);
+    return state.orderedProducts
+        .map((e) => e.isTieredPrice ? e.price : (e.price * e.quantity).round())
+        .reduce((a, b) => a + b);
   }
 
   static const int _lowStockThreshold = 5;

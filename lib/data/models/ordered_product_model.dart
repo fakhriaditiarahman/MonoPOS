@@ -12,6 +12,7 @@ class OrderedProductModel {
   String priceType;
   String unit;
   int conversionValue;
+  bool isTieredPrice;
   String? createdAt;
   String? updatedAt;
 
@@ -27,6 +28,7 @@ class OrderedProductModel {
     this.priceType = 'retail',
     this.unit = 'pcs',
     this.conversionValue = 1,
+    this.isTieredPrice = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -44,6 +46,7 @@ class OrderedProductModel {
       priceType: json['priceType'] ?? 'retail',
       unit: json['unit'] ?? 'pcs',
       conversionValue: json['conversionValue'] ?? 1,
+      isTieredPrice: json['isTieredPrice'] == 1 || json['isTieredPrice'] == true,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -62,6 +65,7 @@ class OrderedProductModel {
       'priceType': priceType,
       'unit': unit,
       'conversionValue': conversionValue,
+      'isTieredPrice': isTieredPrice ? 1 : 0,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -80,6 +84,7 @@ class OrderedProductModel {
       priceType: entity.priceType,
       unit: entity.unit,
       conversionValue: entity.conversionValue,
+      isTieredPrice: entity.isTieredPrice,
       createdAt: entity.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: entity.updatedAt ?? DateTime.now().toIso8601String(),
     );
@@ -98,6 +103,7 @@ class OrderedProductModel {
       priceType: priceType,
       unit: unit,
       conversionValue: conversionValue,
+      isTieredPrice: isTieredPrice,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
