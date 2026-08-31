@@ -127,6 +127,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
   final _amountController = TextEditingController();
   final _customerController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _lainnyaPriceController = TextEditingController();
   List<CustomerEntity> _customerSuggestions = [];
   bool _showCustomerDropdown = false;
 
@@ -135,6 +136,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     _amountController.dispose();
     _customerController.dispose();
     _descriptionController.dispose();
+    _lainnyaPriceController.dispose();
     super.dispose();
   }
 
@@ -171,9 +173,10 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
   Future<void> onPay({
     required GoRouter router,
     required HomeNotifier homeNotifier,
+    required int lainnyaPrice,
   }) async {
     var res = await AppDialog.showProgress(() {
-      return homeNotifier.createTransaction();
+      return homeNotifier.createTransaction(lainnyaPrice: lainnyaPrice);
     });
 
     if (res.isSuccess) {
@@ -186,9 +189,10 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
   Future<void> onPayQris({
     required GoRouter router,
     required HomeNotifier homeNotifier,
+    required int lainnyaPrice,
   }) async {
     var res = await AppDialog.showProgress(() {
-      return homeNotifier.createQrisTransaction();
+      return homeNotifier.createQrisTransaction(lainnyaPrice: lainnyaPrice);
     });
 
     if (res.isSuccess) {
@@ -196,6 +200,11 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
     } else {
       AppDialog.showError(error: res.error?.toString());
     }
+  }
+
+  int _getLainnyaPrice() {
+    final clean = _lainnyaPriceController.text.replaceAll('.', '');
+    return int.tryParse(clean) ?? 0;
   }
 
   @override
@@ -280,6 +289,30 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           },
         ),
         const SizedBox(height: AppSizes.padding),
+        AppTextField(
+          keyboardType: TextInputType.number,
+          controller: _lainnyaPriceController,
+          labelText: 'Harga Lainnya',
+          hintText: 'Masukkan harga barang lainnya (opsional)',
+          prefixWidget: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Rp',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            RupiahInputFormatter(),
+          ],
+          onChanged: (val) {
+            setState(() {});
+          },
+        ),
+        const SizedBox(height: AppSizes.padding),
         Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -345,6 +378,65 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           hintText: AppLocalizations.of(context)!.cart_descriptionHint,
           onChanged: (v) => homeNotifier.onChangedDescription(v),
         ),
+        const SizedBox(height: AppSizes.padding),
+        if (_getLainnyaPrice() > 0) ...[
+          Container(
+            padding: const EdgeInsets.all(AppSizes.padding),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(AppSizes.radius),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Subtotal Produk',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    Text(
+                      CurrencyFormatter.format(homeNotifier.getTotalAmount()),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Harga Lainnya',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    Text(
+                      CurrencyFormatter.format(_getLainnyaPrice()),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+                const Divider(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      CurrencyFormatter.format(homeNotifier.getTotalAmount() + _getLainnyaPrice()),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: AppSizes.padding * 1.5),
         Row(
           children: [
@@ -366,20 +458,24 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                 text: AppLocalizations.of(context)!.home_pay,
                 enabled: homeState.selectedPaymentMethod == 'qris'
                     ? true
-                    : (int.tryParse(_amountController.text.replaceAll('.', '')) ?? 0) >= homeNotifier.getTotalAmount(),
+                    : (int.tryParse(_amountController.text.replaceAll('.', '')) ?? 0) >=
+                          (homeNotifier.getTotalAmount() + _getLainnyaPrice()),
                 onTap: () {
                   final router = ref.read(goRouterProvider);
+                  final lainnyaPrice = _getLainnyaPrice();
 
                   context.pop();
                   if (homeState.selectedPaymentMethod == 'qris') {
                     onPayQris(
                       homeNotifier: homeNotifier,
                       router: router,
+                      lainnyaPrice: lainnyaPrice,
                     );
                   } else {
                     onPay(
                       homeNotifier: homeNotifier,
                       router: router,
+                      lainnyaPrice: lainnyaPrice,
                     );
                   }
                 },

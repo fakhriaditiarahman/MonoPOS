@@ -16,6 +16,7 @@ class ProductModel {
   List<ProductUnitModel> units;
   String? createdAt;
   String? updatedAt;
+  bool isCustomPrice;
 
   ProductModel({
     required this.id,
@@ -32,6 +33,7 @@ class ProductModel {
     this.units = const [],
     this.createdAt,
     this.updatedAt,
+    this.isCustomPrice = false,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -50,6 +52,7 @@ class ProductModel {
       units: json['units'] != null ? (json['units'] as List).map((e) => ProductUnitModel.fromJson(e)).toList() : [],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
+      isCustomPrice: json['isCustomPrice'] == 1 || json['isCustomPrice'] == true,
     );
   }
 
@@ -69,6 +72,7 @@ class ProductModel {
       'units': units.map((e) => e.toJson()).toList(),
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'isCustomPrice': isCustomPrice ? 1 : 0,
     };
   }
 
@@ -88,6 +92,7 @@ class ProductModel {
       units: entity.units.map((e) => ProductUnitModel.fromEntity(e)).toList(),
       createdAt: entity.createdAt ?? DateTime.now().toIso8601String(),
       updatedAt: entity.updatedAt ?? DateTime.now().toIso8601String(),
+      isCustomPrice: entity.isCustomPrice,
     );
   }
 
@@ -107,6 +112,7 @@ class ProductModel {
       units: units.map((e) => e.toEntity()).toList(),
       createdAt: createdAt,
       updatedAt: updatedAt,
+      isCustomPrice: isCustomPrice,
     );
   }
 }

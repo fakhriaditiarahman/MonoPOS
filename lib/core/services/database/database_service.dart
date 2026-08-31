@@ -43,6 +43,7 @@ class DatabaseService {
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) await _applyMigrations(db);
+        if (oldVersion < 3) await _applyMigrationsV3(db);
       },
     );
 
@@ -217,6 +218,11 @@ class DatabaseService {
 
     // Migration: add UNIQUE constraint on Product name
     await _addProductNameUniqueConstraint(db);
+  }
+
+  Future<void> _applyMigrationsV3(Database db) async {
+    // Migration: add isCustomPrice column to Product
+    await _addColumnIfNotExists(db, 'Product', 'isCustomPrice', 'INTEGER NOT NULL DEFAULT 0');
   }
 
   Future<void> _seedProducts() async {

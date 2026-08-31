@@ -24,11 +24,14 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     return const HomeState();
   }
 
-  Future<Result<int>> createTransaction() async {
+  Future<Result<int>> createTransaction({int lainnyaPrice = 0}) async {
     try {
       final authState = ref.read(authNotifierProvider);
       if (!authState.isAuthenticated) throw 'Unauthenticated!';
       final user = authState.user!;
+
+      final orderedProducts = _buildOrderedList(lainnyaPrice);
+      final totalAmount = getTotalAmount() + lainnyaPrice;
 
       var transaction = TransactionEntity(
         id: DateTime.now().millisecondsSinceEpoch,
@@ -37,13 +40,13 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
         customerId: state.customerId,
         customerName: state.customerName,
         description: state.description,
-        orderedProducts: state.orderedProducts,
+        orderedProducts: orderedProducts,
         createdById: user.id,
         createdBy: user,
         receivedAmount: state.receivedAmount,
-        returnAmount: state.receivedAmount - getTotalAmount(),
-        totalOrderedProduct: state.orderedProducts.length,
-        totalAmount: getTotalAmount(),
+        returnAmount: state.receivedAmount - totalAmount,
+        totalOrderedProduct: orderedProducts.length,
+        totalAmount: totalAmount,
         paymentStatus: 'paid',
       );
 
@@ -69,31 +72,34 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     }
   }
 
-  Future<Result<int>> createQrisTransaction() async {
+  Future<Result<int>> createQrisTransaction({int lainnyaPrice = 0}) async {
     try {
       final authState = ref.read(authNotifierProvider);
       if (!authState.isAuthenticated) throw 'Unauthenticated!';
       final user = authState.user!;
+
+      final orderedProducts = _buildOrderedList(lainnyaPrice);
+      final totalAmount = getTotalAmount() + lainnyaPrice;
 
       var transaction = TransactionEntity(
         id: DateTime.now().millisecondsSinceEpoch,
         paymentMethod: 'qris',
         customerName: state.customerName,
         description: state.description,
-        orderedProducts: state.orderedProducts,
+        orderedProducts: orderedProducts,
         createdById: user.id,
         createdBy: user,
-        receivedAmount: getTotalAmount(),
+        receivedAmount: totalAmount,
         returnAmount: 0,
-        totalOrderedProduct: state.orderedProducts.length,
-        totalAmount: getTotalAmount(),
+        totalOrderedProduct: orderedProducts.length,
+        totalAmount: totalAmount,
         paymentStatus: 'pending',
       );
 
       final qrisNotifier = ref.read(klikQrisPaymentNotifierProvider.notifier);
       var res = await qrisNotifier.startKlikQrisPayment(
         transaction: transaction,
-        totalAmount: getTotalAmount(),
+        totalAmount: totalAmount,
       );
 
       if (res.isSuccess) {
@@ -105,6 +111,27 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     } catch (e) {
       return Result.failure(error: e);
     }
+  }
+
+  List<OrderedProductEntity> _buildOrderedList(int lainnyaPrice) {
+    final orderedProducts = [...state.orderedProducts];
+    if (lainnyaPrice > 0) {
+      orderedProducts.add(
+        OrderedProductEntity(
+          id: DateTime.now().millisecondsSinceEpoch,
+          productId: 0,
+          quantity: 1,
+          stock: 0,
+          name: 'Lainnya',
+          imageUrl: '',
+          price: lainnyaPrice,
+          priceType: 'retail',
+          unit: 'item',
+          conversionValue: 1,
+        ),
+      );
+    }
+    return orderedProducts;
   }
 
   void onChangedIsPanelExpanded(bool val) {
@@ -193,6 +220,14 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
     }
 
     orderedProducts[index] = item.copyWith(price: newPrice, priceType: priceType);
+    state = state.copyWith(orderedProducts: orderedProducts);
+  }
+
+  void onChangedOrderedProductPrice(int index, int newPrice) {
+    final orderedProducts = [...state.orderedProducts];
+    if (index < 0 || index >= orderedProducts.length) return;
+
+    orderedProducts[index] = orderedProducts[index].copyWith(price: newPrice);
     state = state.copyWith(orderedProducts: orderedProducts);
   }
 

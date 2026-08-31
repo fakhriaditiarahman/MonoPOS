@@ -3,7 +3,7 @@ class DatabaseConfig {
   DatabaseConfig._();
 
   static const String dbPath = 'app_database.db';
-  static const int version = 2;
+  static const int version = 3;
 
   static const String userTableName = 'User';
   static const String productTableName = 'Product';

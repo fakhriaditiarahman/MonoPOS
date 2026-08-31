@@ -17,6 +17,7 @@ class ProductEntity extends Equatable {
   final String? createdAt;
   final String? updatedAt;
   final List<ProductUnitEntity> units;
+  final bool isCustomPrice;
 
   const ProductEntity({
     this.id,
@@ -33,6 +34,7 @@ class ProductEntity extends Equatable {
     this.createdAt,
     this.updatedAt,
     this.units = const [],
+    this.isCustomPrice = false,
   });
 
   ProductEntity copyWith({
@@ -50,6 +52,7 @@ class ProductEntity extends Equatable {
     String? createdAt,
     String? updatedAt,
     List<ProductUnitEntity>? units,
+    bool? isCustomPrice,
   }) {
     return ProductEntity(
       id: id ?? this.id,
@@ -66,6 +69,7 @@ class ProductEntity extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       units: units ?? this.units,
+      isCustomPrice: isCustomPrice ?? this.isCustomPrice,
     );
   }
 
@@ -85,5 +89,6 @@ class ProductEntity extends Equatable {
     createdAt,
     updatedAt,
     units,
+    isCustomPrice,
   ];
 }
