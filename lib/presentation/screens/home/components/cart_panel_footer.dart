@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -7,7 +6,6 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../../../app/di/app_providers.dart';
 import '../../../../core/themes/app_sizes.dart';
 import '../../../../core/utilities/currency_formatter.dart';
-import '../../../../core/utilities/rupiah_input_formatter.dart';
 import '../../../../domain/entities/customer_entity.dart';
 import '../../../../generated/app_localizations.dart';
 import '../../../providers/customer/customer_notifier.dart';
@@ -222,20 +220,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
             controller: _amountController,
             labelText: AppLocalizations.of(context)!.cart_receivedAmount,
             hintText: AppLocalizations.of(context)!.cart_receivedAmountHint,
-            prefixWidget: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Rp',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ),
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              RupiahInputFormatter(),
-            ],
+            type: AppTextFieldType.currency,
             onChanged: (val) {
               final clean = val.replaceAll('.', '');
               homeNotifier.onChangedReceivedAmount(int.tryParse(clean) ?? 0);
@@ -294,20 +279,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           controller: _lainnyaPriceController,
           labelText: 'Harga Lainnya',
           hintText: 'Masukkan harga barang lainnya (opsional)',
-          prefixWidget: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Rp',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            RupiahInputFormatter(),
-          ],
+          type: AppTextFieldType.currency,
           onChanged: (val) {
             setState(() {});
           },
