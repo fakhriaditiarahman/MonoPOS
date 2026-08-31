@@ -4,11 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
+import '../../../app/di/app_providers.dart';
 import '../../../core/services/supabase/supabase_config.dart';
 import '../../../core/services/sync/sync_service.dart';
 import '../../../core/themes/app_sizes.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../domain/entities/product_tier_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
+import '../../../domain/usecases/product_usecases.dart';
 import '../../providers/home/home_notifier.dart';
 import '../../providers/main/main_notifier.dart';
 import '../../providers/products/products_notifier.dart';
@@ -568,7 +571,7 @@ class _NetworkInfo extends ConsumerWidget {
   }
 }
 
-class _AddToCartDialog extends StatefulWidget {
+class _AddToCartDialog extends ConsumerStatefulWidget {
   final ProductEntity product;
   final double initialQuantity;
   final bool isGrosir;
@@ -583,21 +586,24 @@ class _AddToCartDialog extends StatefulWidget {
   });
 
   @override
-  State<_AddToCartDialog> createState() => _AddToCartDialogState();
+  ConsumerState<_AddToCartDialog> createState() => _AddToCartDialogState();
 }
 
-class _AddToCartDialogState extends State<_AddToCartDialog> {
+class _AddToCartDialogState extends ConsumerState<_AddToCartDialog> {
   late double _quantity;
   late String _selectedUnit;
   late int _conversionValue;
   late int _price;
   late String _priceType;
+  bool _isTieredPrice = false;
+  final Map<int, List<ProductTierEntity>> _unitTiers = {};
 
   double get quantity => _quantity;
   String get selectedUnit => _selectedUnit;
   int get conversionValue => _conversionValue;
   int get price => _price;
   String get priceType => _priceType;
+  bool get isTieredPrice => _isTieredPrice;
 
   @override
   void initState() {
@@ -611,12 +617,42 @@ class _AddToCartDialogState extends State<_AddToCartDialog> {
     );
     _selectedUnit = defaultUnit.unitName;
     _conversionValue = defaultUnit.conversionValue;
+    _loadTiers();
+  }
+
+  Future<void> _loadTiers() async {
+    final productRepository = ref.read(productRepositoryProvider);
+    for (final unit in widget.effectiveUnits) {
+      if (unit.id != null && unit.id! > 0 && !_unitTiers.containsKey(unit.id)) {
+        final res = await GetProductTiersUsecase(productRepository).call(unit.id!);
+        if (res.isSuccess && res.data != null && res.data!.isNotEmpty) {
+          _unitTiers[unit.id!] = res.data!;
+        }
+      }
+    }
     _recomputePrice();
+    if (mounted) setState(() {});
   }
 
   void _recomputePrice() {
-    var unit = widget.effectiveUnits.firstWhere((u) => u.unitName == _selectedUnit);
-    _price = _priceType == 'grosir' && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
+    final unit = widget.effectiveUnits.firstWhere((u) => u.unitName == _selectedUnit);
+    final basePrice = _priceType == 'grosir' && unit.wholesalePrice != null ? unit.wholesalePrice! : unit.price;
+
+    final tiers = unit.id != null ? _unitTiers[unit.id] : null;
+    if (tiers != null && tiers.isNotEmpty) {
+      final intQty = _quantity.round();
+      for (final tier in tiers) {
+        if (intQty >= tier.minQty && intQty % tier.minQty == 0) {
+          final bundles = intQty ~/ tier.minQty;
+          _price = bundles * tier.price;
+          _isTieredPrice = true;
+          return;
+        }
+      }
+    }
+
+    _price = basePrice;
+    _isTieredPrice = false;
   }
 
   void _onChangedUnit(String? val) {
@@ -651,8 +687,11 @@ class _AddToCartDialogState extends State<_AddToCartDialog> {
       conversionValue: _conversionValue,
       onChangedUnit: _onChangedUnit,
       onChangedPriceType: _onChangedPriceType,
-      onChangedQuantity: (val) {
+      isTieredPrice: _isTieredPrice,
+      onChangedQuantity: (val) async {
         _quantity = val;
+        _recomputePrice();
+        if (mounted) setState(() {});
       },
     );
   }
