@@ -336,7 +336,12 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
           hintText: 'Masukkan harga barang lainnya (opsional)',
           type: AppTextFieldType.currency,
           onChanged: (val) {
-            setState(() {});
+            setState(() {
+              if (_selectedQuickAmount == 'pas') {
+                final total = homeNotifier.getTotalAmount() + _getLainnyaPrice();
+                homeNotifier.onChangedReceivedAmount(total);
+              }
+            });
           },
         ),
         const SizedBox(height: AppSizes.padding),
@@ -485,8 +490,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                 text: AppLocalizations.of(context)!.home_pay,
                 enabled: homeState.selectedPaymentMethod == 'qris'
                     ? true
-                    : (int.tryParse(_amountController.text.replaceAll('.', '')) ?? 0) >=
-                          (homeNotifier.getTotalAmount() + _getLainnyaPrice()),
+                    : homeState.receivedAmount >= (homeNotifier.getTotalAmount() + _getLainnyaPrice()),
                 onTap: () {
                   final router = ref.read(goRouterProvider);
                   final lainnyaPrice = _getLainnyaPrice();
