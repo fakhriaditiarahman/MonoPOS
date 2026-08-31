@@ -617,6 +617,7 @@ class _AddToCartDialogState extends ConsumerState<_AddToCartDialog> {
     );
     _selectedUnit = defaultUnit.unitName;
     _conversionValue = defaultUnit.conversionValue;
+    _recomputePrice();
     _loadTiers();
   }
 

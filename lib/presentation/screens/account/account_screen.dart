@@ -706,6 +706,9 @@ class _SupabaseConfigButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isConfigured = SupabaseConfig.isConfigured;
+    final isAdmin = ref.watch(authNotifierProvider.select((s) => s.user?.role?.value == 'admin'));
+
+    if (!isAdmin) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSizes.padding),
