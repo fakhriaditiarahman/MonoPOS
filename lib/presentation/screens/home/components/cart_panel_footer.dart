@@ -128,6 +128,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
   final _lainnyaPriceController = TextEditingController();
   List<CustomerEntity> _customerSuggestions = [];
   bool _showCustomerDropdown = false;
+  String? _selectedQuickAmount;
 
   @override
   void dispose() {
@@ -224,7 +225,61 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
             onChanged: (val) {
               final clean = val.replaceAll('.', '');
               homeNotifier.onChangedReceivedAmount(int.tryParse(clean) ?? 0);
+              setState(() => _selectedQuickAmount = null);
             },
+          ),
+          const SizedBox(height: AppSizes.padding),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  text: 'Uang Pas',
+                  buttonColor: _selectedQuickAmount == 'pas' ? Colors.orange : Theme.of(context).colorScheme.surface,
+                  borderColor: _selectedQuickAmount == 'pas' ? Colors.orange : Theme.of(context).colorScheme.outline,
+                  textColor: _selectedQuickAmount == 'pas' ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  onTap: () {
+                    final total = homeNotifier.getTotalAmount() + _getLainnyaPrice();
+                    _amountController.text = CurrencyFormatter.format(total);
+                    homeNotifier.onChangedReceivedAmount(total);
+                    setState(() => _selectedQuickAmount = 'pas');
+                  },
+                ),
+              ),
+              const SizedBox(width: AppSizes.padding / 2),
+              Expanded(
+                child: AppButton(
+                  text: '50 Ribu',
+                  buttonColor: _selectedQuickAmount == '50k' ? Colors.orange : Theme.of(context).colorScheme.surface,
+                  borderColor: _selectedQuickAmount == '50k' ? Colors.orange : Theme.of(context).colorScheme.outline,
+                  textColor: _selectedQuickAmount == '50k' ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  onTap: () {
+                    _amountController.text = CurrencyFormatter.format(50000);
+                    homeNotifier.onChangedReceivedAmount(50000);
+                    setState(() => _selectedQuickAmount = '50k');
+                  },
+                ),
+              ),
+              const SizedBox(width: AppSizes.padding / 2),
+              Expanded(
+                child: AppButton(
+                  text: '100 Ribu',
+                  buttonColor: _selectedQuickAmount == '100k' ? Colors.orange : Theme.of(context).colorScheme.surface,
+                  borderColor: _selectedQuickAmount == '100k' ? Colors.orange : Theme.of(context).colorScheme.outline,
+                  textColor: _selectedQuickAmount == '100k' ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  onTap: () {
+                    _amountController.text = CurrencyFormatter.format(100000);
+                    homeNotifier.onChangedReceivedAmount(100000);
+                    setState(() => _selectedQuickAmount = '100k');
+                  },
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSizes.padding),
         ],
