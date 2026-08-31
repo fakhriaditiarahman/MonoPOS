@@ -271,12 +271,12 @@ class ProductFormNotifier extends AutoDisposeNotifier<ProductFormState> {
   }
 
   void onChangedPrice(String value) {
-    state = state.copyWith(price: int.tryParse(value));
+    state = state.copyWith(price: int.tryParse(value.replaceAll('.', '')));
     _syncManagedUnits();
   }
 
   void onChangedWholesalePrice(String value) {
-    state = state.copyWith(wholesalePrice: int.tryParse(value));
+    state = state.copyWith(wholesalePrice: int.tryParse(value.replaceAll('.', '')));
     _syncManagedUnits();
   }
 

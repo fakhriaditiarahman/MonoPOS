@@ -11,6 +11,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/themes/app_sizes.dart';
 import '../../../core/utilities/currency_formatter.dart';
+import '../../../core/utilities/rupiah_input_formatter.dart';
 import '../../../domain/entities/product_tier_entity.dart';
 import '../../../domain/entities/product_unit_entity.dart';
 import '../../providers/products/product_form_notifier.dart';
@@ -52,8 +53,18 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
       final state = ref.read(productFormNotifierProvider);
       nameController.text = state.name ?? '';
-      priceController.text = state.price?.toString() ?? '';
-      wholesalePriceController.text = state.wholesalePrice?.toString() ?? '';
+      priceController.text = RupiahInputFormatter()
+          .formatEditUpdate(
+            const TextEditingValue(text: ''),
+            TextEditingValue(text: state.price?.toString() ?? ''),
+          )
+          .text;
+      wholesalePriceController.text = RupiahInputFormatter()
+          .formatEditUpdate(
+            const TextEditingValue(text: ''),
+            TextEditingValue(text: state.wholesalePrice?.toString() ?? ''),
+          )
+          .text;
       stockController.text = state.stock?.toString() ?? '';
       barcodeController.text = state.barcode ?? '';
       descController.text = state.description ?? '';
@@ -679,8 +690,22 @@ class _UnitManagementSection extends ConsumerWidget {
   void _showUnitDialog(BuildContext context, WidgetRef ref, ProductUnitEntity? existing, int index) {
     final nameController = TextEditingController(text: existing?.unitName ?? '');
     final conversionController = TextEditingController(text: existing?.conversionValue.toString() ?? '1');
-    final priceController = TextEditingController(text: existing?.price.toString() ?? '');
-    final wholesalePriceController = TextEditingController(text: existing?.wholesalePrice?.toString() ?? '');
+    final priceController = TextEditingController(
+      text: RupiahInputFormatter()
+          .formatEditUpdate(
+            const TextEditingValue(text: ''),
+            TextEditingValue(text: existing?.price.toString() ?? ''),
+          )
+          .text,
+    );
+    final wholesalePriceController = TextEditingController(
+      text: RupiahInputFormatter()
+          .formatEditUpdate(
+            const TextEditingValue(text: ''),
+            TextEditingValue(text: existing?.wholesalePrice?.toString() ?? ''),
+          )
+          .text,
+    );
     bool isBase = existing?.isBase ?? false;
 
     final units = ref.read(productFormNotifierProvider).units;
@@ -746,8 +771,8 @@ class _UnitManagementSection extends ConsumerWidget {
         final unit = ProductUnitEntity(
           unitName: nameController.text,
           conversionValue: int.tryParse(conversionController.text) ?? 1,
-          price: int.tryParse(priceController.text) ?? 0,
-          wholesalePrice: int.tryParse(wholesalePriceController.text),
+          price: int.tryParse(priceController.text.replaceAll('.', '')) ?? 0,
+          wholesalePrice: int.tryParse(wholesalePriceController.text.replaceAll('.', '')),
           isBase: isBase,
           productId: 0,
         );
@@ -889,7 +914,14 @@ class _TieredPriceSection extends ConsumerWidget {
   ) {
     final minQtyController = TextEditingController(text: existing?.minQty.toString() ?? '');
     final maxQtyController = TextEditingController(text: existing?.maxQty?.toString() ?? '');
-    final priceController = TextEditingController(text: existing?.price.toString() ?? '');
+    final priceController = TextEditingController(
+      text: RupiahInputFormatter()
+          .formatEditUpdate(
+            const TextEditingValue(text: ''),
+            TextEditingValue(text: existing?.price.toString() ?? ''),
+          )
+          .text,
+    );
 
     AppDialog.show(
       title: existing == null ? 'Tambah Harga Bertingkat' : 'Edit Harga Bertingkat',
@@ -928,7 +960,7 @@ class _TieredPriceSection extends ConsumerWidget {
           productUnitId: 0,
           minQty: int.tryParse(minQtyController.text) ?? 1,
           maxQty: int.tryParse(maxQtyController.text),
-          price: int.tryParse(priceController.text) ?? 0,
+          price: int.tryParse(priceController.text.replaceAll('.', '')) ?? 0,
         );
 
         if (existing != null) {

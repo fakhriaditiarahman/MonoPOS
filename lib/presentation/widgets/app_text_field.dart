@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/locale/app_locale.dart';
 import '../../core/themes/app_sizes.dart';
+import '../../core/utilities/rupiah_input_formatter.dart';
 import 'app_icon_button.dart';
 
 enum AppTextFieldType {
@@ -127,7 +128,7 @@ class _AppTextFieldState extends State<AppTextField> {
     }
 
     if (widget.type == AppTextFieldType.currency) {
-      return [FilteringTextInputFormatter.digitsOnly];
+      return [FilteringTextInputFormatter.digitsOnly, RupiahInputFormatter()];
     }
 
     return null;
