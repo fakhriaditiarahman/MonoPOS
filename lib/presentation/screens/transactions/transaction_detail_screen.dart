@@ -330,7 +330,7 @@ class _PaymentDetail extends StatelessWidget {
                 ),
               ),
               Text(
-                CurrencyFormatter.format(transaction.totalAmount),
+                CurrencyFormatter.withoutSymbol(transaction.totalAmount, decimalDigits: 0),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -346,7 +346,7 @@ class _PaymentDetail extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
-                CurrencyFormatter.format(transaction.receivedAmount),
+                CurrencyFormatter.withoutSymbol(transaction.receivedAmount, decimalDigits: 0),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -360,7 +360,7 @@ class _PaymentDetail extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Text(
-                CurrencyFormatter.format(transaction.receivedAmount - transaction.totalAmount),
+                CurrencyFormatter.withoutSymbol(transaction.receivedAmount - transaction.totalAmount, decimalDigits: 0),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
@@ -416,11 +416,11 @@ class _ProductItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${CurrencyFormatter.format(order.price)} x ${order.quantity == order.quantity.roundToDouble() ? order.quantity.toInt().toString() : order.quantity.toStringAsFixed(1)} ${order.unit}',
+              '${CurrencyFormatter.withoutSymbol(order.price, decimalDigits: 0)} x ${order.quantity == order.quantity.roundToDouble() ? order.quantity.toInt().toString() : order.quantity.toStringAsFixed(1)} ${order.unit}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             Text(
-              CurrencyFormatter.format((order.price) * order.quantity),
+              CurrencyFormatter.withoutSymbol((order.price) * order.quantity, decimalDigits: 0),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],

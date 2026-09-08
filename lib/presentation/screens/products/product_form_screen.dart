@@ -880,7 +880,7 @@ class _TieredPriceSection extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        '$rangeText: ${CurrencyFormatter.format(tier.price)}',
+                        '$rangeText: ${CurrencyFormatter.withoutSymbol(tier.price, decimalDigits: 0)}',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           fontSize: 9,
                         ),

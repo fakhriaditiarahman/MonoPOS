@@ -58,7 +58,7 @@ class TransactionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      CurrencyFormatter.format(transaction.totalAmount),
+                      CurrencyFormatter.withoutSymbol(transaction.totalAmount, decimalDigits: 0),
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),

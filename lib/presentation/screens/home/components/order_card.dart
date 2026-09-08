@@ -152,7 +152,7 @@ class _OrderCardState extends State<OrderCard> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              CurrencyFormatter.format(widget.price),
+                              CurrencyFormatter.withoutSymbol(widget.price, decimalDigits: 0),
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 4),
@@ -320,8 +320,9 @@ class _OrderCardState extends State<OrderCard> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            CurrencyFormatter.format(
+                            CurrencyFormatter.withoutSymbol(
                               widget.isTieredPrice ? widget.price : (widget.price * quantity).round(),
+                              decimalDigits: 0,
                             ),
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               fontWeight: FontWeight.bold,

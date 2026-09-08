@@ -97,7 +97,7 @@ class _PayButton extends ConsumerWidget {
       text: !isPanelUsed || homeState.isPanelExpanded
           ? AppLocalizations.of(context)!.home_pay
           : homeState.orderedProducts.isNotEmpty
-          ? "${AppLocalizations.of(context)!.cart_products(homeState.orderedProducts.length)} = ${CurrencyFormatter.format(homeNotifier.getTotalAmount())}"
+          ? "${AppLocalizations.of(context)!.cart_products(homeState.orderedProducts.length)} = ${CurrencyFormatter.withoutSymbol(homeNotifier.getTotalAmount(), decimalDigits: 0)}"
           : AppLocalizations.of(context)!.home_transaction,
       enabled: homeState.orderedProducts.isNotEmpty,
       onTap: () {
@@ -241,7 +241,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   onTap: () {
                     final total = homeNotifier.getTotalAmount() + _getLainnyaPrice();
-                    _amountController.text = CurrencyFormatter.format(total);
+                    _amountController.text = CurrencyFormatter.withoutSymbol(total, decimalDigits: 0);
                     homeNotifier.onChangedReceivedAmount(total);
                     setState(() => _selectedQuickAmount = 'pas');
                   },
@@ -257,7 +257,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                   fontSize: 12,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   onTap: () {
-                    _amountController.text = CurrencyFormatter.format(50000);
+                    _amountController.text = CurrencyFormatter.withoutSymbol(50000, decimalDigits: 0);
                     homeNotifier.onChangedReceivedAmount(50000);
                     setState(() => _selectedQuickAmount = '50k');
                   },
@@ -273,7 +273,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                   fontSize: 12,
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   onTap: () {
-                    _amountController.text = CurrencyFormatter.format(100000);
+                    _amountController.text = CurrencyFormatter.withoutSymbol(100000, decimalDigits: 0);
                     homeNotifier.onChangedReceivedAmount(100000);
                     setState(() => _selectedQuickAmount = '100k');
                   },
@@ -429,7 +429,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     Text(
-                      CurrencyFormatter.format(homeNotifier.getTotalAmount()),
+                      CurrencyFormatter.withoutSymbol(homeNotifier.getTotalAmount(), decimalDigits: 0),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -443,7 +443,7 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     Text(
-                      CurrencyFormatter.format(_getLainnyaPrice()),
+                      CurrencyFormatter.withoutSymbol(_getLainnyaPrice(), decimalDigits: 0),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -457,7 +457,10 @@ class _AdditionalInfoDialogState extends ConsumerState<_AdditionalInfoDialog> {
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      CurrencyFormatter.format(homeNotifier.getTotalAmount() + _getLainnyaPrice()),
+                      CurrencyFormatter.withoutSymbol(
+                        homeNotifier.getTotalAmount() + _getLainnyaPrice(),
+                        decimalDigits: 0,
+                      ),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.primary,
@@ -552,7 +555,7 @@ class _OrderTotalSummary extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  CurrencyFormatter.format(total),
+                  CurrencyFormatter.withoutSymbol(total, decimalDigits: 0),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,

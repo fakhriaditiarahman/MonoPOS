@@ -149,7 +149,7 @@ class _KlikQrisPaymentScreenState extends ConsumerState<KlikQrisPaymentScreen> {
               ),
               const SizedBox(height: AppSizes.padding / 2),
               Text(
-                CurrencyFormatter.format(displayAmount),
+                CurrencyFormatter.withoutSymbol(displayAmount, decimalDigits: 0),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.bold,

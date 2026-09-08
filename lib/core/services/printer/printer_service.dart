@@ -236,27 +236,6 @@ class PrinterService {
 
       ticket.separator();
 
-      ticket.row([
-        PrintColumn(
-          text: _l10n.receipt_item,
-          flex: 3,
-          style: const PrintTextStyle(bold: true),
-        ),
-        PrintColumn(
-          text: _l10n.receipt_qty,
-          flex: 1,
-          align: PrintAlign.center,
-          style: const PrintTextStyle(bold: true),
-        ),
-        PrintColumn(
-          text: _l10n.receipt_subtotal,
-          flex: 2,
-          align: PrintAlign.right,
-          style: const PrintTextStyle(bold: true),
-        ),
-      ]);
-      ticket.separator();
-
       final grosirItems = transaction.orderedProducts?.where((p) => p.priceType == 'grosir').toList() ?? [];
       final retailItems = transaction.orderedProducts?.where((p) => p.priceType != 'grosir').toList() ?? [];
 
@@ -271,14 +250,16 @@ class PrinterService {
               ? product.quantity.toInt().toString()
               : product.quantity.toStringAsFixed(1);
 
+          final unitPrice = CurrencyFormatter.withoutSymbol(product.price, decimalDigits: 0);
+          final subtotal = CurrencyFormatter.withoutSymbol(
+            (product.price * product.quantity).round(),
+            decimalDigits: 0,
+          );
+
+          ticket.text(product.name);
           ticket.row([
-            PrintColumn(text: product.name, flex: 3),
-            PrintColumn(text: '$qtyStr ${product.unit}', flex: 1, align: PrintAlign.center),
-            PrintColumn(
-              text: CurrencyFormatter.format((product.price * product.quantity).round()),
-              flex: 2,
-              align: PrintAlign.right,
-            ),
+            PrintColumn(text: '$unitPrice x $qtyStr ${product.unit}', flex: 3),
+            PrintColumn(text: subtotal, flex: 2, align: PrintAlign.right),
           ]);
         }
       }
@@ -297,14 +278,16 @@ class PrinterService {
               ? product.quantity.toInt().toString()
               : product.quantity.toStringAsFixed(1);
 
+          final unitPrice = CurrencyFormatter.withoutSymbol(product.price, decimalDigits: 0);
+          final subtotal = CurrencyFormatter.withoutSymbol(
+            (product.price * product.quantity).round(),
+            decimalDigits: 0,
+          );
+
+          ticket.text(product.name);
           ticket.row([
-            PrintColumn(text: product.name, flex: 3),
-            PrintColumn(text: '$qtyStr ${product.unit}', flex: 1, align: PrintAlign.center),
-            PrintColumn(
-              text: CurrencyFormatter.format((product.price * product.quantity).round()),
-              flex: 2,
-              align: PrintAlign.right,
-            ),
+            PrintColumn(text: '$unitPrice x $qtyStr ${product.unit}', flex: 3),
+            PrintColumn(text: subtotal, flex: 2, align: PrintAlign.right),
           ]);
         }
       }
@@ -318,7 +301,7 @@ class PrinterService {
           style: const PrintTextStyle(bold: true),
         ),
         PrintColumn(
-          text: CurrencyFormatter.format(transaction.totalAmount),
+          text: CurrencyFormatter.withoutSymbol(transaction.totalAmount, decimalDigits: 0),
           flex: 3,
           align: PrintAlign.right,
           style: const PrintTextStyle(bold: true),
@@ -333,7 +316,7 @@ class PrinterService {
           flex: 3,
         ),
         PrintColumn(
-          text: CurrencyFormatter.format(transaction.receivedAmount),
+          text: CurrencyFormatter.withoutSymbol(transaction.receivedAmount, decimalDigits: 0),
           flex: 3,
           align: PrintAlign.right,
         ),
@@ -344,7 +327,7 @@ class PrinterService {
           flex: 3,
         ),
         PrintColumn(
-          text: CurrencyFormatter.format(transaction.returnAmount),
+          text: CurrencyFormatter.withoutSymbol(transaction.returnAmount, decimalDigits: 0),
           flex: 3,
           align: PrintAlign.right,
         ),
@@ -398,7 +381,7 @@ class PrinterService {
         style: const PrintTextStyle(fontType: FontType.fontB),
       );
       ticket.text(
-        CurrencyFormatter.format(totalAmount),
+        CurrencyFormatter.withoutSymbol(totalAmount, decimalDigits: 0),
         align: PrintAlign.center,
         style: const PrintTextStyle(
           bold: true,

@@ -301,7 +301,7 @@ class _ProductPrice extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           Text(
-            CurrencyFormatter.format(price ?? 0),
+            CurrencyFormatter.withoutSymbol(price ?? 0, decimalDigits: 0),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -445,7 +445,7 @@ class _ProductUnits extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    CurrencyFormatter.format(unit.price),
+                    CurrencyFormatter.withoutSymbol(unit.price, decimalDigits: 0),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -453,7 +453,7 @@ class _ProductUnits extends StatelessWidget {
                   if (unit.wholesalePrice != null) ...[
                     const SizedBox(width: 8),
                     Text(
-                      'Grosir: ${CurrencyFormatter.format(unit.wholesalePrice!)}',
+                      'Grosir: ${CurrencyFormatter.withoutSymbol(unit.wholesalePrice!, decimalDigits: 0)}',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         fontSize: 10,
                         color: Theme.of(context).colorScheme.primary,

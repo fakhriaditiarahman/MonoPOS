@@ -108,8 +108,12 @@ class ProductsCard extends StatelessWidget {
               if (displayPrice != null && priceType != null)
                 Text(
                   priceType == 'grosir'
-                      ? AppLocalizations.of(context)!.product_grosirPrice(CurrencyFormatter.format(displayPrice!))
-                      : AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(displayPrice!)),
+                      ? AppLocalizations.of(
+                          context,
+                        )!.product_grosirPrice(CurrencyFormatter.withoutSymbol(displayPrice!, decimalDigits: 0))
+                      : AppLocalizations.of(
+                          context,
+                        )!.product_retailPrice(CurrencyFormatter.withoutSymbol(displayPrice!, decimalDigits: 0)),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: priceType == 'grosir' ? Theme.of(context).colorScheme.primary : null,
@@ -117,7 +121,9 @@ class ProductsCard extends StatelessWidget {
                 )
               else ...[
                 Text(
-                  AppLocalizations.of(context)!.product_retailPrice(CurrencyFormatter.format(product.price)),
+                  AppLocalizations.of(
+                    context,
+                  )!.product_retailPrice(CurrencyFormatter.withoutSymbol(product.price, decimalDigits: 0)),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 if (product.wholesalePrice != null) ...[
@@ -125,7 +131,7 @@ class ProductsCard extends StatelessWidget {
                   Text(
                     AppLocalizations.of(
                       context,
-                    )!.product_grosirPrice(CurrencyFormatter.format(product.wholesalePrice!)),
+                    )!.product_grosirPrice(CurrencyFormatter.withoutSymbol(product.wholesalePrice!, decimalDigits: 0)),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,

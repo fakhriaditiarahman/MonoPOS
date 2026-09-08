@@ -65,7 +65,7 @@ class RevenueCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    CurrencyFormatter.format(revenue.totalAmount),
+                    CurrencyFormatter.withoutSymbol(revenue.totalAmount, decimalDigits: 0),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.primary,
