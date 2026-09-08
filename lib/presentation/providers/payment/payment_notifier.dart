@@ -7,7 +7,6 @@ import '../../../core/common/result.dart';
 import '../../../core/utilities/console_logger.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/usecases/transaction_usecases.dart';
-import '../../widgets/app_snack_bar.dart';
 import 'payment_state.dart';
 
 final klikQrisPaymentNotifierProvider = NotifierProvider<KlikQrisPaymentNotifier, KlikQrisPaymentState>(
@@ -164,12 +163,6 @@ class KlikQrisPaymentNotifier extends Notifier<KlikQrisPaymentState> {
 
     final transactionResult = await GetTransactionUsecase(transactionRepo).call(transactionId);
     if (transactionResult.isSuccess && transactionResult.data != null) {
-      final printer = ref.read(printerServiceProvider);
-      final printResult = await printer.printTransaction(transactionResult.data!);
-      if (printResult.isFailure) {
-        AppSnackBar.showError('Cetak struk gagal: ${printResult.error}');
-      }
-
       final tts = ref.read(ttsServiceProvider);
       await tts.playCashRegister();
       final spokenAmount = transactionResult.data!.totalAmount > 0

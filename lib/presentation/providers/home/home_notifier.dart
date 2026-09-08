@@ -9,7 +9,6 @@ import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/usecases/product_usecases.dart';
 import '../../../domain/usecases/transaction_usecases.dart';
 import '../../widgets/app_low_stock_dialog.dart';
-import '../../widgets/app_snack_bar.dart';
 import '../auth/auth_notifier.dart';
 import '../payment/payment_notifier.dart';
 import '../products/products_notifier.dart';
@@ -55,15 +54,7 @@ class HomeNotifier extends AutoDisposeNotifier<HomeState> {
       var res = await CreateTransactionUsecase(transactionRepository).call(transaction);
 
       if (res.isSuccess) {
-        final printResult = await ref.read(printerServiceProvider).printTransaction(transaction);
-        if (printResult.isFailure) {
-          AppSnackBar.showError('Cetak struk gagal: ${printResult.error}');
-        }
-      }
-
-      ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
-
-      if (res.isSuccess) {
+        ref.read(berandaProductsNotifierProvider.notifier).getAllProducts();
         _checkLowStock(user.id);
       }
 
